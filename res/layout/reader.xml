@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	      android:orientation="vertical" android:layout_width="fill_parent"
+	      android:layout_height="fill_parent">
+
+	<LinearLayout android:id="@+id/status_panel"
+		      android:orientation="horizontal" android:layout_width="fill_parent"
+		      android:layout_height="wrap_content" android:visibility="gone">
+		<TextView android:id="@+id/reading_percent_text"
+			  android:layout_width="wrap_content" android:layout_height="wrap_content"
+			  android:layout_gravity="center_vertical">
+		</TextView>
+		<TextView android:id="@+id/reading_book_text" android:layout_width="0dip"
+			  android:layout_height="wrap_content" android:layout_weight="1"
+			  android:gravity="center" android:layout_gravity="center_vertical">
+		</TextView>
+		<TextView android:id="@+id/reading_time_text"
+			  android:layout_width="wrap_content" android:layout_height="wrap_content"
+			  android:layout_gravity="center_vertical">
+		</TextView>
+		<TextView android:id="@+id/battery_level_text"
+			  android:layout_width="wrap_content" android:layout_height="wrap_content"
+			  android:layout_gravity="center_vertical">
+		</TextView>
+		<!--		<ImageView android:id="@+id/battery_icon"
+			     android:layout_width="wrap_content" android:layout_height="wrap_content"
+			     android:layout_gravity="center_vertical" android:background="#0106000d">
+		  </ImageView>
+  		-->
+	</LinearLayout>
+	<LinearLayout style="@android:style/ButtonBar" android:id="@+id/search_panel"
+		      android:orientation="horizontal" android:layout_width="fill_parent"
+		      android:layout_height="wrap_content" android:visibility="gone">
+		<EditText android:id="@+id/search_text_edit" android:layout_width="0dip"
+			  android:layout_height="wrap_content" android:layout_weight="1" android:singleLine="true">
+		</EditText>
+		<Button android:id="@+id/search_button_search" android:text="@string/button_search_text"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+		<Button android:id="@+id/search_button_ok" android:text="@string/button_ok_text"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+		<Button android:id="@+id/search_button_cancel" android:text="@string/button_cancel_text"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+	</LinearLayout>
+	<LinearLayout android:id="@+id/seek_panel" android:orientation="vertical"
+		      android:layout_width="fill_parent" android:layout_height="wrap_content"
+		      android:visibility="gone">
+		<LinearLayout style="@android:style/ButtonBar" android:orientation="horizontal"
+			      android:layout_width="fill_parent" android:layout_height="wrap_content">
+			<SeekBar android:id="@+id/seek_seekbar" android:layout_width="0dip" android:max="100"
+				 android:layout_height="wrap_content" android:layout_weight="1">
+			</SeekBar>
+			<Button android:id="@+id/seek_button_ok" android:text="@string/button_ok_text"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+			<Button android:id="@+id/seek_button_cancel" android:text="@string/button_cancel_text"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+		</LinearLayout>
+	</LinearLayout>
+	<LinearLayout android:orientation="horizontal"
+		      android:layout_width="fill_parent" android:layout_height="fill_parent">
+		<LinearLayout android:id="@+id/bookmark_list_panel" android:layout_width="180dp"
+			      android:orientation="vertical" android:layout_height="fill_parent"
+			      android:visibility="gone">
+			<TextView android:id="@+id/bookmark_list_label" android:layout_width="fill_parent"
+				  android:layout_height="wrap_content" android:text="@string/menu_bookmark"
+				  android:paddingLeft="8dp" android:paddingTop="8dp" android:paddingBottom="8dp"
+				  android:textSize="20dip" android:textStyle="bold" android:textColor="#ff000000"
+				  android:background="#ffa9a9a9"/>
+			<ListView android:id="@+id/bookmark_list" android:layout_width="wrap_content"
+				  android:layout_height="fill_parent" android:paddingLeft="4dp"
+				  android:paddingBottom="4dp" android:paddingRight="4dp"
+				  android:cacheColorHint="#ffdcdcdc" android:background="#ffdcdcdc">
+			</ListView>
+		</LinearLayout>
+		<zhang.lu.SimpleReader.View.HTextView android:id="@+id/hbook_text" android:layout_width="fill_parent"
+						      android:layout_height="wrap_content"
+						      android:layout_weight="1"/>
+		<zhang.lu.SimpleReader.View.XTextView android:id="@+id/xbook_text" android:layout_width="fill_parent"
+						      android:layout_height="wrap_content"
+						      android:layout_weight="1" android:visibility="gone"/>
+	</LinearLayout>
+</LinearLayout>
+

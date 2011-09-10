@@ -1,0 +1,369 @@
+package zhang.lu.SimpleReader;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.*;
+
+import java.io.File;
+import java.io.FilenameFilter;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: zhanglu
+ * Date: 10-12-9
+ * Time: 下午8:38
+ */
+public class OptionDialog extends Activity implements AdapterView.OnItemSelectedListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener
+{
+	private static final String[] fontSizeStringList = new String[]{"20", "22", "24", "26", "28", "30", "32", "34",};
+	private static final int[] fontSizeList = new int[]{20, 22, 24, 26, 28, 30, 32, 34,};
+	private static final String colorFormatString = "%03d";
+	private static final String[] zipEncodeList = new String[]{"GBK", "BIG5", "UTF8"};
+	private static String[] pagingDirectList = null;
+	private static String[] colorModeList;
+	private TextView tp;
+
+	private int r, g, b;
+	private int br, bg, bb;
+	int color, bcolor, ncolor, nbcolor;
+	int fs;
+	boolean isBright;
+	private Config conf;
+	private Config.PagingDirect pds[] = Config.PagingDirect.values();
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState)
+	{
+		super.onCreate(savedInstanceState);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				     WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.optdlg);
+
+		Bundle bundle = getIntent().getExtras();
+		conf = new Config(null);
+		conf.optFromString(bundle.getString(Reader.BUNDLE_DATA_CONFIG));
+		color = conf.getColor();
+		bcolor = conf.getBColor();
+		ncolor = conf.getNColor();
+		nbcolor = conf.getNBColor();
+		fs = conf.getFontSize();
+		Util.setActivityOrient(this, conf.getViewOrient());
+
+		tp = (TextView) findViewById(R.id.text_preview);
+		tp.setTextSize(fs);
+
+		isBright = conf.isColorBright();
+		loadColor(isBright);
+
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
+									fontSizeStringList);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		Spinner spinner = (Spinner) findViewById(R.id.font_size);
+		spinner.setAdapter(adapter);
+		for (int i = 0; i < fontSizeList.length; i++)
+			if (fontSizeList[i] == fs) {
+				spinner.setSelection(i, true);
+				break;
+			}
+		spinner.setOnItemSelectedListener(this);
+
+		Button btn = (Button) findViewById(R.id.button_cancel);
+		btn.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View v)
+			{
+				setResult(RESULT_CANCELED, null);
+				finish();
+			}
+		});
+		btn = (Button) findViewById(R.id.button_ok);
+		btn.setOnClickListener(this);
+
+		RadioGroup rg = (RadioGroup) findViewById(R.id.view_style);
+		if (conf.isHanStyle())
+			rg.check(R.id.han_style);
+		else
+			rg.check(R.id.xi_style);
+
+		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, zipEncodeList);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner = (Spinner) findViewById(R.id.zip_encode);
+		spinner.setAdapter(adapter);
+
+		for (int i = 0; i < zipEncodeList.length; i++)
+			if (zipEncodeList[i].equals(conf.getZipEncode())) {
+				spinner.setSelection(i, true);
+				break;
+			}
+
+		//paging direct
+		if (pagingDirectList == null) {
+			pagingDirectList = new String[pds.length];
+			for (int i = 0; i < pds.length; i++)
+				pagingDirectList[i] = getPagingDirectText(pds[i]);
+		}
+
+		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, pagingDirectList);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner = (Spinner) findViewById(R.id.paging_direct);
+		spinner.setAdapter(adapter);
+
+		for (int i = 0; i < pagingDirectList.length; i++)
+			if (pagingDirectList[i].equals(getPagingDirectText(conf.getPagingDirect()))) {
+				spinner.setSelection(i, true);
+				break;
+			}
+
+		if (colorModeList == null)
+			colorModeList = new String[]{getResources().getString(R.string.color_mode_day), getResources()
+				.getString(R.string.color_mode_night)};
+		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colorModeList);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner = (Spinner) findViewById(R.id.color_mode);
+		spinner.setAdapter(adapter);
+
+		spinner.setSelection(conf.isColorBright() ? 0 : 1, true);
+		spinner.setOnItemSelectedListener(this);
+
+		CheckBox de = (CheckBox) findViewById(R.id.dict_enabled);
+		spinner = (Spinner) findViewById(R.id.dict_file);
+		String[] fl = (new File(Reader.dictPath)).list(new FilenameFilter()
+		{
+			public boolean accept(File file, String s)
+			{
+				return s.endsWith(Reader.dictSuffix);
+			}
+		});
+		de.setChecked(conf.isDictEnabled());
+		if ((fl != null) && (fl.length > 0)) {
+			for (int i = 0; i < fl.length; i++)
+				fl[i] = fl[i].substring(0, fl[i].length() - Reader.dictSuffix.length());
+			adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, fl);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			spinner.setAdapter(adapter);
+
+			if (!conf.getDictFile().equals(Reader.DICT_FILE_NONE))
+				for (int i = 0; i < fl.length; i++)
+					if (fl[i].equals(conf.getDictFile())) {
+						spinner.setSelection(i, false);
+						break;
+					}
+			de.setOnCheckedChangeListener(this);
+		}
+		if (!conf.isDictEnabled())
+			spinner.setVisibility(View.INVISIBLE);
+	}
+
+	public void onClick(View view)
+	{
+		saveColor(isBright);
+		Intent data = new Intent();
+		conf.setFontSize(fs);
+		conf.setColor(color);
+		conf.setBColor(bcolor);
+		conf.setNColor(ncolor);
+		conf.setNBColor(nbcolor);
+		//conf.setColorBright(isBright);
+		conf.setHanStyle(
+			((RadioGroup) findViewById(R.id.view_style)).getCheckedRadioButtonId() == R.id.han_style);
+
+		conf.setDictEnabled(((CheckBox) findViewById(R.id.dict_enabled)).isChecked());
+
+		Object df = ((Spinner) findViewById(R.id.dict_file)).getSelectedItem();
+		if (df == null)
+			conf.setDictFile(Reader.DICT_FILE_NONE);
+		else
+			conf.setDictFile(df.toString());
+
+		String pdstring = ((Spinner) findViewById(R.id.paging_direct)).getSelectedItem().toString();
+		int i;
+		for (i = 0; i < pagingDirectList.length; i++)
+			if (pagingDirectList[i].equals(pdstring))
+				break;
+		conf.setPagingDirect(pds[i]);
+		conf.setZipEncode(((Spinner) findViewById(R.id.zip_encode)).getSelectedItem().toString());
+		data.putExtra(Reader.BUNDLE_DATA_CONFIG, conf.optToString());
+		setResult(RESULT_OK, data);
+		finish();
+	}
+
+	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+	{
+		Spinner s = (Spinner) adapterView;
+		switch (s.getId()) {
+			case R.id.font_size:
+				fs = fontSizeList[s.getSelectedItemPosition()];
+				tp.setTextSize(fs);
+				break;
+			case R.id.color_mode:
+				isBright = (s.getSelectedItemPosition() == 0);
+				saveColor(!isBright);
+				loadColor(isBright);
+				break;
+		}
+	}
+
+	public void onNothingSelected(AdapterView<?> adapterView)
+	{
+	}
+
+	public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser)
+	{
+		TextView v;
+
+		switch (seekBar.getId()) {
+			case R.id.font_color_red:
+				v = (TextView) findViewById(R.id.font_color_red_value);
+				r = i;
+				break;
+			case R.id.font_color_green:
+				v = (TextView) findViewById(R.id.font_color_green_value);
+				g = i;
+				break;
+			case R.id.font_color_blue:
+				v = (TextView) findViewById(R.id.font_color_blue_value);
+				b = i;
+				break;
+			case R.id.font_bcolor_red:
+				v = (TextView) findViewById(R.id.font_bcolor_red_value);
+				br = i;
+				break;
+			case R.id.font_bcolor_green:
+				v = (TextView) findViewById(R.id.font_bcolor_green_value);
+				bg = i;
+				break;
+			case R.id.font_bcolor_blue:
+				v = (TextView) findViewById(R.id.font_bcolor_blue_value);
+				bb = i;
+				break;
+			default:
+				Log.println(Log.ERROR, "OptionDialog", "onProgressChanged id = " + seekBar.getId());
+				return;
+		}
+
+		v.setText(String.format(colorFormatString, i));
+		tp.setTextColor(Color.rgb(r, g, b));
+		tp.setBackgroundColor(Color.rgb(br, bg, bb));
+	}
+
+	public void onStartTrackingTouch(SeekBar seekBar)
+	{
+	}
+
+	public void onStopTrackingTouch(SeekBar seekBar)
+	{
+	}
+
+	private void saveColor(boolean bright)
+	{
+		if (bright) {
+			color = Color.rgb(r, g, b);
+			bcolor = Color.rgb(br, bg, bb);
+		} else {
+			ncolor = Color.rgb(r, g, b);
+			nbcolor = Color.rgb(br, bg, bb);
+		}
+
+	}
+
+	private void loadColor(boolean bright)
+	{
+		tp = (TextView) findViewById(R.id.text_preview);
+		if (bright) {
+			r = Color.red(color);
+			g = Color.green(color);
+			b = Color.blue(color);
+			br = Color.red(bcolor);
+			bg = Color.green(bcolor);
+			bb = Color.blue(bcolor);
+			tp.setTextColor(color);
+			tp.setBackgroundColor(bcolor);
+
+		} else {
+			r = Color.red(ncolor);
+			g = Color.green(ncolor);
+			b = Color.blue(ncolor);
+			br = Color.red(nbcolor);
+			bg = Color.green(nbcolor);
+			bb = Color.blue(nbcolor);
+			tp.setTextColor(ncolor);
+			tp.setBackgroundColor(nbcolor);
+		}
+
+		SeekBar seekBar = (SeekBar) findViewById(R.id.font_color_red);
+		seekBar.setProgress(r);
+		seekBar.setOnSeekBarChangeListener(this);
+		TextView v = (TextView) findViewById(R.id.font_color_red_value);
+		v.setText(String.format(colorFormatString, r));
+
+		seekBar = (SeekBar) findViewById(R.id.font_color_green);
+		seekBar.setProgress(g);
+		seekBar.setOnSeekBarChangeListener(this);
+		v = (TextView) findViewById(R.id.font_color_green_value);
+		v.setText(String.format(colorFormatString, g));
+
+		seekBar = (SeekBar) findViewById(R.id.font_color_blue);
+		seekBar.setProgress(b);
+		seekBar.setOnSeekBarChangeListener(this);
+		v = (TextView) findViewById(R.id.font_color_blue_value);
+		v.setText(String.format(colorFormatString, b));
+
+		seekBar = (SeekBar) findViewById(R.id.font_bcolor_red);
+		seekBar.setProgress(br);
+		seekBar.setOnSeekBarChangeListener(this);
+		v = (TextView) findViewById(R.id.font_bcolor_red_value);
+		v.setText(String.format(colorFormatString, br));
+
+		seekBar = (SeekBar) findViewById(R.id.font_bcolor_green);
+		seekBar.setProgress(bg);
+		seekBar.setOnSeekBarChangeListener(this);
+		v = (TextView) findViewById(R.id.font_bcolor_green_value);
+		v.setText(String.format(colorFormatString, bg));
+
+		seekBar = (SeekBar) findViewById(R.id.font_bcolor_blue);
+		seekBar.setProgress(bb);
+		seekBar.setOnSeekBarChangeListener(this);
+		v = (TextView) findViewById(R.id.font_bcolor_blue_value);
+		v.setText(String.format(colorFormatString, bb));
+	}
+
+	private String getPagingDirectText(Config.PagingDirect pd)
+	{
+		switch (pd) {
+			case up:
+				return getResources().getString(R.string.paging_up_label);
+			case down:
+				return getResources().getString(R.string.paging_down_label);
+			case left:
+				return getResources().getString(R.string.paging_left_label);
+			case right:
+				return getResources().getString(R.string.paging_right_label);
+			case clickUp:
+				return getResources().getString(R.string.paging_click_up_label);
+			case clickDown:
+				return getResources().getString(R.string.paging_click_down_label);
+			case clickLeft:
+				return getResources().getString(R.string.paging_click_left_label);
+			case clickRight:
+				return getResources().getString(R.string.paging_click_right_label);
+		}
+		return null;
+	}
+
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+	{
+		View df = findViewById(R.id.dict_file);
+		if (isChecked) {
+			df.setVisibility(View.VISIBLE);
+		} else
+			df.setVisibility(View.INVISIBLE);
+	}
+}
+
