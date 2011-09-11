@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.webkit.WebView;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,9 +27,11 @@ public class Util
 						 .setPositiveButton(R.string.button_ok_text, null).show();
 	}
 
-	static public void showNote(Context activity, String msg)
+	static public void showDialog(Context activity, String msg, int titleID)
 	{
-		new AlertDialog.Builder(activity).setTitle(R.string.note_title).setMessage(msg)
+		WebView wv = new WebView(activity);
+		wv.loadDataWithBaseURL(null, msg, "text/html", "utf-8", null);
+		new AlertDialog.Builder(activity).setTitle(titleID).setView(wv)
 						 .setPositiveButton(R.string.button_ok_text, null).show();
 	}
 

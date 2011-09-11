@@ -27,6 +27,7 @@ import java.util.List;
 
 public class Reader extends Activity implements View.OnTouchListener, SimpleTextView.OnPosChangeListener
 {
+	private static final String ABOUT_MESSAGE = "<center>作者：<a href=\"http://weibo.com/2386922042\">zhanglu</a></center></br><center>主頁：<a href=\"http://sourceforge.net/projects/simplereader\">SimpleReader</a></center>";
 	private static final int REQUEST_CODE_OPEN_FILE = 1;
 	private static final int REQUEST_CODE_OPTIONS = 2;
 	public static final String pathPrefix = Environment.getExternalStorageDirectory() + "/books";
@@ -52,6 +53,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final int menuColorBright = 6;
 	private static final int menuFile = 7;
 	private static final int menuOption = 8;
+	private static final int menuAbout = 9;
 
 	private SimpleTextView hbv, xbv;
 	private SimpleTextView bv;
@@ -154,7 +156,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			{
 				String note = bv.getFingerPosNote(e.getX(), e.getY());
 				if (note != null) {
-					Util.showNote(Reader.this, note);
+					Util.showDialog(Reader.this, note, R.string.note_title);
 					return true;
 				}
 				float p1, p2;
@@ -617,6 +619,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			case menuExit:
 				finish();
 				break;
+			case menuAbout:
+				Util.showDialog(this, ABOUT_MESSAGE, R.string.about_title);
+				break;
 		}
 		return true;
 	}
@@ -643,6 +648,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		menu.add(0, menuStatusBar, menuStatusBar, getResources().getString(R.string.menu_status_bar));
 		menu.add(0, menuExit, menuExit, getResources().getString(R.string.menu_exit));
 		menu.add(0, menuOption, menuOption, getResources().getString(R.string.menu_option));
+		menu.add(0, menuAbout, menuAbout, getResources().getString(R.string.menu_about));
 		menu.add(0, menuSearch, menuSearch, getResources().getString(R.string.menu_search));
 
 		return true;

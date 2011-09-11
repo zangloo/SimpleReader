@@ -19,6 +19,7 @@
 	<string name="menu_exit">退出</string>
 	<string name="menu_dict">字典：</string>
 	<string name="menu_bookmark">書籤：</string>
+	<string name="menu_about">關於</string>
 
 	<string name="text_preview">揩面、汰腳、睏覺</string>
 	<string name="text_preview_label">效果預覽：</string>
@@ -58,4 +59,5 @@
 	<string name="file_list_title">　文件列表　</string>
 
 	<string name="loading">加載中...</string>
+	<string name="about_title">關於</string>
 </resources>
