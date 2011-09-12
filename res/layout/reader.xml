@@ -46,12 +46,12 @@
 		      android:visibility="gone">
 		<LinearLayout style="@android:style/ButtonBar" android:orientation="horizontal"
 			      android:layout_width="fill_parent" android:layout_height="wrap_content">
+			<Button android:id="@+id/seek_button_cancel" android:text="@string/button_cancel_text"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 			<SeekBar android:id="@+id/seek_seekbar" android:layout_width="0dip" android:max="100"
 				 android:layout_height="wrap_content" android:layout_weight="1">
 			</SeekBar>
 			<Button android:id="@+id/seek_button_ok" android:text="@string/button_ok_text"
-				android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-			<Button android:id="@+id/seek_button_cancel" android:text="@string/button_cancel_text"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 		</LinearLayout>
 	</LinearLayout>

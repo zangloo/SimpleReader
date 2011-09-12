@@ -256,8 +256,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	@Override
 	public void onBackPressed()
 	{
-		if (hidePanels())
+		if (hidePanels()) {
+			bv.setPos(ppi, ppo);
 			return;
+		}
 		super.onBackPressed();
 	}
 
@@ -517,8 +519,11 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		b.putInt(BUNDLE_DATA_CURR_ORIENT, config.getViewOrient());
 
 		List<String> rfl = config.getRecentFilesList();
-		for (int i = 0; i < rfl.size(); i++)
-			b.putString(Config.RECENTLY_FILE_PREFIX + (i + 1), rfl.get(i));
+		for (int i = 0; i < rfl.size(); i++) {
+			Config.ReadingInfo ri = config.getReadingInfo(rfl.get(i));
+			b.putString(Config.RECENTLY_FILE_PREFIX + (i + 1),
+				    String.valueOf(ri.percent) + FileDialog.posSplitter + rfl.get(i));
+		}
 		intent.putExtras(b);
 		startActivityForResult(intent, REQUEST_CODE_OPEN_FILE);
 	}
