@@ -53,21 +53,20 @@ public class FileDialog extends Activity implements AdapterView.OnItemClickListe
 		String path = bundle.getString(Reader.BUNDLE_DATA_NAME_PATH);
 		Util.setActivityOrient(this, bundle.getInt(Reader.BUNDLE_DATA_CURR_ORIENT));
 
-		for (int i = 0; i < Config.MAX_RECENTLY_FILE_COUNT; i++) {
-			String s = (String) bundle.get(Config.RECENTLY_FILE_PREFIX + (i + 1));
-			if (s != null)
-				rfl.add(s);
-		}
-
 		// setup recently files list
 		lv[1] = new ListView(this);
 		fns = new ArrayList<HashMap<String, Object>>();
-		for (String s : rfl) {
+		for (int i = 0; i < Config.MAX_RECENTLY_FILE_COUNT; i++) {
+			String s = (String) bundle.get(Config.RECENTLY_FILE_PREFIX + (i + 1));
+			if (s == null)
+				continue;
 			int p = s.indexOf(posSplitter);
 			HashMap<String, Object> m = new HashMap<String, Object>();
 			m.put(LIST_HEAD_NAMES[0], null);
-			m.put(LIST_HEAD_NAMES[1], s.substring(p + 1));
 			m.put(LIST_HEAD_NAMES[2], s.substring(0, p) + "%");
+			s = s.substring(p + 1);
+			m.put(LIST_HEAD_NAMES[1], s);
+			rfl.add(s);
 			fns.add(m);
 		}
 		sa = new SimpleAdapter(this, fns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
