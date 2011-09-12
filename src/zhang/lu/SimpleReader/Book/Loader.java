@@ -37,17 +37,20 @@ public abstract class Loader
 
 	public static BookContent loadFile(String filePath)
 	{
+		VFile f = new VFile(filePath);
+		if (!f.exists())
+			return null;
 		try {
 			if (defaultLoader == null)
 				init();
 			for (Loader l : loaders)
 				for (String s : l.getSuffixes())
 					if (filePath.toLowerCase().endsWith("." + s))
-						return l.load(filePath);
+						return l.load(f);
 
 			if (defaultLoader == null)
 				return null;
-			return defaultLoader.load(filePath);
+			return defaultLoader.load(f);
 		} catch (Exception e) {
 			ArrayList<String> list = new ArrayList<String>();
 			list.add(e.getMessage());
@@ -84,5 +87,5 @@ public abstract class Loader
 
 	protected abstract String[] getSuffixes();
 
-	protected abstract BookContent load(String filePath) throws Exception;
+	protected abstract BookContent load(VFile file) throws Exception;
 }

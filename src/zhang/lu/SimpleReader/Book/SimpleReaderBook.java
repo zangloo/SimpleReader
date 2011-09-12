@@ -73,9 +73,9 @@ public class SimpleReaderBook extends Loader implements BookContent
 	}
 
 	@Override
-	protected BookContent load(String filePath)
+	protected BookContent load(VFile f)
 	{
-		db = SQLiteDatabase.openDatabase(filePath, null,
+		db = SQLiteDatabase.openDatabase(f.getPath(), null,
 						 SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
 
 		HashMap<String, String> map = new HashMap<String, String>();

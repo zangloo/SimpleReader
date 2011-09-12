@@ -4,7 +4,8 @@
 	<string name="error">錯誤</string>
 	<string name="error_dir_is_file">"SD卡中，/books"不是目錄，請檢查</string>
 	<string name="error_dir_not_exist">"SD卡中，/books"目錄不存在，請創建</string>
-	<string name="error_open_file">無法打開配置文件:</string>
+	<string name="error_open_config_file">無法打開配置文件:</string>
+	<string name="error_open_file">無法打開文件:</string>
 	<string name="msg_file_opening">正在打開文件，請等待</string>
 	<string name="error_write_config">無法保存配置文件</string>
 	<string name="error_empty_file">文件為空</string>

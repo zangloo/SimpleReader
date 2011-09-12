@@ -116,7 +116,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		try {
 			config.readConfig();
 		} catch (SQLiteException e) {
-			Util.errorMsg(this, R.string.error_open_file);
+			Util.errorMsg(this, R.string.error_open_config_file);
 		}
 
 		// init panels
@@ -808,14 +808,19 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		{
 			pd.dismiss();
 
-			ri = config.getReadingInfo(config.getCurrFile());
-			ppi = ri.line;
-			ppo = ri.offset;
-			bv.setPos(ppi, ppo);
+			if (msg.arg1 == 0) {
+				Util.errorMsg(Reader.this,
+					      getString(R.string.error_open_file) + msg.getData().get("filename"));
+			} else {
 
-			hidePanels();
-			updateStatusPanelFile();
-			bv.invalidate();
+				ppi = ri.line;
+				ppo = ri.offset;
+				bv.setPos(ppi, ppo);
+
+				hidePanels();
+				updateStatusPanelFile();
+				bv.invalidate();
+			}
 			loading = false;
 		}
 	};
@@ -823,16 +828,27 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private void openfile(final String fp)
 	{
 		loading = true;
-		config.setReadingFile(fp);
 		pd = ProgressDialog.show(this, "", getString(R.string.loading), true);
 		Thread thread = new Thread(new Runnable()
 		{
 			public void run()
 			{
-				bv.setContent(Loader.loadFile(pathPrefix + fp));
-
 				Message msg;
 				msg = handler.obtainMessage();
+
+				BookContent bc = Loader.loadFile(pathPrefix + fp);
+				if (bc != null) {
+					config.setReadingFile(fp);
+					bv.setContent(bc);
+					ri = config.getReadingInfo(config.getCurrFile());
+					msg.arg1 = 1;
+				} else{
+					Bundle b = new Bundle();
+					b.putString("filename", fp);
+					msg.setData(b);
+					msg.arg1 = 0;
+				}
+
 				handler.sendMessage(msg);
 			}
 		});

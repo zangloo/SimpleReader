@@ -39,9 +39,8 @@ public class HtmlLoader extends Loader
 	}
 
 	@Override
-	protected BookContent load(String filePath) throws Exception
+	protected BookContent load(VFile f) throws Exception
 	{
-		VFile f = new VFile(filePath);
 		List<String> lines = new ArrayList<String>();
 		String cs;
 

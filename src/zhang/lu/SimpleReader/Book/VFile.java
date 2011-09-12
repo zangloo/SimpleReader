@@ -116,6 +116,28 @@ public class VFile extends File
 		}
 	}
 
+	@Override
+	public boolean exists()
+	{
+		if (!v)
+			return super.exists();
+
+		try {
+			ZipFile zf = new ZipFile(rf, encode);
+			Enumeration es = zf.getEntries();
+			if (cp.length() > 0)
+				while (es.hasMoreElements())
+					if (cp.equals(((ZipArchiveEntry) es.nextElement()).getName()))
+						return true;
+
+			return false;
+		} catch (FileNotFoundException e) {
+			return false;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
 	public List<Property> listProperty()
 	{
 		return listProperty(true);

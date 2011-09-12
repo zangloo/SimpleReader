@@ -78,7 +78,6 @@ public class FileDialog extends Activity implements AdapterView.OnItemClickListe
 				filePicked(rfl.get(position));
 			}
 		});
-		//sa.notifyDataSetChanged();
 
 		// setup file list
 		fns = new ArrayList<HashMap<String, Object>>();

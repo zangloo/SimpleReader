@@ -242,11 +242,11 @@ public class HaodooLoader extends Loader
 	}
 
 	@Override
-	protected BookContent load(String filePath) throws Exception
+	protected BookContent load(VFile file) throws Exception
 	{
 		encrypted = false;
 
-		f = new VFile(filePath);
+		f = file;
 		text = new ArrayList<String>();
 
 		is = f.getInputStream();
