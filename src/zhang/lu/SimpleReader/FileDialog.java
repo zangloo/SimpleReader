@@ -62,7 +62,7 @@ public class FileDialog extends Activity implements AdapterView.OnItemClickListe
 				continue;
 			int p = s.indexOf(posSplitter);
 			HashMap<String, Object> m = new HashMap<String, Object>();
-			m.put(LIST_HEAD_NAMES[0], null);
+			m.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
 			m.put(LIST_HEAD_NAMES[2], s.substring(0, p) + "%");
 			s = s.substring(p + 1);
 			m.put(LIST_HEAD_NAMES[1], s);
