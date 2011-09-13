@@ -281,6 +281,16 @@ public class Config extends SQLiteOpenHelper
 		return ri;
 	}
 
+	public void removeReadingInfo(String filename)
+	{
+		for (int i = 0; i < recentFiles.size(); i++)
+			if (recentFiles.get(i).equals(filename))
+				recentFiles.remove(i);
+
+		SQLiteDatabase db = getWritableDatabase();
+		db.delete(BOOK_INFO_TABLE_NAME, BOOK_INFO_TABLE_COLS[0] + " = ?", new String[]{filename});
+	}
+
 	public void setReadingInfo(ReadingInfo ri)
 	{
 		if (ri == null)
@@ -506,5 +516,4 @@ public class Config extends SQLiteOpenHelper
 	{
 		return (colorBright) ? bcolor : nbcolor;
 	}
-
 }

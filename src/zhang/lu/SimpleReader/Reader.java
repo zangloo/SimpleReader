@@ -809,8 +809,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			pd.dismiss();
 
 			if (msg.arg1 == 0) {
-				Util.errorMsg(Reader.this,
-					      getString(R.string.error_open_file) + msg.getData().get("filename"));
+				String fp = (String) msg.getData().get("filename");
+				config.removeReadingInfo(fp);
+
+				Util.errorMsg(Reader.this, getString(R.string.error_open_file) + fp);
 			} else {
 
 				ppi = ri.line;
@@ -842,7 +844,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 					bv.setContent(bc);
 					ri = config.getReadingInfo(config.getCurrFile());
 					msg.arg1 = 1;
-				} else{
+				} else {
 					Bundle b = new Bundle();
 					b.putString("filename", fp);
 					msg.setData(b);
