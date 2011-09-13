@@ -156,7 +156,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			{
 				String note = bv.getFingerPosNote(e.getX(), e.getY());
 				if (note != null) {
-					Util.showDialog(Reader.this, note, R.string.note_title);
+					Util.showMessage(Reader.this, note, R.string.note_title);
 					return true;
 				}
 				float p1, p2;
