@@ -112,7 +112,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 		// load config
 		config = new Config(this);
-		String fn;
 		try {
 			config.readConfig();
 		} catch (SQLiteException e) {
@@ -194,7 +193,8 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 			public void onLongPress(MotionEvent motionEvent)
 			{
-				fingerPosInfo = bv.getFingerPosInfo(motionEvent.getX(), motionEvent.getY());
+				if (config.getCurrFile() != null)
+					fingerPosInfo = bv.getFingerPosInfo(motionEvent.getX(), motionEvent.getY());
 				openOptionsMenu();
 			}
 
@@ -241,6 +241,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		}
 
 		//every thing is ok, load last file if have
+		String fn;
 		fn = config.getCurrFile();
 		if (fn != null)
 			openfile(fn);
@@ -619,8 +620,8 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 							.substring(0, BOOKMARK_DESC_DEFAULT_LEN);
 
 					bookmarkManager.addDialog(BookmarkManager.createBookmark(fingerPosInfo, ri));
-					break;
 				}
+				break;
 			case menuExit:
 				finish();
 				break;
