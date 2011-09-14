@@ -321,6 +321,17 @@ public abstract class SimpleTextView extends View
 		return content.searchText(t, sr);
 	}
 
+	protected String replaceTextChar(char[] txt, char[] oc, char[] nc)
+	{
+		for (int i = 0; i < oc.length; i++)
+			for (int j = 0; j < txt.length; j++)
+				if (txt[j] == oc[i])
+					txt[j] = nc[i];
+		return String.valueOf(txt);
+//		return txt.replace('「', '﹁').replace('」', '﹂').replace('『', '﹃').replace('』', '﹄').replace('（', '︵')
+//			  .replace('）', '︶').replace('《', '︽').replace('》', '︾').replace('〔', '︹').replace('〕', '︺')
+//			  .replace('【', '︻').replace('】', '︼').replace('｛', '︷').replace('｝', '︸').replace('─', '︱');
+	}
 
 	public abstract int calcNextLineOffset();
 

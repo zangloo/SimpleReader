@@ -31,18 +31,6 @@ public class HTextView extends SimpleTextView
 	private static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─',9};
 	private static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱','　'};
 
-	private String formatTraditionalText(char[] txt)
-	{
-		for (int i = 0; i < SC.length; i++)
-			for (int j = 0; j < txt.length; j++)
-				if (txt[j] == SC[i])
-					txt[j] = TC[i];
-		return String.valueOf(txt);
-//		return txt.replace('「', '﹁').replace('」', '﹂').replace('『', '﹃').replace('』', '﹄').replace('（', '︵')
-//			  .replace('）', '︶').replace('《', '︽').replace('》', '︾').replace('〔', '︹').replace('〕', '︺')
-//			  .replace('【', '︻').replace('】', '︼').replace('｛', '︷').replace('｝', '︸').replace('─', '︱');
-	}
-
 	@Override
 	protected void drawText(Canvas canvas)
 	{
@@ -56,7 +44,7 @@ public class HTextView extends SimpleTextView
 		x = w - xoffset - fw;
 
 		do {
-			String line = formatTraditionalText(content.line(nextpi).toCharArray());
+			String line = replaceTextChar(content.line(nextpi).toCharArray(), SC, TC);
 			y = yoffset + fh;
 			int cc = line.length() - nextpo;
 			if (cc > mc)

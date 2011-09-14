@@ -186,6 +186,9 @@ public class XTextView extends SimpleTextView
 		return true;
 	}
 
+	private static final char[] OC = {9};
+	private static final char[] NC = {'　'};
+
 	@Override
 	protected void drawText(Canvas canvas)
 	{
@@ -197,7 +200,8 @@ public class XTextView extends SimpleTextView
 		y = yoffset + fh;
 
 		do {
-			String line = content.line(nextpi);
+			String line = replaceTextChar(content.line(nextpi).toCharArray(), OC, NC);
+
 			int p;
 			p = calcChars(line, nextpo, line.length(), lc);
 			charMapCache[lc][p - nextpo] = 0;
