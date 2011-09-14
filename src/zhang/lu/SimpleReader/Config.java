@@ -239,9 +239,10 @@ public class Config extends SQLiteOpenHelper
 
 	public void setReadingFile(String filename)
 	{
-		if (currFile.equals(filename))
+		if (filename.equals(currFile))
 			return;
-		recentFiles.add(0, currFile);
+		if (currFile != null)
+			recentFiles.add(0, currFile);
 		currFile = filename;
 		int i;
 		for (i = 1; i < recentFiles.size(); i++)
@@ -260,7 +261,7 @@ public class Config extends SQLiteOpenHelper
 
 	public ReadingInfo getReadingInfo(String filename)
 	{
-		SQLiteDatabase db = getWritableDatabase();
+		SQLiteDatabase db = getReadableDatabase();
 		ReadingInfo ri = new ReadingInfo();
 		ri.name = filename;
 		ri.line = 0;
