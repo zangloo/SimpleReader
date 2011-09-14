@@ -830,7 +830,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		if (fp == null)
 			return;
 		loading = true;
-		pd = ProgressDialog.show(this, "", getString(R.string.loading), true);
+		pd = ProgressDialog.show(this, getString(R.string.loading), fp, true);
 		Thread thread = new Thread(new Runnable()
 		{
 			public void run()
