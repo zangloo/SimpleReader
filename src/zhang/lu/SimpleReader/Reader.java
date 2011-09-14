@@ -516,11 +516,11 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		b.putString(BUNDLE_DATA_NAME_PATH, filepath);
 		b.putInt(BUNDLE_DATA_CURR_ORIENT, config.getViewOrient());
 
-		List<String> rfl = config.getRecentFilesList();
+		List<Config.ReadingInfo> rfl = config.getRecentFilesList();
 		for (int i = 0; i < rfl.size(); i++) {
-			Config.ReadingInfo ri = config.getReadingInfo(rfl.get(i));
+			Config.ReadingInfo ri = rfl.get(i);
 			b.putString(Config.RECENTLY_FILE_PREFIX + (i + 1),
-				    String.valueOf(ri.percent) + FileDialog.posSplitter + rfl.get(i));
+				    String.valueOf(ri.percent) + FileDialog.posSplitter + ri.name);
 		}
 		intent.putExtras(b);
 		startActivityForResult(intent, REQUEST_CODE_OPEN_FILE);

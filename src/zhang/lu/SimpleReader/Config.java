@@ -84,7 +84,7 @@ public class Config extends SQLiteOpenHelper
 	private PagingDirect pagingDirect = Config.PagingDirect.up;
 	private boolean dictEnabled = false;
 	private String dictFile = null;
-	private ArrayList<String> recentFiles = new ArrayList<String>(MAX_RECENTLY_FILE_COUNT);
+	private ArrayList<ReadingInfo> rfl = new ArrayList<ReadingInfo>(MAX_RECENTLY_FILE_COUNT);
 
 	public Config(Context context)
 	{
@@ -124,7 +124,7 @@ public class Config extends SQLiteOpenHelper
 			config.put(cursor.getString(0), cursor.getString(1));
 		cursor.close();
 
-		recentFiles.clear();
+		rfl.clear();
 		try {
 			currFile = config.get(configCurrFile);
 			fontSize = new Integer(config.get(configFontSize));
@@ -141,14 +141,47 @@ public class Config extends SQLiteOpenHelper
 			dictEnabled = config.get(configDictEnabled).equals("true");
 			dictFile = config.get(configDictFile);
 
-			for (int i = 0; i < MAX_RECENTLY_FILE_COUNT; i++) {
-				String s = config.get(RECENTLY_FILE_PREFIX + (i + 1));
-				if (s != null)
-					recentFiles.add(s);
+			StringBuilder sql = new StringBuilder("select ");
+			sql.append(BOOK_INFO_TABLE_COLS[0]);
+			sql.append(',');
+			sql.append(BOOK_INFO_TABLE_COLS[1]);
+			sql.append(',');
+			sql.append(BOOK_INFO_TABLE_COLS[2]);
+			sql.append(',');
+			sql.append(BOOK_INFO_TABLE_COLS[3]);
+			sql.append(", bi.");
+			sql.append(BOOK_INFO_TABLE_COLS[4]);
+			sql.append(" from ");
+			sql.append(BOOK_INFO_TABLE_NAME);
+			sql.append(" bi, ");
+			sql.append(CONFIG_TABLE_NAME);
+			sql.append(" cf where bi.");
+			sql.append(BOOK_INFO_TABLE_COLS[0]);
+			sql.append(" = cf.");
+			sql.append(CONFIG_TABLE_COLS[1]);
+			sql.append(" and cf.");
+			sql.append(CONFIG_TABLE_COLS[0]);
+			sql.append(" like '");
+			sql.append(RECENTLY_FILE_PREFIX);
+			sql.append("%' order by cf.");
+			sql.append(CONFIG_TABLE_COLS[0]);
+
+			rfl.clear();
+			cursor = db.rawQuery(sql.toString(), null);
+			while (cursor.moveToNext()) {
+				ReadingInfo ri = new ReadingInfo();
+				ri.name = cursor.getString(0);
+				ri.line = cursor.getInt(1);
+				ri.offset = cursor.getInt(2);
+				ri.percent = cursor.getInt(3);
+				ri.id = cursor.getInt(4);
+				rfl.add(ri);
 			}
+			cursor.close();
 		} catch (Exception e) {
 			Log.println(Log.ERROR, "Config", "parse config file error:" + e.getMessage());
 		}
+
 	}
 
 	public void saveConfig()
@@ -170,8 +203,8 @@ public class Config extends SQLiteOpenHelper
 		config.put(configDictEnabled, "" + dictEnabled);
 		config.put(configDictFile, "" + dictFile);
 
-		for (int i = 0; i < recentFiles.size(); i++)
-			config.put(RECENTLY_FILE_PREFIX + (i + 1), recentFiles.get(i));
+		for (int i = 0; i < rfl.size(); i++)
+			config.put(RECENTLY_FILE_PREFIX + (i + 1), rfl.get(i).name);
 
 		SQLiteDatabase db = getWritableDatabase();
 		db.execSQL("delete from " + CONFIG_TABLE_NAME);
@@ -242,21 +275,21 @@ public class Config extends SQLiteOpenHelper
 		if (filename.equals(currFile))
 			return;
 		if (currFile != null)
-			recentFiles.add(0, currFile);
+			rfl.add(0, getReadingInfo(currFile));
 		currFile = filename;
 		int i;
-		for (i = 1; i < recentFiles.size(); i++)
-			if (recentFiles.get(i).equals(filename)) {
-				recentFiles.remove(i);
+		for (i = 1; i < rfl.size(); i++)
+			if (rfl.get(i).name.equals(currFile)) {
+				rfl.remove(i);
 				return;
 			}
-		if (recentFiles.size() > MAX_RECENTLY_FILE_COUNT)
-			recentFiles.remove(MAX_RECENTLY_FILE_COUNT);
+		if (rfl.size() > MAX_RECENTLY_FILE_COUNT)
+			rfl.remove(MAX_RECENTLY_FILE_COUNT);
 	}
 
-	public final List<String> getRecentFilesList()
+	public final List<ReadingInfo> getRecentFilesList()
 	{
-		return recentFiles;
+		return rfl;
 	}
 
 	public ReadingInfo getReadingInfo(String filename)
@@ -279,14 +312,25 @@ public class Config extends SQLiteOpenHelper
 			ri.id = cursor.getInt(4);
 		}
 		cursor.close();
+
+		// we must insert new record and get back book id
+		if (ri.id == 0) {
+			setReadingInfo(ri, true);
+			cursor = db
+				.query(BOOK_INFO_TABLE_NAME, BOOK_INFO_TABLE_COLS, "name = ?", new String[]{filename},
+				       null, null, null);
+			cursor.moveToFirst();
+			ri.id = cursor.getInt(4);
+			cursor.close();
+		}
 		return ri;
 	}
 
 	public void removeReadingInfo(String filename)
 	{
-		for (int i = 0; i < recentFiles.size(); i++)
-			if (recentFiles.get(i).equals(filename))
-				recentFiles.remove(i);
+		for (int i = 0; i < rfl.size(); i++)
+			if (rfl.get(i).name.equals(filename))
+				rfl.remove(i);
 
 		SQLiteDatabase db = getWritableDatabase();
 		db.delete(BOOK_INFO_TABLE_NAME, BOOK_INFO_TABLE_COLS[0] + " = ?", new String[]{filename});
@@ -294,17 +338,20 @@ public class Config extends SQLiteOpenHelper
 
 	public void setReadingInfo(ReadingInfo ri)
 	{
+		setReadingInfo(ri, false);
+	}
+
+	private void setReadingInfo(ReadingInfo ri, boolean insert)
+	{
 		if (ri == null)
 			return;
 		SQLiteDatabase db = getWritableDatabase();
-		// SQLite's rowid start from 1 by default, so the zero here mean that the key is not exist
-		// Even can manually set to zero, but i don't care :D
 		ContentValues cv = new ContentValues(4);
 		cv.put(BOOK_INFO_TABLE_COLS[0], ri.name);
 		cv.put(BOOK_INFO_TABLE_COLS[1], ri.line);
 		cv.put(BOOK_INFO_TABLE_COLS[2], ri.offset);
 		cv.put(BOOK_INFO_TABLE_COLS[3], ri.percent);
-		if (ri.id == 0)
+		if (insert)
 			db.insert(BOOK_INFO_TABLE_NAME, null, cv);
 		else
 			db.update(BOOK_INFO_TABLE_NAME, cv, "rowid = ?", new String[]{Integer.toString(ri.id)});
@@ -452,8 +499,9 @@ public class Config extends SQLiteOpenHelper
 
 	public ArrayList<BookmarkManager.Bookmark> getBookmarkList(ReadingInfo ri)
 	{
-		if ((ri == null) || (ri.id == 0))
+		if (ri == null)
 			return null;
+
 		SQLiteDatabase db = getReadableDatabase();
 
 		Cursor cursor = db
