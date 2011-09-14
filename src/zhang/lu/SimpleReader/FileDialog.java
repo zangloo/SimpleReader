@@ -1,14 +1,11 @@
 package zhang.lu.SimpleReader;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
+import android.app.Dialog;
+import android.content.Context;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.*;
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Book.VFile;
@@ -23,82 +20,59 @@ import java.util.List;
  * Date: 10-12-4
  * Time: 下午8:58
  */
-public class FileDialog extends Activity implements AdapterView.OnItemClickListener
+public class FileDialog extends Dialog implements AdapterView.OnItemClickListener
 {
+	public static interface OnFilePickedListener
+	{
+		void onFilePicked(String filename);
+	}
+
 	private static final String upDir = "..";
-	public static final String RESULT_FILE_NAME = "filename";
-	public static final char posSplitter = ',';
 
 	private static final String[] LIST_HEAD_NAMES = new String[]{"icon", "name", "info"};
 	private static final int[] LIST_HEAD_ID = new int[]{R.id.file_icon, R.id.file_name, R.id.file_info};
 
 	private List<HashMap<String, Object>> fns;
-	private List<String> rfl = new ArrayList<String>();
-	private SimpleAdapter sa;
+	private List<HashMap<String, Object>> rfns;
+	private SimpleAdapter saf;
+	private SimpleAdapter sarf;
 	private ListView[] lv = new ListView[2];
 	private ViewPager vp;
 	private RadioGroup rg;
 	private String pwd;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState)
+	private OnFilePickedListener fpl;
+
+	public FileDialog(Context context)
 	{
-		super.onCreate(savedInstanceState);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				     WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		super(context);
+	}
+
+	public void init(OnFilePickedListener listener)
+	{
 		setContentView(R.layout.filedlg);
+		setTitle(getContext().getString(R.string.dialog_file_title));
 
-		Bundle bundle = getIntent().getExtras();
-		String path = bundle.getString(Reader.BUNDLE_DATA_NAME_PATH);
-		Util.setActivityOrient(this, bundle.getInt(Reader.BUNDLE_DATA_CURR_ORIENT));
-
+		fpl = listener;
 		// setup recently files list
-		lv[1] = new ListView(this);
-		fns = new ArrayList<HashMap<String, Object>>();
-		for (int i = 0; i < Config.MAX_RECENTLY_FILE_COUNT; i++) {
-			String s = (String) bundle.get(Config.RECENTLY_FILE_PREFIX + (i + 1));
-			if (s == null)
-				continue;
-			int p = s.indexOf(posSplitter);
-			HashMap<String, Object> m = new HashMap<String, Object>();
-			m.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
-			m.put(LIST_HEAD_NAMES[2], s.substring(0, p) + "%");
-			s = s.substring(p + 1);
-			m.put(LIST_HEAD_NAMES[1], s);
-			rfl.add(s);
-			fns.add(m);
-		}
-		sa = new SimpleAdapter(this, fns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
-		lv[1].setAdapter(sa);
+		lv[1] = new ListView(getContext());
+		rfns = new ArrayList<HashMap<String, Object>>();
+		sarf = new SimpleAdapter(getContext(), rfns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
+		lv[1].setAdapter(sarf);
 		lv[1].setOnItemClickListener(new AdapterView.OnItemClickListener()
 		{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
-				filePicked(rfl.get(position));
+				filePicked((String) rfns.get(position).get("name"));
 			}
 		});
 
 		// setup file list
 		fns = new ArrayList<HashMap<String, Object>>();
-		sa = new SimpleAdapter(this, fns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
-		lv[0] = new ListView(this);
-		lv[0].setAdapter(sa);
+		saf = new SimpleAdapter(getContext(), fns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
+		lv[0] = new ListView(getContext());
+		lv[0].setAdapter(saf);
 		lv[0].setOnItemClickListener(this);
-
-		String fn = null;
-		//if path is root, it should be "" not "/"
-		if (path == null)
-			pwd = "";
-		else {
-			int p = path.lastIndexOf('/');
-			if (p > 0)
-				pwd = path.substring(0, p);
-			else
-				pwd = "";
-			fn = path.substring(p + 1);
-		}
-		lv[0].setSelection(updateList(fn));
 
 		vp = (ViewPager) findViewById(R.id.file_list_pager);
 		vp.setOnPageChangeListener(new android.support.v4.view.ViewPager.OnPageChangeListener()
@@ -178,8 +152,7 @@ public class FileDialog extends Activity implements AdapterView.OnItemClickListe
 		{
 			public void onClick(View v)
 			{
-				setResult(RESULT_CANCELED, null);
-				finish();
+				dismiss();
 			}
 		});
 
@@ -199,6 +172,38 @@ public class FileDialog extends Activity implements AdapterView.OnItemClickListe
 				}
 			}
 		});
+	}
+
+	public void update(String path, List<Config.ReadingInfo> recentFileList)
+	{
+		String fn = null;
+		//if path is root, it should be "" not "/"
+		if (path == null)
+			pwd = "";
+		else {
+			int p = path.lastIndexOf('/');
+			if (p > 0)
+				pwd = path.substring(0, p);
+			else
+				pwd = "";
+			fn = path.substring(p + 1);
+		}
+		lv[0].setSelection(updateList(fn));
+		updateRecentList(recentFileList);
+		vp.setCurrentItem(0);
+	}
+
+	private void updateRecentList(List<Config.ReadingInfo> recentFileList)
+	{
+		rfns.clear();
+		for (Config.ReadingInfo ri : recentFileList) {
+			HashMap<String, Object> m = new HashMap<String, Object>();
+			m.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
+			m.put(LIST_HEAD_NAMES[1], ri.name);
+			m.put(LIST_HEAD_NAMES[2], ri.percent + "%");
+			rfns.add(m);
+		}
+		sarf.notifyDataSetChanged();
 	}
 
 	private int updateList(@Nullable String filename)
@@ -242,7 +247,7 @@ public class FileDialog extends Activity implements AdapterView.OnItemClickListe
 			fns.add(map);
 		}
 
-		sa.notifyDataSetChanged();
+		saf.notifyDataSetChanged();
 		return pos;
 	}
 
@@ -270,9 +275,7 @@ public class FileDialog extends Activity implements AdapterView.OnItemClickListe
 
 	private void filePicked(String result)
 	{
-		Intent data = new Intent();
-		data.putExtra(RESULT_FILE_NAME, result);
-		setResult(RESULT_OK, data);
-		finish();
+		dismiss();
+		fpl.onFilePicked(result);
 	}
 }

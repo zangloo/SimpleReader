@@ -22,6 +22,9 @@
 	<string name="menu_bookmark">書籤：</string>
 	<string name="menu_about">關於</string>
 
+	<string name="dialog_option_title">配置選項</string>
+	<string name="dialog_file_title">選擇書籍</string>
+
 	<string name="text_preview">揩面、汰腳、睏覺</string>
 	<string name="text_preview_label">效果預覽：</string>
 	<string name="font_size">字體大小：</string>

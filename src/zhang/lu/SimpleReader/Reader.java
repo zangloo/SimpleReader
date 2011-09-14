@@ -1,6 +1,7 @@
 package zhang.lu.SimpleReader;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,15 +28,10 @@ import java.util.List;
 public class Reader extends Activity implements View.OnTouchListener, SimpleTextView.OnPosChangeListener
 {
 	private static final String ABOUT_MESSAGE = "<center>作者：<a href=\"http://weibo.com/2386922042\">zhanglu</a></center></br><center>主頁：<a href=\"http://sourceforge.net/projects/simplereader\">SimpleReader</a></center>";
-	private static final int REQUEST_CODE_OPEN_FILE = 1;
-	private static final int REQUEST_CODE_OPTIONS = 2;
 	public static final String pathPrefix = Environment.getExternalStorageDirectory() + "/books";
 	public static final String dictPath = pathPrefix + "/dict/";
 	public static final String dictSuffix = ".sqlite";
 
-	public static final String BUNDLE_DATA_NAME_PATH = "path";
-	public static final String BUNDLE_DATA_CONFIG = "config";
-	public static final String BUNDLE_DATA_CURR_ORIENT = "direct";
 	public static final String DATE_FORMAT_STRING = "kk:mm";
 	public static final String DICT_FILE_NONE = "NONE";
 
@@ -53,6 +49,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final int menuFile = 7;
 	private static final int menuOption = 8;
 	private static final int menuAbout = 9;
+
+	private static final int FILE_DIALOG_ID = 1;
+	private static final int OPTION_DIALOG_ID = 2;
 
 	private SimpleTextView hbv, xbv;
 	private SimpleTextView bv;
@@ -301,32 +300,54 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		dictManager.unloadDict();
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	protected Dialog onCreateDialog(int id)
 	{
-		super.onActivityResult(requestCode, resultCode, data);
+		switch (id) {
+			case FILE_DIALOG_ID:
+				FileDialog fd = new FileDialog(this);
+				fd.init(new FileDialog.OnFilePickedListener()
+				{
+					public void onFilePicked(String filename)
+					{
+						if (!filename.equals(config.getCurrFile()))
+							openfile(filename);
+					}
+				});
+				return fd;
+			case OPTION_DIALOG_ID:
+				OptionDialog od = new OptionDialog(this);
+				od.init(new OptionDialog.OnOptionAcceptListener()
+				{
+					public void onOptionAccept(String optstr)
+					{
+						boolean han = config.isHanStyle();
+						config.optFromString(optstr);
+						VFile.setDefaultEncode(config.getZipEncode());
 
-		switch (requestCode) {
-			case REQUEST_CODE_OPEN_FILE:
-				if (resultCode == RESULT_OK) {
-					String s = data.getExtras().getString(FileDialog.RESULT_FILE_NAME);
-					if (!s.equals(config.getCurrFile()))
-						openfile(s);
-				}
-				break;
-			case REQUEST_CODE_OPTIONS:
-				if (resultCode == RESULT_OK) {
-					Bundle b = data.getExtras();
-					boolean han = config.isHanStyle();
-					config.optFromString(b.getString(BUNDLE_DATA_CONFIG));
-					VFile.setDefaultEncode(config.getZipEncode());
+						if (config.isHanStyle() != han)
+							setView(config.isHanStyle());
+						setColorAndFont();
+						setDictEnable(config.isDictEnabled());
+						bv.invalidate();
+					}
+				});
+				return od;
+			default:
+				return null;
+		}
+	}
 
-					if (config.isHanStyle() != han)
-						setView(config.isHanStyle());
-					setColorAndFont();
-					setDictEnable(config.isDictEnabled());
-				}
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog)
+	{
+		switch (id) {
+			case FILE_DIALOG_ID:
+				((FileDialog) dialog).update(config.getCurrFile(), config.getRecentFilesList());
 				break;
+			case OPTION_DIALOG_ID:
+				((OptionDialog) dialog).update(config.optToString());
+				break;
+			default:
 		}
 	}
 
@@ -439,7 +460,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		{
 			public void onClick(View view)
 			{
-				openFileDlg(config.getCurrFile());
+				showDialog(FILE_DIALOG_ID);
 			}
 		});
 
@@ -481,34 +502,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		TextView tv = (TextView) findViewById(R.id.reading_book_text);
 		String n = config.getCurrFile();
 		tv.setText(n.substring(n.lastIndexOf('/') + 1));
-	}
-
-	private void openOptionDlg()
-	{
-		Intent intent = new Intent();
-		intent.setClass(this, OptionDialog.class);
-		Bundle b = new Bundle();
-		b.putString(BUNDLE_DATA_CONFIG, config.optToString());
-		intent.putExtras(b);
-		startActivityForResult(intent, REQUEST_CODE_OPTIONS);
-	}
-
-	private void openFileDlg(String filepath)
-	{
-		Intent intent = new Intent();
-		intent.setClass(this, FileDialog.class);
-		Bundle b = new Bundle();
-		b.putString(BUNDLE_DATA_NAME_PATH, filepath);
-		b.putInt(BUNDLE_DATA_CURR_ORIENT, config.getViewOrient());
-
-		List<Config.ReadingInfo> rfl = config.getRecentFilesList();
-		for (int i = 0; i < rfl.size(); i++) {
-			Config.ReadingInfo ri = rfl.get(i);
-			b.putString(Config.RECENTLY_FILE_PREFIX + (i + 1),
-				    String.valueOf(ri.percent) + FileDialog.posSplitter + ri.name);
-		}
-		intent.putExtras(b);
-		startActivityForResult(intent, REQUEST_CODE_OPEN_FILE);
 	}
 
 	private void setColorAndFont()
@@ -553,13 +546,13 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	{
 		switch (item.getItemId()) {
 			case menuFile:
-				openFileDlg(config.getCurrFile());
+				showDialog(FILE_DIALOG_ID);
 				break;
 			case menuSearch:
 				showSearchPanel();
 				break;
 			case menuOption:
-				openOptionDlg();
+				showDialog(OPTION_DIALOG_ID);
 				break;
 			case menuViewLock:
 				if (config.isViewLock())
@@ -823,6 +816,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				Message msg;
 				msg = handler.obtainMessage();
 
+				saveReadingInfo();
 				BookContent bc = Loader.loadFile(pathPrefix + fp);
 				if (bc != null) {
 					config.setReadingFile(fp);

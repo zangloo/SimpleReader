@@ -1,13 +1,10 @@
 package zhang.lu.SimpleReader;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.app.Dialog;
+import android.content.Context;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.*;
 
 import java.io.File;
@@ -19,8 +16,13 @@ import java.io.FilenameFilter;
  * Date: 10-12-9
  * Time: 下午8:38
  */
-public class OptionDialog extends Activity implements AdapterView.OnItemSelectedListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener
+public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener
 {
+	public static interface OnOptionAcceptListener
+	{
+		void onOptionAccept(String optstr);
+	}
+
 	private static final String[] fontSizeStringList = new String[]{"20", "22", "24", "26", "28", "30", "32", "34",};
 	private static final int[] fontSizeList = new int[]{20, 22, 24, 26, 28, 30, 32, 34,};
 	private static final String colorFormatString = "%03d";
@@ -28,6 +30,7 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 	private static String[] pagingDirectList = null;
 	private static String[] colorModeList;
 	private TextView tp;
+	private OnOptionAcceptListener oal;
 
 	private int r, g, b;
 	private int br, bg, bb;
@@ -37,41 +40,26 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 	private Config conf;
 	private Config.PagingDirect pds[] = Config.PagingDirect.values();
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState)
+	public OptionDialog(Context context)
 	{
-		super.onCreate(savedInstanceState);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				     WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.optdlg);
+		super(context);
+	}
 
-		Bundle bundle = getIntent().getExtras();
-		conf = new Config(null);
-		conf.optFromString(bundle.getString(Reader.BUNDLE_DATA_CONFIG));
-		color = conf.getColor();
-		bcolor = conf.getBColor();
-		ncolor = conf.getNColor();
-		nbcolor = conf.getNBColor();
-		fs = conf.getFontSize();
-		Util.setActivityOrient(this, conf.getViewOrient());
+
+	public void init(OnOptionAcceptListener listener)
+	{
+		oal = listener;
+		setContentView(R.layout.optdlg);
+		setTitle(getContext().getString(R.string.dialog_option_title));
 
 		tp = (TextView) findViewById(R.id.text_preview);
-		tp.setTextSize(fs);
 
-		isBright = conf.isColorBright();
-		loadColor(isBright);
-
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+									android.R.layout.simple_spinner_item,
 									fontSizeStringList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		Spinner spinner = (Spinner) findViewById(R.id.font_size);
 		spinner.setAdapter(adapter);
-		for (int i = 0; i < fontSizeList.length; i++)
-			if (fontSizeList[i] == fs) {
-				spinner.setSelection(i, true);
-				break;
-			}
 		spinner.setOnItemSelectedListener(this);
 
 		Button btn = (Button) findViewById(R.id.button_cancel);
@@ -79,29 +67,16 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 		{
 			public void onClick(View v)
 			{
-				setResult(RESULT_CANCELED, null);
-				finish();
+				dismiss();
 			}
 		});
 		btn = (Button) findViewById(R.id.button_ok);
 		btn.setOnClickListener(this);
 
-		RadioGroup rg = (RadioGroup) findViewById(R.id.view_style);
-		if (conf.isHanStyle())
-			rg.check(R.id.han_style);
-		else
-			rg.check(R.id.xi_style);
-
-		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, zipEncodeList);
+		adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, zipEncodeList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.zip_encode);
 		spinner.setAdapter(adapter);
-
-		for (int i = 0; i < zipEncodeList.length; i++)
-			if (zipEncodeList[i].equals(conf.getZipEncode())) {
-				spinner.setSelection(i, true);
-				break;
-			}
 
 		//paging direct
 		if (pagingDirectList == null) {
@@ -110,29 +85,72 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 				pagingDirectList[i] = getPagingDirectText(pds[i]);
 		}
 
-		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, pagingDirectList);
+		adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item,
+						   pagingDirectList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.paging_direct);
 		spinner.setAdapter(adapter);
 
+		if (colorModeList == null)
+			colorModeList = new String[]{getContext().getString(R.string.color_mode_day), getContext()
+				.getString(R.string.color_mode_night)};
+		adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, colorModeList);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner = (Spinner) findViewById(R.id.color_mode);
+		spinner.setAdapter(adapter);
+		spinner.setOnItemSelectedListener(this);
+
+	}
+
+	public void update(String optstr)
+	{
+		conf = new Config(null);
+		conf.optFromString(optstr);
+		color = conf.getColor();
+		bcolor = conf.getBColor();
+		ncolor = conf.getNColor();
+		nbcolor = conf.getNBColor();
+		fs = conf.getFontSize();
+
+		tp.setTextSize(fs);
+
+		isBright = conf.isColorBright();
+		loadColor(isBright);
+
+		Spinner spinner = (Spinner) findViewById(R.id.font_size);
+		for (int i = 0; i < fontSizeList.length; i++)
+			if (fontSizeList[i] == fs) {
+				spinner.setSelection(i, true);
+				break;
+			}
+
+
+		RadioGroup rg = (RadioGroup) findViewById(R.id.view_style);
+		if (conf.isHanStyle())
+			rg.check(R.id.han_style);
+		else
+			rg.check(R.id.xi_style);
+
+		spinner = (Spinner) findViewById(R.id.zip_encode);
+		for (int i = 0; i < zipEncodeList.length; i++)
+			if (zipEncodeList[i].equals(conf.getZipEncode())) {
+				spinner.setSelection(i, true);
+				break;
+			}
+
+		spinner = (Spinner) findViewById(R.id.paging_direct);
 		for (int i = 0; i < pagingDirectList.length; i++)
 			if (pagingDirectList[i].equals(getPagingDirectText(conf.getPagingDirect()))) {
 				spinner.setSelection(i, true);
 				break;
 			}
 
-		if (colorModeList == null)
-			colorModeList = new String[]{getResources().getString(R.string.color_mode_day), getResources()
-				.getString(R.string.color_mode_night)};
-		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colorModeList);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.color_mode);
-		spinner.setAdapter(adapter);
-
 		spinner.setSelection(conf.isColorBright() ? 0 : 1, true);
-		spinner.setOnItemSelectedListener(this);
 
 		CheckBox de = (CheckBox) findViewById(R.id.dict_enabled);
+		de.setChecked(conf.isDictEnabled());
+
 		spinner = (Spinner) findViewById(R.id.dict_file);
 		String[] fl = (new File(Reader.dictPath)).list(new FilenameFilter()
 		{
@@ -141,11 +159,12 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 				return s.endsWith(Reader.dictSuffix);
 			}
 		});
-		de.setChecked(conf.isDictEnabled());
 		if ((fl != null) && (fl.length > 0)) {
 			for (int i = 0; i < fl.length; i++)
 				fl[i] = fl[i].substring(0, fl[i].length() - Reader.dictSuffix.length());
-			adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, fl);
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+										android.R.layout.simple_spinner_item,
+										fl);
 			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spinner.setAdapter(adapter);
 
@@ -156,7 +175,8 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 						break;
 					}
 			de.setOnCheckedChangeListener(this);
-		}
+		} else
+			de.setOnCheckedChangeListener(null);
 		if (!conf.isDictEnabled())
 			spinner.setVisibility(View.INVISIBLE);
 	}
@@ -164,7 +184,7 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 	public void onClick(View view)
 	{
 		saveColor(isBright);
-		Intent data = new Intent();
+
 		conf.setFontSize(fs);
 		conf.setColor(color);
 		conf.setBColor(bcolor);
@@ -189,9 +209,8 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 				break;
 		conf.setPagingDirect(pds[i]);
 		conf.setZipEncode(((Spinner) findViewById(R.id.zip_encode)).getSelectedItem().toString());
-		data.putExtra(Reader.BUNDLE_DATA_CONFIG, conf.optToString());
-		setResult(RESULT_OK, data);
-		finish();
+		oal.onOptionAccept(conf.optToString());
+		dismiss();
 	}
 
 	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
@@ -338,21 +357,21 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 	{
 		switch (pd) {
 			case up:
-				return getResources().getString(R.string.paging_up_label);
+				return getContext().getString(R.string.paging_up_label);
 			case down:
-				return getResources().getString(R.string.paging_down_label);
+				return getContext().getString(R.string.paging_down_label);
 			case left:
-				return getResources().getString(R.string.paging_left_label);
+				return getContext().getString(R.string.paging_left_label);
 			case right:
-				return getResources().getString(R.string.paging_right_label);
+				return getContext().getString(R.string.paging_right_label);
 			case clickUp:
-				return getResources().getString(R.string.paging_click_up_label);
+				return getContext().getString(R.string.paging_click_up_label);
 			case clickDown:
-				return getResources().getString(R.string.paging_click_down_label);
+				return getContext().getString(R.string.paging_click_down_label);
 			case clickLeft:
-				return getResources().getString(R.string.paging_click_left_label);
+				return getContext().getString(R.string.paging_click_left_label);
 			case clickRight:
-				return getResources().getString(R.string.paging_click_right_label);
+				return getContext().getString(R.string.paging_click_right_label);
 		}
 		return null;
 	}
@@ -360,10 +379,7 @@ public class OptionDialog extends Activity implements AdapterView.OnItemSelected
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
 	{
 		View df = findViewById(R.id.dict_file);
-		if (isChecked) {
-			df.setVisibility(View.VISIBLE);
-		} else
-			df.setVisibility(View.INVISIBLE);
+		df.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
 	}
 }
 
