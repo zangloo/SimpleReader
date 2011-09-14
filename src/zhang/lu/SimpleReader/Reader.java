@@ -241,10 +241,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		}
 
 		//every thing is ok, load last file if have
-		String fn;
-		fn = config.getCurrFile();
-		if (fn != null)
-			openfile(fn);
+		openfile(config.getCurrFile());
 	}
 
 	@Override
@@ -830,6 +827,8 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	private void openfile(final String fp)
 	{
+		if (fp == null)
+			return;
 		loading = true;
 		pd = ProgressDialog.show(this, "", getString(R.string.loading), true);
 		Thread thread = new Thread(new Runnable()
