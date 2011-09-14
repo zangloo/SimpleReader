@@ -28,8 +28,8 @@ public class HTextView extends SimpleTextView
 		fw *= 1.15;
 	}
 
-	private static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─'};
-	private static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱'};
+	private static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─',9};
+	private static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱','　'};
 
 	private String formatTraditionalText(char[] txt)
 	{
