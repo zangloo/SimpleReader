@@ -18,10 +18,10 @@ public class BookmarkManager
 	{
 		String desc;
 		int line, offset;
-		int bookid;
-		private int id;
+		long bookid;
+		private long id;
 
-		public int getID() {return id;}
+		public long getID() {return id;}
 	}
 
 	public static interface OnBookmarkEditListener

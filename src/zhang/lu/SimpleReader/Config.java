@@ -39,9 +39,9 @@ public class Config extends SQLiteOpenHelper
 		String name;
 		int line, offset;
 		int percent;
-		private int id;
+		private long id;
 
-		public int getID() {return id;}
+		public long getID() {return id;}
 	}
 
 	private static final int DB_VERSION = 1;
@@ -314,15 +314,8 @@ public class Config extends SQLiteOpenHelper
 		cursor.close();
 
 		// we must insert new record and get back book id
-		if (ri.id == 0) {
+		if (ri.id == 0)
 			setReadingInfo(ri, true);
-			cursor = db
-				.query(BOOK_INFO_TABLE_NAME, BOOK_INFO_TABLE_COLS, "name = ?", new String[]{filename},
-				       null, null, null);
-			cursor.moveToFirst();
-			ri.id = cursor.getInt(4);
-			cursor.close();
-		}
 		return ri;
 	}
 
@@ -352,9 +345,9 @@ public class Config extends SQLiteOpenHelper
 		cv.put(BOOK_INFO_TABLE_COLS[2], ri.offset);
 		cv.put(BOOK_INFO_TABLE_COLS[3], ri.percent);
 		if (insert)
-			db.insert(BOOK_INFO_TABLE_NAME, null, cv);
+			ri.id = db.insert(BOOK_INFO_TABLE_NAME, null, cv);
 		else
-			db.update(BOOK_INFO_TABLE_NAME, cv, "rowid = ?", new String[]{Integer.toString(ri.id)});
+			db.update(BOOK_INFO_TABLE_NAME, cv, "rowid = ?", new String[]{Long.toString(ri.id)});
 	}
 
 	public boolean isHanStyle()

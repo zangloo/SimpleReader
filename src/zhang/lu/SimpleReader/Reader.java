@@ -1,7 +1,6 @@
 package zhang.lu.SimpleReader;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -331,13 +330,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		}
 	}
 
-	@Override
-	protected void onPrepareDialog(int id, Dialog dialog, Bundle args)
-	{
-		args.clear();
-		super.onPrepareDialog(id, dialog, args);
-	}
-
 	private void setDictEnable(boolean de)
 	{
 		if (de)
@@ -363,22 +355,15 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	private void updateBookmarkList()
 	{
-		updateBookmarkList(true);
-	}
-
-	private void updateBookmarkList(boolean reload)
-	{
-		if (reload) {
-			bookmarkListStrings.clear();
-			bookMarkList = config.getBookmarkList(ri);
-			if (bookMarkList != null)
-				for (BookmarkManager.Bookmark b : bookMarkList) {
-					HashMap<String, Object> map = new HashMap<String, Object>();
-					map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
-					map.put(BOOKMARK_LIST_TITLE_POS, b.line + " : " + b.offset);
-					bookmarkListStrings.add(map);
-				}
-		}
+		bookmarkListStrings.clear();
+		bookMarkList = config.getBookmarkList(ri);
+		if (bookMarkList != null)
+			for (BookmarkManager.Bookmark b : bookMarkList) {
+				HashMap<String, Object> map = new HashMap<String, Object>();
+				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
+				map.put(BOOKMARK_LIST_TITLE_POS, b.line + " : " + b.offset);
+				bookmarkListStrings.add(map);
+			}
 		sa.notifyDataSetChanged();
 	}
 
