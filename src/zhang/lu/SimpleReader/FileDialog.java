@@ -204,6 +204,7 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 			rfns.add(m);
 		}
 		sarf.notifyDataSetChanged();
+		lv[1].setSelection(0);
 	}
 
 	private int updateList(@Nullable String filename)

@@ -179,6 +179,9 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 			de.setOnCheckedChangeListener(null);
 		if (!conf.isDictEnabled())
 			spinner.setVisibility(View.INVISIBLE);
+
+		ScrollView sv = (ScrollView)findViewById(R.id.opt_scroll_view);
+		sv.scrollTo(0, 0);
 	}
 
 	public void onClick(View view)
