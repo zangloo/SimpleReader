@@ -80,7 +80,7 @@ public abstract class SimpleTextView extends View
 		if (reset) {
 			w = getWidth();
 			h = getHeight();
-			if (tf != null){
+			if (tf != null) {
 				paint.setTypeface(tf);
 				fontCalc();
 			}
@@ -345,6 +345,11 @@ public abstract class SimpleTextView extends View
 			tf = null;
 		else
 			tf = Typeface.createFromFile(fontFilename);
+	}
+
+	public static Typeface getTypeface()
+	{
+		return tf;
 	}
 
 	public abstract int calcNextLineOffset();

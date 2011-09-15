@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8da49b8d-901f-4985-8fc2-f52a3cdd17c3" name="Default" comment="bug fix:dialog not scroll to top when open">
+    <list default="true" id="8da49b8d-901f-4985-8fc2-f52a3cdd17c3" name="Default" comment="improve:external font support">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/VFile.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/VFile.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java" />
     </list>
     <ignored path="SimpleReader.iws" />
@@ -106,15 +104,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="SimpleTextView.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="208" column="49" selection-start="4964" selection-end="4964" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Loader.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/Loader.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -144,10 +133,30 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PlainTextContent.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="PlainTextContent.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="36" selection-start="568" selection-end="568" vertical-scroll-proportion="0.42881072">
+            <state line="9" column="3" selection-start="172" selection-end="172" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OptionDialog.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="56" column="29" selection-start="1665" selection-end="1666" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SimpleTextView.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="366" column="0" selection-start="8257" selection-end="8257" vertical-scroll-proportion="0.83919597">
               <folding />
             </state>
           </provider>
@@ -189,14 +198,14 @@
         <option value="$PROJECT_DIR$/res/layout/filedlg.xml" />
         <option value="$PROJECT_DIR$/AndroidManifest.xml" />
         <option value="$PROJECT_DIR$/res/values/strings.xml" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/FileDialog.java" />
         <option value="$PROJECT_DIR$/res/layout/optdlg.xml" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/HTextView.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/VFile.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java" />
       </list>
     </option>
   </component>
@@ -749,7 +758,7 @@
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
     <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fix:dialog not scroll to top when open" />
+    <option name="LAST_COMMIT_MESSAGE" value="improve:external font support" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -777,6 +786,7 @@
     <MESSAGE value="optimize" />
     <MESSAGE value="improve ui:use dialog instead activity for file and option operation" />
     <MESSAGE value="bug fix:dialog not scroll to top when open" />
+    <MESSAGE value="improve:external font support" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -825,15 +835,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="81" selection-start="1373" selection-end="1373" vertical-scroll-proportion="0.6753247">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/FileDialog.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="206" column="36" selection-start="4894" selection-end="4894" vertical-scroll-proportion="-1.0858506">
@@ -871,20 +872,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="208" column="49" selection-start="4964" selection-end="4964" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/Loader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="22" selection-start="310" selection-end="310" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
@@ -903,7 +890,30 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="36" selection-start="568" selection-end="568" vertical-scroll-proportion="0.42881072">
+        <state line="9" column="3" selection-start="172" selection-end="172" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/Loader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="22" selection-start="310" selection-end="310" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="56" column="29" selection-start="1665" selection-end="1666" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="366" column="0" selection-start="8257" selection-end="8257" vertical-scroll-proportion="0.83919597">
           <folding />
         </state>
       </provider>

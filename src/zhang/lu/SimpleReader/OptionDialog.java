@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
+import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -53,6 +54,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		setTitle(getContext().getString(R.string.dialog_option_title));
 
 		tp = (TextView) findViewById(R.id.text_preview);
+		if (SimpleTextView.getTypeface() != null)
+			tp.setTypeface(SimpleTextView.getTypeface());
 
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
 									android.R.layout.simple_spinner_item,
