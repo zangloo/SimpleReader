@@ -945,6 +945,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			{
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
+				tv.setTypeface(tf);
 				tv.setTextColor(Color.BLACK);
 				tv = (TextView) v.findViewById(android.R.id.text2);
 				tv.setTextColor(Color.BLACK);

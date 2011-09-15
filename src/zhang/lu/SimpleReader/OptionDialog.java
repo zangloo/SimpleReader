@@ -147,8 +147,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 			spinner.setVisibility(View.INVISIBLE);
 		spinner.setOnItemSelectedListener(this);
 
-		if (conf.getFontFile() != null)
-			tp.setTypeface(getTypeface(conf.getFontFile()));
+		tp.setTypeface(getTypeface(conf.getFontFile()));
 		tp.setTextSize(fs);
 
 		isBright = conf.isColorBright();
@@ -255,7 +254,12 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 	private Typeface getTypeface(String name)
 	{
-		return Typeface.createFromFile(Reader.fontPath + name + Reader.fontSuffix);
+		String fn = Reader.fontPath + name + Reader.fontSuffix;
+		File ff = new File(fn);
+		if (ff.exists())
+			return Typeface.createFromFile(fn);
+		else
+			return null;
 	}
 
 	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
