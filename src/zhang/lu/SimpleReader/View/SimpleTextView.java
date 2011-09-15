@@ -44,7 +44,6 @@ public abstract class SimpleTextView extends View
 	protected static int bcolor;
 	protected static OnPosChangeListener mOnPosChangeListener = null;
 	protected static boolean reset = true;
-	protected static Typeface tf = null;
 
 	protected Paint paint;
 
@@ -80,10 +79,6 @@ public abstract class SimpleTextView extends View
 		if (reset) {
 			w = getWidth();
 			h = getHeight();
-			if (tf != null) {
-				paint.setTypeface(tf);
-				fontCalc();
-			}
 
 			resetValues();
 			reset = false;
@@ -146,12 +141,13 @@ public abstract class SimpleTextView extends View
 
 	 }
  */
-	public void setColorAndFont(int color, int aBcolor, int fontSize)
+	public void setColorAndFont(int color, int aBcolor, int fontSize, Typeface typeface)
 	{
 		boardGAP = fontSize / 3;
 		bcolor = aBcolor;
 		paint.setColor(color);
 		paint.setTextSize(fontSize);
+		paint.setTypeface(typeface);
 		fontCalc();
 		reset = true;
 		//invalidate();
@@ -337,19 +333,6 @@ public abstract class SimpleTextView extends View
 		//		return txt.replace('「', '﹁').replace('」', '﹂').replace('『', '﹃').replace('』', '﹄').replace('（', '︵')
 		//			  .replace('）', '︶').replace('《', '︽').replace('》', '︾').replace('〔', '︹').replace('〕', '︺')
 		//			  .replace('【', '︻').replace('】', '︼').replace('｛', '︷').replace('｝', '︸').replace('─', '︱');
-	}
-
-	public static void setTypeface(String fontFilename)
-	{
-		if (fontFilename == null)
-			tf = null;
-		else
-			tf = Typeface.createFromFile(fontFilename);
-	}
-
-	public static Typeface getTypeface()
-	{
-		return tf;
 	}
 
 	public abstract int calcNextLineOffset();

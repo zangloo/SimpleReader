@@ -1,5 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
+import zhang.lu.SimpleReader.Reader;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,16 +14,13 @@ import java.util.List;
  */
 public class PlainTextContent implements BookContent
 {
-	private static final String[] ReaderTip = {"", "", "請選取所需觀看的書本。書本須放置於SD卡中，books目錄下。", "所用字典請置于books下dict目錄中。", "如須使用其他字體替代自帶，可將字體置於books下fonts目錄中，字體文件名改為default.ttf", "字體可至“http://sourceforge.net/projects/vietunicode/files/hannom/hannom v2005/”下載"};
-
-
 	private List<String> lines;
 	private int booksize = 0;
 
 	public PlainTextContent()
 	{
 		lines = new ArrayList<String>();
-		Collections.addAll(lines, ReaderTip);
+		Collections.addAll(lines, Reader.ReaderTip);
 		booksize = calcSize();
 	}
 

@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.*;
 import android.text.format.DateFormat;
 import android.view.*;
@@ -27,14 +28,16 @@ import java.util.List;
 
 public class Reader extends Activity implements View.OnTouchListener, SimpleTextView.OnPosChangeListener
 {
-	private static final String ABOUT_MESSAGE = "<center>作者：<a href=\"http://weibo.com/2386922042\">zhanglu</a></center></br><center>主頁：<a href=\"http://sourceforge.net/projects/simplereader\">SimpleReader</a></center>";
+	public static final String ABOUT_MESSAGE = "<center>作者：<a href=\"http://weibo.com/2386922042\">zhanglu</a></center></br><center>主頁：<a href=\"http://sourceforge.net/projects/simplereader\">SimpleReader</a></center>";
+	public static final String[] ReaderTip = {"", "", "請選取所需觀看的書本。書本須放置於SD卡中，books目錄下。", "所用字典請置于books下dict目錄中。", "如須使用其他字體替代自帶，可將字體置於books下fonts目錄中，字體可至“http://sourceforge.net/projects/vietunicode/files/hannom/hannom v2005/”下載"};
+
 	public static final String pathPrefix = Environment.getExternalStorageDirectory() + "/books";
 	public static final String dictPath = pathPrefix + "/dict/";
-	public static final String fontFilename = pathPrefix + "/fonts/default.ttf";
 	public static final String dictSuffix = ".sqlite";
+	public static final String fontPath = pathPrefix + "/fonts/";
+	public static final String fontSuffix = ".ttf";
 
 	public static final String DATE_FORMAT_STRING = "kk:mm";
-	public static final String DICT_FILE_NONE = "NONE";
 
 	private static final String BOOKMARK_LIST_TITLE_DESC = "desc";
 	private static final String BOOKMARK_LIST_TITLE_POS = "pos";
@@ -74,6 +77,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private ArrayList<BookmarkManager.Bookmark> bookMarkList;
 	private BookmarkManager bookmarkManager;
 	private DictManager dictManager;
+	private Typeface tf = null;
 
 	private BroadcastReceiver timeTickReceiver = new BroadcastReceiver()
 	{
@@ -123,9 +127,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		initSeekBarPanel();
 
 		// if external font exist, load it
-		File ff = new File(fontFilename);
-		if (ff.exists())
-			SimpleTextView.setTypeface(fontFilename);
+		setTypeface(config.getFontFile());
 		// init book view
 		hbv = (SimpleTextView) findViewById(R.id.hbook_text);
 		hbv.setOnTouchListener(this);
@@ -323,11 +325,12 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				OptionDialog od = new OptionDialog(this);
 				od.init(new OptionDialog.OnOptionAcceptListener()
 				{
-					public void onOptionAccept(String optstr)
+					public void onOptionAccept(Config cfg)
 					{
 						boolean han = config.isHanStyle();
-						config.optFromString(optstr);
+						config.getback(cfg);
 						VFile.setDefaultEncode(config.getZipEncode());
+						setTypeface(config.getFontFile());
 
 						if (config.isHanStyle() != han)
 							setView(config.isHanStyle());
@@ -350,7 +353,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				((FileDialog) dialog).update(config.getCurrFile(), config.getRecentFilesList());
 				break;
 			case OPTION_DIALOG_ID:
-				((OptionDialog) dialog).update(config.optToString());
+				((OptionDialog) dialog).update(config.dup());
 				break;
 			default:
 		}
@@ -511,7 +514,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	private void setColorAndFont()
 	{
-		bv.setColorAndFont(config.getCurrentColor(), config.getCurrentBColor(), config.getFontSize());
+		bv.setColorAndFont(config.getCurrentColor(), config.getCurrentBColor(), config.getFontSize(), tf);
 		updateStatusPanel();
 	}
 
@@ -1003,5 +1006,16 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			return true;
 		}
 		return false;
+	}
+
+	private void setTypeface(String name)
+	{
+		if (name != null) {
+			String fn = fontPath + name + fontSuffix;
+			File ff = new File(fn);
+			if (ff.exists())
+				tf = Typeface.createFromFile(fn);
+		} else
+			tf = null;
 	}
 }

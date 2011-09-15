@@ -3,10 +3,10 @@ package zhang.lu.SimpleReader;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
-import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -21,7 +21,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 {
 	public static interface OnOptionAcceptListener
 	{
-		void onOptionAccept(String optstr);
+		void onOptionAccept(Config cfg);
 	}
 
 	private static final String[] fontSizeStringList = new String[]{"20", "22", "24", "26", "28", "30", "32", "34",};
@@ -40,6 +40,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 	boolean isBright;
 	private Config conf;
 	private Config.PagingDirect pds[] = Config.PagingDirect.values();
+	private String[] fnl = null;
 
 	public OptionDialog(Context context)
 	{
@@ -54,9 +55,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		setTitle(getContext().getString(R.string.dialog_option_title));
 
 		tp = (TextView) findViewById(R.id.text_preview);
-		if (SimpleTextView.getTypeface() != null)
-			tp.setTypeface(SimpleTextView.getTypeface());
 
+		// font size list
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
 									android.R.layout.simple_spinner_item,
 									fontSizeStringList);
@@ -76,6 +76,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		btn = (Button) findViewById(R.id.button_ok);
 		btn.setOnClickListener(this);
 
+		// zip encode list
 		adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, zipEncodeList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.zip_encode);
@@ -94,6 +95,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		spinner = (Spinner) findViewById(R.id.paging_direct);
 		spinner.setAdapter(adapter);
 
+		// color mode list
 		if (colorModeList == null)
 			colorModeList = new String[]{getContext().getString(R.string.color_mode_day), getContext()
 				.getString(R.string.color_mode_night)};
@@ -105,22 +107,54 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 	}
 
-	public void update(String optstr)
+	public void update(Config config)
 	{
-		conf = new Config(null);
-		conf.optFromString(optstr);
+		conf = config;
 		color = conf.getColor();
 		bcolor = conf.getBColor();
 		ncolor = conf.getNColor();
 		nbcolor = conf.getNBColor();
 		fs = conf.getFontSize();
 
+		// font list
+		String[] fl = (new File(Reader.fontPath)).list(new FilenameFilter()
+		{
+			public boolean accept(File file, String s)
+			{
+				return s.endsWith(Reader.fontSuffix);
+			}
+		});
+
+		ArrayAdapter<String> adapter;
+		Spinner spinner = (Spinner) findViewById(R.id.font_name);
+		if ((fl != null) && (fl.length > 0)) {
+			fnl = new String[fl.length + 1];
+			fnl[0] = getContext().getString(R.string.default_font_label);
+			for (int i = 0; i < fl.length; i++)
+				fnl[i + 1] = fl[i].substring(0, fl[i].length() - Reader.fontSuffix.length());
+			adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, fnl);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			spinner.setAdapter(adapter);
+
+			if (conf.getFontFile() != null)
+				for (int i = 1; i < fnl.length; i++)
+					if (fnl[i].equals(conf.getFontFile())) {
+						spinner.setSelection(i, false);
+						break;
+					}
+			spinner.setVisibility(View.VISIBLE);
+		} else
+			spinner.setVisibility(View.INVISIBLE);
+		spinner.setOnItemSelectedListener(this);
+
+		if (conf.getFontFile() != null)
+			tp.setTypeface(getTypeface(conf.getFontFile()));
 		tp.setTextSize(fs);
 
 		isBright = conf.isColorBright();
 		loadColor(isBright);
 
-		Spinner spinner = (Spinner) findViewById(R.id.font_size);
+		spinner = (Spinner) findViewById(R.id.font_size);
 		for (int i = 0; i < fontSizeList.length; i++)
 			if (fontSizeList[i] == fs) {
 				spinner.setSelection(i, true);
@@ -155,7 +189,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		de.setChecked(conf.isDictEnabled());
 
 		spinner = (Spinner) findViewById(R.id.dict_file);
-		String[] fl = (new File(Reader.dictPath)).list(new FilenameFilter()
+		fl = (new File(Reader.dictPath)).list(new FilenameFilter()
 		{
 			public boolean accept(File file, String s)
 			{
@@ -165,13 +199,11 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		if ((fl != null) && (fl.length > 0)) {
 			for (int i = 0; i < fl.length; i++)
 				fl[i] = fl[i].substring(0, fl[i].length() - Reader.dictSuffix.length());
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
-										android.R.layout.simple_spinner_item,
-										fl);
+			adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, fl);
 			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spinner.setAdapter(adapter);
 
-			if (!conf.getDictFile().equals(Reader.DICT_FILE_NONE))
+			if (conf.getDictFile() != null)
 				for (int i = 0; i < fl.length; i++)
 					if (fl[i].equals(conf.getDictFile())) {
 						spinner.setSelection(i, false);
@@ -180,10 +212,9 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 			de.setOnCheckedChangeListener(this);
 		} else
 			de.setOnCheckedChangeListener(null);
-		if (!conf.isDictEnabled())
-			spinner.setVisibility(View.INVISIBLE);
+		spinner.setVisibility(conf.isDictEnabled() ? View.VISIBLE : View.INVISIBLE);
 
-		ScrollView sv = (ScrollView)findViewById(R.id.opt_scroll_view);
+		ScrollView sv = (ScrollView) findViewById(R.id.opt_scroll_view);
 		sv.scrollTo(0, 0);
 	}
 
@@ -203,10 +234,13 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		conf.setDictEnabled(((CheckBox) findViewById(R.id.dict_enabled)).isChecked());
 
 		Object df = ((Spinner) findViewById(R.id.dict_file)).getSelectedItem();
-		if (df == null)
-			conf.setDictFile(Reader.DICT_FILE_NONE);
+		conf.setDictFile((String) df);
+
+		Object fn = ((Spinner) findViewById(R.id.font_name)).getSelectedItem();
+		if (getContext().getString(R.string.default_font_label).equals(fn))
+			conf.setFontFile(null);
 		else
-			conf.setDictFile(df.toString());
+			conf.setFontFile((String) fn);
 
 		String pdstring = ((Spinner) findViewById(R.id.paging_direct)).getSelectedItem().toString();
 		int i;
@@ -215,8 +249,13 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				break;
 		conf.setPagingDirect(pds[i]);
 		conf.setZipEncode(((Spinner) findViewById(R.id.zip_encode)).getSelectedItem().toString());
-		oal.onOptionAccept(conf.optToString());
+		oal.onOptionAccept(conf);
 		dismiss();
+	}
+
+	private Typeface getTypeface(String name)
+	{
+		return Typeface.createFromFile(Reader.fontPath + name + Reader.fontSuffix);
 	}
 
 	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
@@ -231,6 +270,12 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				isBright = (s.getSelectedItemPosition() == 0);
 				saveColor(!isBright);
 				loadColor(isBright);
+				break;
+			case R.id.font_name:
+				if (s.getSelectedItemPosition() == 0)
+					tp.setTypeface(null);
+				else
+					tp.setTypeface(getTypeface(fnl[s.getSelectedItemPosition()]));
 				break;
 		}
 	}

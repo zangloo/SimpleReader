@@ -2,6 +2,7 @@ package zhang.lu.SimpleReader.View;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import zhang.lu.SimpleReader.Book.BookContent;
 
@@ -99,9 +100,9 @@ public class XTextView extends SimpleTextView
 	}
 
 	@Override
-	public void setColorAndFont(int color, int aBcolor, int fontSize)
+	public void setColorAndFont(int color, int aBcolor, int fontSize, Typeface typeface)
 	{
-		super.setColorAndFont(color, aBcolor, fontSize);
+		super.setColorAndFont(color, aBcolor, fontSize, typeface);
 		clearpl();
 	}
 

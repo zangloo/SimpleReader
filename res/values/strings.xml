@@ -61,6 +61,8 @@
 	<string name="note_title">註釋</string>
 	<string name="recently_opened_title">　最近閱讀　</string>
 	<string name="file_list_title">　文件列表　</string>
+	<string name="font_name_label">選擇字體：</string>
+	<string name="default_font_label">缺省字體</string>
 
 	<string name="loading">加載中...</string>
 	<string name="about_title">關於</string>

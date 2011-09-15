@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Book.VFile;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
@@ -54,7 +55,6 @@ public class Config extends SQLiteOpenHelper
 	private static final String BOOKMARKS_TABLE_NAME = "bookmark";
 	private static final String[] BOOKMARKS_TABLE_COLS = {"bookrowid", "desc", "line", "offset", "rowid"};
 
-	private static final char posSplitter = ',';
 	private static final String configCurrFile = "currfile";
 	private static final String configFontSize = "fontsize";
 	private static final String configColor = "color";
@@ -69,6 +69,7 @@ public class Config extends SQLiteOpenHelper
 	private static final String configPagingDirect = "pagingdirect";
 	private static final String configDictEnabled = "dictenable";
 	private static final String configDictFile = "dictfile";
+	private static final String configFontFile = "fontfile";
 
 	private int fontSize = SimpleTextView.defaultFontSize;
 	private int color = SimpleTextView.defaultTextColor;
@@ -84,6 +85,7 @@ public class Config extends SQLiteOpenHelper
 	private PagingDirect pagingDirect = Config.PagingDirect.up;
 	private boolean dictEnabled = false;
 	private String dictFile = null;
+	private String fontFile = null;
 	private ArrayList<ReadingInfo> rfl = new ArrayList<ReadingInfo>(MAX_RECENTLY_FILE_COUNT);
 
 	public Config(Context context)
@@ -140,6 +142,7 @@ public class Config extends SQLiteOpenHelper
 			pagingDirect = PagingDirect.valueOf(config.get(configPagingDirect));
 			dictEnabled = config.get(configDictEnabled).equals("true");
 			dictFile = config.get(configDictFile);
+			fontFile = config.get(configFontFile);
 
 			StringBuilder sql = new StringBuilder("select ");
 			sql.append(BOOK_INFO_TABLE_COLS[0]);
@@ -202,6 +205,7 @@ public class Config extends SQLiteOpenHelper
 		config.put(configPagingDirect, "" + pagingDirect);
 		config.put(configDictEnabled, "" + dictEnabled);
 		config.put(configDictFile, "" + dictFile);
+		config.put(configFontFile, "" + fontFile);
 
 		for (int i = 0; i < rfl.size(); i++)
 			config.put(RECENTLY_FILE_PREFIX + (i + 1), rfl.get(i).name);
@@ -213,56 +217,42 @@ public class Config extends SQLiteOpenHelper
 				   new String[]{e.getKey(), e.getValue()});
 	}
 
-	void optFromString(String s)
+	public Config dup()
 	{
-		int p, np;
-		np = s.indexOf(posSplitter);
-		fontSize = new Integer(s.substring(0, np));
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		color = new Integer(s.substring(p, np));
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		bcolor = new Integer(s.substring(p, np));
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		ncolor = new Integer(s.substring(p, np));
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		nbcolor = new Integer(s.substring(p, np));
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		colorBright = s.substring(p, np).equals("true");
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		hanStyle = s.substring(p, np).equals("true");
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		showStatus = s.substring(p, np).equals("true");
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		viewOrient = new Integer(s.substring(p, np));
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		pagingDirect = PagingDirect.valueOf(s.substring(p, np));
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		dictEnabled = s.substring(p, np).equals("true");
-		p = np + 1;
-		np = s.indexOf(posSplitter, p);
-		dictFile = s.substring(p, np);
-		p = np + 1;
-		zipEncode = s.substring(p);
-
+		Config dup = new Config(null);
+		dup.fontSize = fontSize;
+		dup.color = color;
+		dup.bcolor = bcolor;
+		dup.ncolor = ncolor;
+		dup.nbcolor = nbcolor;
+		dup.colorBright = colorBright;
+		dup.hanStyle = hanStyle;
+		dup.showStatus = showStatus;
+		dup.viewOrient = viewOrient;
+		dup.pagingDirect = pagingDirect;
+		dup.dictEnabled = dictEnabled;
+		dup.dictFile = dictFile;
+		dup.fontFile = fontFile;
+		dup.zipEncode = zipEncode;
+		return dup;
 	}
 
-	String optToString()
+	public void getback(Config dup)
 	{
-		// be careful, for para order
-		return "" + fontSize + posSplitter + color + posSplitter + bcolor + posSplitter + ncolor + posSplitter +
-			nbcolor + posSplitter + colorBright + posSplitter + hanStyle + posSplitter + showStatus +
-			posSplitter + viewOrient + posSplitter + pagingDirect + posSplitter + dictEnabled +
-			posSplitter + dictFile + posSplitter + zipEncode;
+		fontSize = dup.fontSize;
+		color = dup.color;
+		bcolor = dup.bcolor;
+		ncolor = dup.ncolor;
+		nbcolor = dup.nbcolor;
+		colorBright = dup.colorBright;
+		hanStyle = dup.hanStyle;
+		showStatus = dup.showStatus;
+		viewOrient = dup.viewOrient;
+		pagingDirect = dup.pagingDirect;
+		dictEnabled = dup.dictEnabled;
+		dictFile = dup.dictFile;
+		fontFile = dup.fontFile;
+		zipEncode = dup.zipEncode;
 	}
 
 	public String getCurrFile()
@@ -488,6 +478,16 @@ public class Config extends SQLiteOpenHelper
 	public void setDictFile(String dictFile)
 	{
 		this.dictFile = dictFile;
+	}
+
+	public String getFontFile()
+	{
+		return fontFile;
+	}
+
+	public void setFontFile(@Nullable String fontFile)
+	{
+		this.fontFile = fontFile;
 	}
 
 	public ArrayList<BookmarkManager.Bookmark> getBookmarkList(ReadingInfo ri)
