@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 import org.jetbrains.annotations.Nullable;
@@ -43,6 +44,7 @@ public abstract class SimpleTextView extends View
 	protected static int bcolor;
 	protected static OnPosChangeListener mOnPosChangeListener = null;
 	protected static boolean reset = true;
+	protected static Typeface tf = null;
 
 	protected Paint paint;
 
@@ -78,6 +80,10 @@ public abstract class SimpleTextView extends View
 		if (reset) {
 			w = getWidth();
 			h = getHeight();
+			if (tf != null){
+				paint.setTypeface(tf);
+				fontCalc();
+			}
 
 			resetValues();
 			reset = false;
@@ -321,16 +327,24 @@ public abstract class SimpleTextView extends View
 		return content.searchText(t, sr);
 	}
 
-	protected String replaceTextChar(char[] txt, char[] oc, char[] nc)
+	protected static String replaceTextChar(char[] txt, char[] oc, char[] nc)
 	{
 		for (int i = 0; i < oc.length; i++)
 			for (int j = 0; j < txt.length; j++)
 				if (txt[j] == oc[i])
 					txt[j] = nc[i];
 		return String.valueOf(txt);
-//		return txt.replace('「', '﹁').replace('」', '﹂').replace('『', '﹃').replace('』', '﹄').replace('（', '︵')
-//			  .replace('）', '︶').replace('《', '︽').replace('》', '︾').replace('〔', '︹').replace('〕', '︺')
-//			  .replace('【', '︻').replace('】', '︼').replace('｛', '︷').replace('｝', '︸').replace('─', '︱');
+		//		return txt.replace('「', '﹁').replace('」', '﹂').replace('『', '﹃').replace('』', '﹄').replace('（', '︵')
+		//			  .replace('）', '︶').replace('《', '︽').replace('》', '︾').replace('〔', '︹').replace('〕', '︺')
+		//			  .replace('【', '︻').replace('】', '︼').replace('｛', '︷').replace('｝', '︸').replace('─', '︱');
+	}
+
+	public static void setTypeface(String fontFilename)
+	{
+		if (fontFilename == null)
+			tf = null;
+		else
+			tf = Typeface.createFromFile(fontFilename);
 	}
 
 	public abstract int calcNextLineOffset();

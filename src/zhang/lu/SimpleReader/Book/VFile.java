@@ -3,7 +3,7 @@ package zhang.lu.SimpleReader.Book;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import zhang.lu.SimpleReader.Config;
+import zhang.lu.SimpleReader.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -159,6 +159,8 @@ public class VFile extends File
 				if (n.equals(Config.configDB))
 					continue;
 				if (n.endsWith(zhang.lu.SimpleReader.Reader.dictSuffix))
+					continue;
+				if (n.endsWith(zhang.lu.SimpleReader.Reader.fontFilename))
 					continue;
 				VFile f = new VFile(path + "/" + n);
 				if (f.isHidden())

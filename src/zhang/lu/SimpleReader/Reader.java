@@ -30,6 +30,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final String ABOUT_MESSAGE = "<center>作者：<a href=\"http://weibo.com/2386922042\">zhanglu</a></center></br><center>主頁：<a href=\"http://sourceforge.net/projects/simplereader\">SimpleReader</a></center>";
 	public static final String pathPrefix = Environment.getExternalStorageDirectory() + "/books";
 	public static final String dictPath = pathPrefix + "/dict/";
+	public static final String fontFilename = pathPrefix + "/fonts/default.ttf";
 	public static final String dictSuffix = ".sqlite";
 
 	public static final String DATE_FORMAT_STRING = "kk:mm";
@@ -121,6 +122,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		initSearchPanel();
 		initSeekBarPanel();
 
+		// if external font exist, load it
+		File ff = new File(fontFilename);
+		if (ff.exists())
+			SimpleTextView.setTypeface(fontFilename);
 		// init book view
 		hbv = (SimpleTextView) findViewById(R.id.hbook_text);
 		hbv.setOnTouchListener(this);
