@@ -57,14 +57,15 @@ public class SimpleReaderBook extends Loader implements BookContent
 	private String searchSQL;
 	private int booksize;
 	private int lineCount;
+	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
 
 	// cache size
 	private static final int LINE_CACHE_SIZE = 90;
 	// fetch lines from (<index> - LINE_CACHE_PREFETCH_SIZE) to (<index> + LINE_CACHE_SIZE - 1)
 	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
 
-	private String[] lineCache = new String[LINE_CACHE_SIZE + LINE_CACHE_PREFETCH_SIZE];
-	private int lineCacheBegin, lineCacheEnd;
+	//	private String[] lineCache = new String[LINE_CACHE_SIZE + LINE_CACHE_PREFETCH_SIZE];
+	//	private int lineCacheBegin, lineCacheEnd;
 
 	@Override
 	protected String[] getSuffixes()
@@ -119,29 +120,28 @@ public class SimpleReaderBook extends Loader implements BookContent
 
 		cursor.close();
 
-		lineCacheBegin = lineCount + indexBase;
-		lineCacheEnd = indexBase - 1;
+		//		lineCacheBegin = lineCount + indexBase;
+		//		lineCacheEnd = indexBase - 1;
 		return this;
 	}
 
 	public String line(int index)
 	{
+		if (lineCache.containsKey(index))
+			return lineCache.get(index);
 		int lineno = index + indexBase;
-		if ((lineno < lineCacheBegin) || (lineno > lineCacheEnd)) {
-			lineCacheBegin = lineno - LINE_CACHE_PREFETCH_SIZE;
-			lineCacheEnd = lineno + LINE_CACHE_SIZE - 1;
-			if (lineCacheBegin < indexBase)
-				lineCacheBegin = indexBase;
-			if (lineCacheEnd > lineCount)
-				lineCacheEnd = lineCount + indexBase - 1;
-			Cursor c = db.rawQuery(lineSQL, new String[]{String.valueOf(lineCacheBegin), String
-				.valueOf(lineCacheEnd)});
-			int i = 0;
-			while (c.moveToNext())
-				lineCache[i++] = c.getString(0);
-			c.close();
+		int b = Math.max(lineno - LINE_CACHE_PREFETCH_SIZE, indexBase);
+		int e = Math.min(lineno + LINE_CACHE_SIZE, lineCount + indexBase - 1);
+
+		Cursor c = db.rawQuery(lineSQL, new String[]{String.valueOf(b), String.valueOf(e)});
+		int i = b - indexBase;
+		while (c.moveToNext()) {
+			if (!lineCache.containsKey(i))
+				lineCache.put(i, c.getString(0));
+			i++;
 		}
-		return lineCache[lineno - lineCacheBegin];
+		c.close();
+		return lineCache.get(index);
 	}
 
 	public int getLineCount()
