@@ -57,15 +57,12 @@ public class SimpleReaderBook extends Loader implements BookContent
 	private String searchSQL;
 	private int booksize;
 	private int lineCount;
-	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
 
 	// cache size
 	private static final int LINE_CACHE_SIZE = 90;
 	// fetch lines from (<index> - LINE_CACHE_PREFETCH_SIZE) to (<index> + LINE_CACHE_SIZE - 1)
 	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
-
-	//	private String[] lineCache = new String[LINE_CACHE_SIZE + LINE_CACHE_PREFETCH_SIZE];
-	//	private int lineCacheBegin, lineCacheEnd;
+	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
 
 	@Override
 	protected String[] getSuffixes()

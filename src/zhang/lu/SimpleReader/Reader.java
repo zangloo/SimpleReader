@@ -44,15 +44,16 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final int BOOKMARK_DESC_DEFAULT_LEN = 10;
 
 	private static final int menuSearch = 0;
-	private static final int menuViewLock = 1;
+	private static final int menuSeek = 1;
 	private static final int menuExit = 2;
 	private static final int menuDict = 3;
 	private static final int menuBookmark = 4;
-	private static final int menuStatusBar = 5;
-	private static final int menuColorBright = 6;
-	private static final int menuFile = 7;
-	private static final int menuOption = 8;
-	private static final int menuAbout = 9;
+	private static final int menuViewLock = 5;
+	private static final int menuStatusBar = 6;
+	private static final int menuColorBright = 7;
+	private static final int menuFile = 8;
+	private static final int menuOption = 9;
+	private static final int menuAbout = 10;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
@@ -569,6 +570,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 					config.setViewOrient(currOrient);
 				setViewLock(config.getViewOrient());
 				break;
+			case menuSeek:
+				showSeekPanel();
+				break;
 			case menuColorBright:
 				switchColorBright();
 				break;
@@ -639,6 +643,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		menu.add(0, menuOption, menuOption, getResources().getString(R.string.menu_option));
 		menu.add(0, menuAbout, menuAbout, getResources().getString(R.string.menu_about));
 		menu.add(0, menuSearch, menuSearch, getResources().getString(R.string.menu_search));
+		menu.add(0, menuSeek, menuSeek, getResources().getString(R.string.menu_seek));
 
 		return true;
 	}
