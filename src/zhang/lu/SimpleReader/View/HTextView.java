@@ -2,6 +2,7 @@ package zhang.lu.SimpleReader.View;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 
 /**
@@ -28,8 +29,8 @@ public class HTextView extends SimpleTextView
 		fw *= 1.15;
 	}
 
-	private static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─',9};
-	private static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱','　'};
+	private static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', 9};
+	private static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '　'};
 
 	@Override
 	protected void drawText(Canvas canvas)
@@ -43,28 +44,50 @@ public class HTextView extends SimpleTextView
 		nextpo = po;
 		x = w - xoffset - fw;
 
+		String line = null;
 		do {
-			String line = replaceTextChar(content.line(nextpi).toCharArray(), SC, TC);
+			if (line == null)
+				line = replaceTextChar(content.line(nextpi).toCharArray(), SC, TC);
 			y = yoffset + fh;
 			int cc = line.length() - nextpo;
 			if (cc > mc)
 				cc = mc;
 			fingerPosIndex[lc] = nextpi;
 			fingerPosOffset[lc] = nextpo;
-			for (int i = 0; i < cc; i++) {
-				buf[i] = line.charAt(nextpo++);
+			int i = 0;
+			for (; i < cc; i++) {
+				buf[i] = line.charAt(nextpo + i);
 				xy[i * 2] = x;
 				xy[i * 2 + 1] = y;
 				y += fh;
 			}
-			if (cc > 0)
+			if (cc > 0) {
 				canvas.drawPosText(buf, 0, cc, xy, paint);
+				if ((hli != null) && (hli.line == nextpi) && (hli.end > nextpo) &&
+					(hli.begin < nextpo + i)) {
+					int b = Math.max(hli.begin, nextpo);
+					int e = Math.min(hli.end, nextpo + i);
+					for (int j = 0; j < e - b; j++) {
+						xy[j * 2] = xy[(b - nextpo + j) * 2];
+						xy[j * 2 + 1] = xy[(b - nextpo + j) * 2 + 1];
+					}
+					Rect r = new Rect((int) xy[0], (int) (xy[1] - fh + fd),
+							  (int) (xy[(e - b - 1) * 2] + fw),
+							  (int) (xy[(e - b - 1) * 2 + 1] + fd));
+					canvas.drawRect(r, paint);
+					paint.setColor(bcolor);
+					canvas.drawPosText(buf, b - nextpo, e - b, xy, paint);
+					paint.setColor(color);
+				}
+			}
 			lc++;
 			x -= fw;
 
+			nextpo += i;
 			if (nextpo == line.length()) {
 				nextpo = 0;
 				nextpi++;
+				line = null;
 			}
 		} while ((nextpi < content.getLineCount()) & (lc < ml));
 		for (int i = lc; i < ml; i++)

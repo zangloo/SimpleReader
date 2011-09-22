@@ -2,6 +2,7 @@ package zhang.lu.SimpleReader.View;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import zhang.lu.SimpleReader.Book.BookContent;
@@ -16,49 +17,29 @@ import java.util.ArrayList;
  */
 public class XTextView extends SimpleTextView
 {
-	private static final int ascii_offset = 32;
-	private static final int ascii_char_count = 223;
-	private static final String special_chars = "“”·‘’；：…　［］｛｝□◇△○☆〖〗■◆▲●★【】『』";
-
-	private float[] ascii_width = null;
-	private float[] special_chars_width = null;
-
 	private ArrayList<Integer> pl = new ArrayList<Integer>();
 	private int pli = 0;
 	private int mll;
 
-	private float[][] charMapCache;
-	private int[] fingerPosIndex;
-	private int[] fingerPosOffset;
-	private float minCharWidth;
-	private int maxLineCharCount;
+	private class ViewLineInfo
+	{
+		int line;	// index of book content
+		int offset;	// offset of the line for draw
+		char[] str;	// char array of line for draw
+
+		ViewLineInfo(int l, int o, char[] s)
+		{
+			line = l;
+			offset = o;
+			str = s;
+		}
+	}
+
+	private ArrayList<ViewLineInfo> vls = new ArrayList<ViewLineInfo>();
 
 	public XTextView(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);
-	}
-
-	@Override
-	protected void fontCalc()
-	{
-		super.fontCalc();
-		if (ascii_width == null) {
-			ascii_width = new float[ascii_char_count];
-			special_chars_width = new float[special_chars.length()];
-		}
-		minCharWidth = 800;
-		char[] c = new char[1];
-		for (int i = 0; i < ascii_char_count; i++) {
-			c[0] = (char) (i + ascii_offset);
-			ascii_width[i] = paint.measureText(c, 0, 1);
-			if (minCharWidth > ascii_width[i])
-				minCharWidth = ascii_width[i];
-		}
-		for (int i = 0; i < special_chars.length(); i++) {
-			special_chars_width[i] = paint.measureText(special_chars, i, i + 1);
-			if (minCharWidth > special_chars_width[i])
-				minCharWidth = special_chars_width[i];
-		}
 	}
 
 	@Override
@@ -78,7 +59,7 @@ public class XTextView extends SimpleTextView
 		do {
 			o = to;
 			to = calcChars(line, o, npo + 1);
-		} while (to < npo + 1);
+		} while (to <= npo);
 		return o;
 	}
 
@@ -121,10 +102,6 @@ public class XTextView extends SimpleTextView
 		yoffset = (h - (fh * ml)) / 2 - fd;
 		mll = w - 2 * boardGAP;
 		clearpl();
-		maxLineCharCount = (int) (mll / minCharWidth);
-		charMapCache = new float[ml][maxLineCharCount];
-		fingerPosIndex = new int[ml];
-		fingerPosOffset = new int[ml];
 	}
 
 	@Override
@@ -200,26 +177,41 @@ public class XTextView extends SimpleTextView
 		nextpo = po;
 		y = yoffset + fh;
 
+		String line = null;
+		vls.clear();
 		do {
-			String line = replaceTextChar(content.line(nextpi).toCharArray(), OC, NC);
-
+			if (line == null)
+				line = replaceTextChar(content.line(nextpi).toCharArray(), OC, NC);
 			int p;
-			p = calcChars(line, nextpo, line.length(), lc);
-			charMapCache[lc][p - nextpo] = 0;
-			fingerPosIndex[lc] = nextpi;
-			fingerPosOffset[lc] = nextpo;
-			if (p > nextpo)
-				canvas.drawText(line, nextpo, p, xoffset, y, paint);
+			p = calcChars(line, nextpo, line.length());
+			if (p > nextpo) {
+				char[] s = line.substring(nextpo, p).toCharArray();
+				vls.add(new ViewLineInfo(nextpi, nextpo, s));
+				canvas.drawText(s, 0, s.length, xoffset, y, paint);
+				if ((hli != null) && (hli.line == nextpi) && (hli.end > nextpo) && (hli.begin < p)) {
+					int b = Math.max(hli.begin, nextpo);
+					int e = Math.min(hli.end, p);
+					int x1 = (int) (calcWidth(line, nextpo, b) + xoffset);
+					int y1 = (int) (y - fh + fd);
+					int x2 = (int) (x1 + calcWidth(line, b, e));
+					int y2 = (int) (y1 + fh);
+					Rect r = new Rect(x1, y1, x2, y2);
+					canvas.drawRect(r, paint);
+					paint.setColor(bcolor);
+					canvas.drawText(s, b - nextpo, e - b, x1, y, paint);
+					paint.setColor(color);
+				}
+			} else
+				vls.add(null);
 			y += fh;
 			lc++;
 			if (p == line.length()) {
 				nextpo = 0;
 				nextpi++;
+				line = null;
 			} else
 				nextpo = p;
 		} while ((nextpi < content.getLineCount()) & (lc < ml));
-		for (int i = lc; i < ml; i++)
-			charMapCache[i][0] = 0;
 	}
 
 	@Override
@@ -231,67 +223,43 @@ public class XTextView extends SimpleTextView
 		if (l >= ml)
 			l = ml - 1;
 
-		float xo = x - xoffset;
-		for (int i = 0; (charMapCache[l][i] != 0) && (i < maxLineCharCount); i++)
-			if (xo <= charMapCache[l][i]) {
-				i += fingerPosOffset[l];
+		ViewLineInfo vli = vls.get(l);
+		if (vli == null)
+			return null;
+		float[] w = new float[vli.str.length];
+		paint.getTextWidths(vli.str, 0, vli.str.length, w);
+		x -= xoffset;
+		for (int i = 0; i < w.length; i++)
+			if ((x -= w[i]) < 0) {
 				FingerPosInfo pi = new FingerPosInfo();
-				pi.line = fingerPosIndex[l];
-				pi.offset = i;
+				pi.line = vli.line;
+				pi.offset = vli.offset + i;
 				return pi;
 			}
 		return null;
 	}
 
-	private int calcChars(String line, int posFrom, int posTo)
+	private float calcWidth(String line, int posFrom, int posTo)
 	{
-		return calcChars(line, posFrom, posTo, -1);
+		return paint.measureText(line, posFrom, posTo);
 	}
 
-	private int calcChars(String line, int posFrom, int posTo, int lineNum)
+	private int calcChars(String line, int posFrom, int posTo)
 	{
-		int i;
-		float ll = 0;
-		int j = 0;
-
-		for (i = posFrom; i < posTo; i++) {
-			char ch = line.charAt(i);
-			ll += charWidth(ch);
-			if (ll > mll)
-				return i;
-			if (lineNum >= 0)
-				charMapCache[lineNum][j++] = ll;
-		}
-		return i;
+		return paint.breakText(line, posFrom, posTo, true, mll, null) + posFrom;
 	}
 
 	private int calcLines(String line, int posTo)
 	{
-		int i, lc = 0;
-		float ll = 0;
+		int i = 0, c, lc = 0;
 		pl.clear();
-		pl.add(0);
-		for (i = 0; i < posTo; i++) {
-			float d = charWidth(line.charAt(i));
-			if (ll + d > mll) {
-				lc++;
-				ll = d;
-				pl.add(i);
-			} else
-				ll += d;
-		}
-		return lc + 1;
-	}
 
-	private float charWidth(char c)
-	{
-		int i;
-
-		if ((c >= ascii_offset) && (c <= ascii_offset + ascii_char_count))
-			return ascii_width[c - ascii_offset];
-		else if ((i = special_chars.indexOf(c)) >= 0)
-			return special_chars_width[i];
-		else
-			return fw;
+		do {
+			pl.add(i);
+			c = paint.breakText(line, i, posTo, true, mll, null);
+			i += c;
+			lc++;
+		} while (i < posTo);
+		return lc;
 	}
 }

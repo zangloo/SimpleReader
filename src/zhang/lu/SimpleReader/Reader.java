@@ -370,6 +370,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	private void hideSearchPanel()
 	{
+		bv.setHighlightInfo(null);
 		sp.setEnabled(false);
 		sp.setVisibility(View.GONE);
 	}
@@ -868,9 +869,12 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		{
 			public void onClick(View v)
 			{
-				BookContent.ContentPosInfo sr = bv.searchText(et.getText().toString());
+				String s = et.getText().toString();
+				BookContent.ContentPosInfo sr = bv.searchText(s);
 				if (sr != null) {
 					bv.setPos(sr.line, sr.offset);
+					bv.setHighlightInfo(new SimpleTextView.HighlightInfo(sr.line, sr.offset,
+											     sr.offset + s.length()));
 					bv.invalidate();
 				}
 			}

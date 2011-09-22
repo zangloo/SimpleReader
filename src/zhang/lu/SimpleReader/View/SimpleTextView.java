@@ -30,6 +30,19 @@ public abstract class SimpleTextView extends View
 		public String str;
 	}
 
+	public static class HighlightInfo
+	{
+		public int line;
+		public int begin, end;
+
+		public HighlightInfo(int l, int b, int e)
+		{
+			line = l;
+			begin = b;
+			end = e;
+		}
+	}
+
 	public static final int defaultTextColor = Color.BLACK;
 	public static final int defaultBackgroundColor = Color.WHITE;
 	public static final int defaultNightTextColor = Color.WHITE;
@@ -41,9 +54,10 @@ public abstract class SimpleTextView extends View
 	protected static int pi = 0, po = 0;
 	protected static int pos = 0;
 	protected static int boardGAP = 3;
-	protected static int bcolor;
+	protected static int bcolor, color;
 	protected static OnPosChangeListener mOnPosChangeListener = null;
 	protected static boolean reset = true;
+	protected static HighlightInfo hli = null;
 
 	protected Paint paint;
 
@@ -63,6 +77,7 @@ public abstract class SimpleTextView extends View
 		paint.setAntiAlias(true);
 		paint.setTextSize(defaultFontSize);
 		bcolor = defaultBackgroundColor;
+		color = defaultTextColor;
 		fontCalc();
 	}
 
@@ -141,10 +156,11 @@ public abstract class SimpleTextView extends View
 
 	 }
  */
-	public void setColorAndFont(int color, int aBcolor, int fontSize, Typeface typeface)
+	public void setColorAndFont(int aColor, int aBcolor, int fontSize, Typeface typeface)
 	{
 		boardGAP = fontSize / 3;
 		bcolor = aBcolor;
+		color = aColor;
 		paint.setColor(color);
 		paint.setTextSize(fontSize);
 		paint.setTypeface(typeface);
@@ -333,6 +349,11 @@ public abstract class SimpleTextView extends View
 		//		return txt.replace('「', '﹁').replace('」', '﹂').replace('『', '﹃').replace('』', '﹄').replace('（', '︵')
 		//			  .replace('）', '︶').replace('《', '︽').replace('》', '︾').replace('〔', '︹').replace('〕', '︺')
 		//			  .replace('【', '︻').replace('】', '︼').replace('｛', '︷').replace('｝', '︸').replace('─', '︱');
+	}
+
+	public void setHighlightInfo(@Nullable HighlightInfo hightlightInfo)
+	{
+		hli = hightlightInfo;
 	}
 
 	public abstract int calcNextLineOffset();
