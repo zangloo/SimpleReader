@@ -548,6 +548,8 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	{
 		bv.setColorAndFont(config.getCurrentColor(), config.getCurrentBColor(), config.getFontSize(), tf);
 		updateStatusPanel();
+		nt.setTypeface(tf);
+		nt.invalidate();
 	}
 
 	private void setViewLock(int orient)
