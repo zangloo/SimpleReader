@@ -43,6 +43,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final String BOOKMARK_LIST_TITLE_POS = "pos";
 	private static final int BOOKMARK_DESC_DEFAULT_LEN = 10;
 
+	private static final int MAX_NOTE_HEIGHT = 180;
+	private static final int DEFAULT_NOTE_WIDTH = 320;
+
 	private static final int menuSearch = 0;
 	private static final int menuSeek = 1;
 	private static final int menuExit = 2;
@@ -69,6 +72,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private EditText et = null;
 	private SeekBar sb = null;
 	private View blp = null;
+	private PopupWindow pw = null;
+	private TextView nt = null;
+	private ScrollView nsv = null;
 	private int ppi, ppo;
 	private boolean loading = false;
 	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
@@ -127,6 +133,11 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		initSearchPanel();
 		initSeekBarPanel();
 
+		View v = getLayoutInflater().inflate(R.layout.notedlg, null, false);
+		pw = new PopupWindow(v, DEFAULT_NOTE_WIDTH, MAX_NOTE_HEIGHT);
+		nt = (TextView) v.findViewById(R.id.note_text);
+		nsv = (ScrollView) v.findViewById(R.id.note_scroll);
+
 		// if external font exist, load it
 		setTypeface(config.getFontFile());
 		// init book view
@@ -161,9 +172,23 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			{
 				String note = bv.getFingerPosNote(e.getX(), e.getY());
 				if (note != null) {
-					Util.showMessage(Reader.this, note, R.string.note_title);
+					if (isNoteOn())
+						hideNote();
+					nt.setText(note);
+					nt.measure(DEFAULT_NOTE_WIDTH + View.MeasureSpec.EXACTLY,
+						   MAX_NOTE_HEIGHT + View.MeasureSpec.AT_MOST);
+					if (nt.getMeasuredHeight() > MAX_NOTE_HEIGHT)
+						pw.setHeight(MAX_NOTE_HEIGHT);
+					else
+						pw.setHeight(nt.getMeasuredHeight());
+					nsv.scrollTo(0, 0);
+					pw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX(), (int) e.getRawY());
+					return true;
+				} else if (isNoteOn()) {
+					hideNote();
 					return true;
 				}
+
 				float p1, p2;
 				switch (config.getPagingDirect()) {
 					case clickUp:
@@ -199,6 +224,8 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 			public void onLongPress(MotionEvent motionEvent)
 			{
+				hideNote();
+
 				if (config.getCurrFile() != null)
 					fingerPosInfo = bv.getFingerPosInfo(motionEvent.getX(), motionEvent.getY());
 				openOptionsMenu();
@@ -206,6 +233,8 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 			public boolean onFling(MotionEvent e1, MotionEvent e2, float v, float v1)
 			{
+				hideNote();
+
 				float p1, p2;
 				switch (config.getPagingDirect()) {
 					case up:
@@ -861,6 +890,16 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		return sp.getVisibility() == View.VISIBLE;
 	}
 
+	private boolean isNoteOn()
+	{
+		return pw.isShowing();
+	}
+
+	private void hideNote()
+	{
+		pw.dismiss();
+	}
+
 	private void initSearchPanel()
 	{
 		sp = findViewById(R.id.search_panel);
@@ -1011,12 +1050,20 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	private boolean hidePanels()
 	{
-		if (isSeekPanelOn() || isSearchPanelOn()) {
-			hideSearchPanel();
+		boolean ret = false;
+		if (isSeekPanelOn()) {
 			hideSeekPanel();
-			return true;
+			ret = true;
 		}
-		return false;
+		if (isSearchPanelOn()) {
+			hideSearchPanel();
+			ret = true;
+		}
+		if (isNoteOn()) {
+			hideNote();
+			ret = true;
+		}
+		return ret;
 	}
 
 	private void setTypeface(String name)

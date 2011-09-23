@@ -9,7 +9,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Book.BookContent;
-import zhang.lu.SimpleReader.Book.Loader;
 import zhang.lu.SimpleReader.Book.PlainTextContent;
 
 /**

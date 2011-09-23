@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	      android:layout_width="fill_parent" android:layout_height="fill_parent">
+	<ScrollView android:id="@+id/note_scroll" android:layout_width="fill_parent" android:layout_height="fill_parent">
+		<TextView android:id="@+id/note_text" android:layout_width="fill_parent"
+			  android:layout_height="fill_parent" android:textSize="20dip" android:padding="4dp"
+			  android:textStyle="bold" android:textColor="#ffdcdcdc" android:background="#b0000000"/>
+	</ScrollView>
+</LinearLayout>

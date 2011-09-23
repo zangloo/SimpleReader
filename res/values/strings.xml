@@ -59,7 +59,6 @@
 	<string name="dict_list_title">選詞</string>
 	<string name="bookmark_title">標記書籤:</string>
 	<string name="button_bookmark_delete_title">刪除書籤</string>
-	<string name="note_title">註釋</string>
 	<string name="recently_opened_title">　最近閱讀　</string>
 	<string name="file_list_title">　文件列表　</string>
 	<string name="font_name_label">選擇字體：</string>

@@ -35,12 +35,6 @@ public class Util
 						 .setPositiveButton(R.string.button_ok_text, null).show();
 	}
 
-	static public void showMessage(Context activity, String msg, int titleID)
-	{
-		new AlertDialog.Builder(activity).setTitle(titleID).setMessage(msg)
-						 .setPositiveButton(R.string.button_ok_text, null).show();
-	}
-
 	static public void setActivityOrient(Activity activity, int viewOrient)
 	{
 		switch (viewOrient) {
