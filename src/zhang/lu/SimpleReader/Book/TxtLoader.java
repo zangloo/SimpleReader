@@ -45,4 +45,9 @@ public class TxtLoader extends Loader
 			lines.add(formatText(line));
 		return new PlainTextContent(lines);
 	}
+
+	@Override
+	protected void unload(BookContent aBook)
+	{
+	}
 }

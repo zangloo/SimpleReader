@@ -27,9 +27,6 @@ public interface BookContent
 	// return null when no note at line:offset
 	public String getNote(int line, int offset);
 
-	// close the book, by now, only srb book need this to close database
-	public void close();
-
 	// search txt from cpi
 	public ContentPosInfo searchText(String txt, ContentPosInfo cpi);
 

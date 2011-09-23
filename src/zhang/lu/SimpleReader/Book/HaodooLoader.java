@@ -257,4 +257,9 @@ public class HaodooLoader extends Loader
 		is.close();
 		return new PlainTextContent(text);
 	}
+
+	@Override
+	protected void unload(BookContent aBook)
+	{
+	}
 }

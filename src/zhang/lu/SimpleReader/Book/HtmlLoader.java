@@ -51,4 +51,9 @@ public class HtmlLoader extends Loader
 		HTMLText(Jsoup.parse(f.getInputStream(), cs, "").body(), lines);
 		return new PlainTextContent(lines);
 	}
+
+	@Override
+	protected void unload(BookContent aBook)
+	{
+	}
 }

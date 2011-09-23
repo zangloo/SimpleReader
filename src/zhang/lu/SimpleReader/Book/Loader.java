@@ -24,7 +24,10 @@ public abstract class Loader
 	public static final int detectFileReadBlockSize = 2048;
 	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
 
-	static void init()
+	private static BookContent book = null;
+	private static Loader currLoader = null;
+
+	private static void init()
 	{
 		defaultLoader = new TxtLoader();
 
@@ -35,26 +38,30 @@ public abstract class Loader
 		loaders.add(new SimpleReaderBook());
 	}
 
+	private static Loader findLoader(String filePath)
+	{
+		for (Loader l : loaders)
+			for (String s : l.getSuffixes())
+				if (filePath.toLowerCase().endsWith("." + s))
+					return l;
+		return defaultLoader;
+	}
+
 	public static BookContent loadFile(String filePath)
 	{
+		unloadBook();
 		VFile f = new VFile(filePath);
 		if (!f.exists())
 			return null;
 		try {
 			if (defaultLoader == null)
 				init();
-			for (Loader l : loaders)
-				for (String s : l.getSuffixes())
-					if (filePath.toLowerCase().endsWith("." + s))
-						return l.load(f);
-
-			if (defaultLoader == null)
-				return null;
-			return defaultLoader.load(f);
+			currLoader = findLoader(filePath);
+			return book = currLoader.load(f);
 		} catch (Exception e) {
 			ArrayList<String> list = new ArrayList<String>();
 			list.add(e.getMessage());
-			return new PlainTextContent(list);
+			return book = new PlainTextContent(list);
 		}
 	}
 
@@ -85,7 +92,18 @@ public abstract class Loader
 		return encoding;
 	}
 
+	public static void unloadBook()
+	{
+		if ((currLoader != null) && (book != null)) {
+			currLoader.unload(book);
+			currLoader = null;
+			book = null;
+		}
+	}
+
 	protected abstract String[] getSuffixes();
 
 	protected abstract BookContent load(VFile file) throws Exception;
+
+	protected abstract void unload(BookContent aBook);
 }

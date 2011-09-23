@@ -70,10 +70,6 @@ public class PlainTextContent implements BookContent
 		return null;
 	}
 
-	public void close()
-	{
-	}
-
 	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
 	{
 		for (int i = cpi.line; i < lines.size(); i++) {

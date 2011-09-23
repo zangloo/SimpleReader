@@ -189,7 +189,7 @@ public class SimpleReaderBook extends Loader implements BookContent
 		return n;
 	}
 
-	public void close()
+	protected void unload(BookContent book)
 	{
 		db.close();
 	}

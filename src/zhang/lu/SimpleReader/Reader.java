@@ -306,6 +306,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		bv.setPos(0, 0);
 		config.close();
 		dictManager.unloadDict();
+		Loader.unloadBook();
 	}
 
 	protected Dialog onCreateDialog(int id)
