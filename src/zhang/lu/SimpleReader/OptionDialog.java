@@ -151,6 +151,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		tp.setTextSize(fs);
 
 		isBright = conf.isColorBright();
+		spinner = (Spinner) findViewById(R.id.color_mode);
+		spinner.setSelection(isBright ? 0 : 1);
 		loadColor(isBright);
 
 		spinner = (Spinner) findViewById(R.id.font_size);
@@ -180,9 +182,6 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				spinner.setSelection(i, true);
 				break;
 			}
-
-		spinner = (Spinner) findViewById(R.id.color_mode);
-		spinner.setSelection(conf.isColorBright() ? 0 : 1, true);
 
 		CheckBox de = (CheckBox) findViewById(R.id.dict_enabled);
 		de.setChecked(conf.isDictEnabled());
@@ -271,9 +270,11 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				tp.setTextSize(fs);
 				break;
 			case R.id.color_mode:
-				isBright = (s.getSelectedItemPosition() == 0);
-				saveColor(!isBright);
-				loadColor(isBright);
+				if (isBright != (s.getSelectedItemPosition() == 0)) {
+					saveColor(isBright);
+					isBright = !isBright;
+					loadColor(isBright);
+				}
 				break;
 			case R.id.font_name:
 				if (s.getSelectedItemPosition() == 0)
