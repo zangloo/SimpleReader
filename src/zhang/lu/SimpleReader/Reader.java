@@ -52,6 +52,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
 
+	// don't know how to get it , so define it for 4
+	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
+
 	private SimpleTextView hbv, xbv;
 	private SimpleTextView bv;
 	private Config config;
@@ -125,7 +128,12 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 
 		View v = getLayoutInflater().inflate(R.layout.notedlg, null, true);
-		npw = new PopupWindow(v, screenWidth >> 1, screenHeight >> 1);
+		//npw = new PopupWindow(v, screenWidth >> 1, screenHeight >> 1);
+		npw = new PopupWindow(this);
+		npw.setContentView(v);
+		npw.setWidth((screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE);
+		npw.setHeight(screenHeight >> 1);
+		npw.setFocusable(true);
 		nt = (TextView) v.findViewById(R.id.note_text);
 		nsv = (ScrollView) v.findViewById(R.id.note_scroll);
 
@@ -161,10 +169,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 			public boolean onSingleTapUp(MotionEvent e)
 			{
-				if (isNoteOn()) {
-					hideNote();
-					return true;
-				}
 				String note = bv.getFingerPosNote(e.getX(), e.getY());
 				if (note != null) {
 					showNote(note, e);
@@ -377,9 +381,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		nt.measure((screenWidth >> 1) + View.MeasureSpec.EXACTLY,
 			   (screenHeight >> 1) + View.MeasureSpec.AT_MOST);
 		if (nt.getMeasuredHeight() > (screenHeight >> 1))
-			npw.setHeight(screenHeight >> 1);
+			npw.setHeight((screenHeight >> 1) + POPUP_WINDOW_BOARD_SIZE);
 		else
-			npw.setHeight(nt.getMeasuredHeight());
+			npw.setHeight(nt.getMeasuredHeight() + POPUP_WINDOW_BOARD_SIZE);
 		nsv.scrollTo(0, 0);
 		npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX(), (int) e.getRawY());
 	}
@@ -987,10 +991,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			hideSearchPanel();
 			ret = true;
 		}
-		if (isNoteOn()) {
-			hideNote();
-			ret = true;
-		}
 		return ret;
 	}
 
@@ -1011,13 +1011,4 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
 	}
 
-	private boolean isNoteOn()
-	{
-		return npw.isShowing();
-	}
-
-	private void hideNote()
-	{
-		npw.dismiss();
-	}
 }
