@@ -19,7 +19,8 @@
 	<string name="menu_status_bar">狀態欄</string>
 	<string name="menu_exit">退出</string>
 	<string name="menu_dict">字典：</string>
-	<string name="menu_bookmark">書籤：</string>
+	<string name="menu_bookmark">標記書籤：</string>
+	<string name="menu_bookmark_mgr">管理書籤：</string>
 	<string name="menu_about">關於</string>
 	<string name="menu_seek">定位</string>
 
@@ -59,8 +60,8 @@
 	<string name="dict_list_title">選詞</string>
 	<string name="bookmark_title">標記書籤:</string>
 	<string name="button_bookmark_delete_title">刪除書籤</string>
-	<string name="recently_opened_title">　最近閱讀　</string>
-	<string name="file_list_title">　文件列表　</string>
+	<string name="recently_opened_title">最近閱讀</string>
+	<string name="file_list_title">文件列表</string>
 	<string name="font_name_label">選擇字體：</string>
 	<string name="default_font_label">缺省字體</string>
 

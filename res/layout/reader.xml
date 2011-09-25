@@ -55,28 +55,11 @@
 				android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 		</LinearLayout>
 	</LinearLayout>
-	<LinearLayout android:orientation="horizontal"
-		      android:layout_width="fill_parent" android:layout_height="fill_parent">
-		<LinearLayout android:id="@+id/bookmark_list_panel" android:layout_width="180dp"
-			      android:orientation="vertical" android:layout_height="fill_parent"
-			      android:visibility="gone">
-			<TextView android:id="@+id/bookmark_list_label" android:layout_width="fill_parent"
-				  android:layout_height="wrap_content" android:text="@string/menu_bookmark"
-				  android:paddingLeft="8dp" android:paddingTop="8dp" android:paddingBottom="8dp"
-				  android:textSize="20dip" android:textStyle="bold" android:textColor="#ff000000"
-				  android:background="#ffa9a9a9"/>
-			<ListView android:id="@+id/bookmark_list" android:layout_width="fill_parent"
-				  android:layout_height="fill_parent" android:paddingLeft="4dp"
-				  android:paddingBottom="4dp" android:paddingRight="4dp"
-				  android:cacheColorHint="#ffdcdcdc" android:background="#ffdcdcdc">
-			</ListView>
-		</LinearLayout>
-		<zhang.lu.SimpleReader.View.HTextView android:id="@+id/hbook_text" android:layout_width="fill_parent"
-						      android:layout_height="wrap_content"
-						      android:layout_weight="1"/>
-		<zhang.lu.SimpleReader.View.XTextView android:id="@+id/xbook_text" android:layout_width="fill_parent"
-						      android:layout_height="wrap_content"
-						      android:layout_weight="1" android:visibility="gone"/>
-	</LinearLayout>
+	<zhang.lu.SimpleReader.View.HTextView android:id="@+id/hbook_text" android:layout_width="fill_parent"
+					      android:layout_height="wrap_content"
+					      android:layout_weight="1"/>
+	<zhang.lu.SimpleReader.View.XTextView android:id="@+id/xbook_text" android:layout_width="fill_parent"
+					      android:layout_height="wrap_content"
+					      android:layout_weight="1" android:visibility="gone"/>
 </LinearLayout>
 

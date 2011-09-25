@@ -3,8 +3,14 @@ package zhang.lu.SimpleReader;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.widget.EditText;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.view.*;
+import android.widget.*;
 import zhang.lu.SimpleReader.View.SimpleTextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +18,7 @@ import zhang.lu.SimpleReader.View.SimpleTextView;
  * Date: 11-9-4
  * Time: 上午8:05
  */
-public class BookmarkManager
+public class BookmarkManager extends PopupWindow
 {
 	public static class Bookmark
 	{
@@ -24,25 +30,18 @@ public class BookmarkManager
 		public long getID() {return id;}
 	}
 
-	public static interface OnBookmarkEditListener
+	public static interface OnBookmarkSelectListener
 	{
-		void onBookmarkAdd(Bookmark bookmark);
-
-		void onBookmarkDelete(Bookmark bookmark);
-
-		void onBookmarkEdit(Bookmark bookmark);
+		void onBookmarkSelect(Bookmark bookmark);
 	}
 
-	EditText et;
-	Context reader;
-	Bookmark bm;
-	OnBookmarkEditListener onBookmarkEditListener = null;
 	DialogInterface.OnClickListener addListener = new DialogInterface.OnClickListener()
 	{
 		public void onClick(DialogInterface dialog, int which)
 		{
 			bm.desc = et.getText().toString();
-			onBookmarkEditListener.onBookmarkAdd(bm);
+			config.addBookmark(bm);
+			updateBookmarkList();
 		}
 	};
 	DialogInterface.OnClickListener editListener = new DialogInterface.OnClickListener()
@@ -50,22 +49,115 @@ public class BookmarkManager
 		public void onClick(DialogInterface dialog, int which)
 		{
 			bm.desc = et.getText().toString();
-			onBookmarkEditListener.onBookmarkEdit(bm);
+			config.updateBookmark(bm);
+			updateBookmarkList();
 		}
 	};
 	DialogInterface.OnClickListener deleteListener = new DialogInterface.OnClickListener()
 	{
 		public void onClick(DialogInterface dialog, int which)
 		{
-			onBookmarkEditListener.onBookmarkDelete(bm);
+			config.deleteBookmark(bm);
+			updateBookmarkList();
 		}
 	};
+	public static final int BOOKMARK_DESC_DEFAULT_LEN = 10;
+	private static final String BOOKMARK_LIST_TITLE_DESC = "desc";
+	private static final String BOOKMARK_LIST_TITLE_POS = "pos";
 
-	protected BookmarkManager(Context context, OnBookmarkEditListener l1)
+	private ArrayList<HashMap<String, Object>> bls;
+	private ArrayList<BookmarkManager.Bookmark> bml;
+	private SimpleAdapter sa;
+	private Typeface tf = null;
+
+	private Config config = null;
+	private Config.ReadingInfo readingInfo = null;
+
+	private EditText et;
+	private Context reader;
+	private View layout;
+	private Bookmark bm;
+	private OnBookmarkSelectListener bsl = null;
+
+	public BookmarkManager(Context context, Config conf, OnBookmarkSelectListener onBookmarkSelectListener)
 	{
+		super(context);
 		reader = context;
+		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		layout = inflater.inflate(R.layout.bookmark, null, true);
 
-		onBookmarkEditListener = l1;
+		setContentView(layout);
+		setFocusable(true);
+		setHeight(100);
+		setWidth(100);
+
+		bsl = onBookmarkSelectListener;
+		config = conf;
+		bls = new ArrayList<HashMap<String, Object>>();
+		ListView bl = (ListView) layout.findViewById(R.id.bookmark_list);
+		sa = new SimpleAdapter(reader, bls, android.R.layout.two_line_list_item,
+				       new String[]{BOOKMARK_LIST_TITLE_DESC, BOOKMARK_LIST_TITLE_POS},
+				       new int[]{android.R.id.text1, android.R.id.text2})
+		{
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent)
+			{
+				View v = super.getView(position, convertView, parent);
+				TextView tv = (TextView) v.findViewById(android.R.id.text1);
+				tv.setTypeface(tf);
+				tv.setTextColor(Color.LTGRAY);
+				tv = (TextView) v.findViewById(android.R.id.text2);
+				tv.setTextColor(Color.LTGRAY);
+				return v;
+			}
+		};
+		bl.setAdapter(sa);
+		bl.setOnItemClickListener(new AdapterView.OnItemClickListener()
+		{
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+			{
+				bsl.onBookmarkSelect(bml.get(position));
+			}
+		});
+		bl.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+		{
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+			{
+				editDialog(bml.get(position));
+				return true;
+			}
+		});
+	}
+
+	private void updateBookmarkList()
+	{
+		bls.clear();
+		bml = config.getBookmarkList(readingInfo);
+		if (bml != null)
+			for (BookmarkManager.Bookmark b : bml) {
+				HashMap<String, Object> map = new HashMap<String, Object>();
+				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
+				map.put(BOOKMARK_LIST_TITLE_POS, b.line + " : " + b.offset);
+				bls.add(map);
+			}
+		sa.notifyDataSetChanged();
+	}
+
+	public void show(Config.ReadingInfo ri, Typeface typeface, int top, int width, int height)
+	{
+		readingInfo = ri;
+		tf = typeface;
+		setWidth(width);
+		setHeight(height);
+		updateBookmarkList();
+		showAtLocation(layout, Gravity.LEFT | Gravity.CENTER, 0, top);
+	}
+
+	public void hide()
+	{
+		readingInfo = null;
+		tf = null;
+		dismiss();
 	}
 
 	public void addDialog(Bookmark bookmark)

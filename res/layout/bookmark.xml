@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical"
+	      android:layout_width="fill_parent" android:layout_height="fill_parent">
+	<TextView android:id="@+id/bookmark_list_label" android:layout_width="fill_parent"
+		  android:layout_height="wrap_content" android:text="@string/menu_bookmark_mgr"
+		  android:paddingLeft="8dp" android:paddingTop="8dp" android:paddingBottom="8dp"
+		  android:textSize="20dip" android:textStyle="bold" android:textColor="#ffdcdcdc"/>
+	<ListView android:id="@+id/bookmark_list" android:layout_width="fill_parent"
+		  android:layout_height="fill_parent" android:paddingLeft="4dp"
+		  android:paddingBottom="4dp" android:paddingRight="4dp" android:cacheColorHint="#00000000">
+	</ListView>
+</LinearLayout>

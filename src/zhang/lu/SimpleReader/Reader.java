@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteException;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.*;
 import android.text.format.DateFormat;
@@ -21,9 +20,7 @@ import zhang.lu.SimpleReader.Book.VFile;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class Reader extends Activity implements View.OnTouchListener, SimpleTextView.OnPosChangeListener
@@ -39,24 +36,20 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	public static final String DATE_FORMAT_STRING = "kk:mm";
 
-	private static final String BOOKMARK_LIST_TITLE_DESC = "desc";
-	private static final String BOOKMARK_LIST_TITLE_POS = "pos";
-	private static final int BOOKMARK_DESC_DEFAULT_LEN = 10;
-
 	private static final int MAX_NOTE_HEIGHT = 180;
-	private static final int DEFAULT_NOTE_WIDTH = 320;
 
 	private static final int menuSearch = 0;
-	private static final int menuSeek = 1;
+	private static final int menuBookmarkMgr = 1;
 	private static final int menuExit = 2;
 	private static final int menuDict = 3;
 	private static final int menuBookmark = 4;
-	private static final int menuViewLock = 5;
-	private static final int menuStatusBar = 6;
-	private static final int menuColorBright = 7;
-	private static final int menuFile = 8;
-	private static final int menuOption = 9;
-	private static final int menuAbout = 10;
+	private static final int menuSeek = 5;
+	private static final int menuViewLock = 6;
+	private static final int menuStatusBar = 7;
+	private static final int menuColorBright = 8;
+	private static final int menuFile = 9;
+	private static final int menuOption = 10;
+	private static final int menuAbout = 11;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
@@ -71,20 +64,17 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private View skp = null;
 	private EditText et = null;
 	private SeekBar sb = null;
-	private View blp = null;
-	private PopupWindow pw = null;
+	private PopupWindow npw = null;
 	private TextView nt = null;
 	private ScrollView nsv = null;
 	private int ppi, ppo;
 	private boolean loading = false;
 	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
 	private Config.ReadingInfo ri = null;
-	private SimpleAdapter sa;
-	private List<HashMap<String, Object>> bookmarkListStrings;
-	private ArrayList<BookmarkManager.Bookmark> bookMarkList;
-	private BookmarkManager bookmarkManager;
+	private BookmarkManager bookmarkManager = null;
 	private DictManager dictManager;
 	private Typeface tf = null;
+	private int screenWidth, screenHeight;
 
 	private BroadcastReceiver timeTickReceiver = new BroadcastReceiver()
 	{
@@ -128,13 +118,19 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			Util.errorMsg(this, R.string.error_open_config_file);
 		}
 
+		updateWH();
 		// init panels
 		initStatusPanel();
 		initSearchPanel();
 		initSeekBarPanel();
+		initBookmarkMgr();
 
-		View v = getLayoutInflater().inflate(R.layout.notedlg, null, false);
-		pw = new PopupWindow(v, DEFAULT_NOTE_WIDTH, MAX_NOTE_HEIGHT);
+		npw = new PopupWindow(this);
+		View v = getLayoutInflater().inflate(R.layout.notedlg, null, true);
+		npw.setContentView(v);
+		npw.setWidth(screenWidth >> 1);
+		npw.setHeight(MAX_NOTE_HEIGHT);
+		npw.setFocusable(true);
 		nt = (TextView) v.findViewById(R.id.note_text);
 		nsv = (ScrollView) v.findViewById(R.id.note_scroll);
 
@@ -172,20 +168,16 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			{
 				String note = bv.getFingerPosNote(e.getX(), e.getY());
 				if (note != null) {
-					if (isNoteOn())
-						hideNote();
 					nt.setText(note);
-					nt.measure(DEFAULT_NOTE_WIDTH + View.MeasureSpec.EXACTLY,
+					nt.measure((screenWidth >> 1) + View.MeasureSpec.EXACTLY,
 						   MAX_NOTE_HEIGHT + View.MeasureSpec.AT_MOST);
 					if (nt.getMeasuredHeight() > MAX_NOTE_HEIGHT)
-						pw.setHeight(MAX_NOTE_HEIGHT);
+						npw.setHeight(MAX_NOTE_HEIGHT);
 					else
-						pw.setHeight(nt.getMeasuredHeight());
+						npw.setHeight(nt.getMeasuredHeight());
 					nsv.scrollTo(0, 0);
-					pw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX(), (int) e.getRawY());
-					return true;
-				} else if (isNoteOn()) {
-					hideNote();
+					npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX(),
+							   (int) e.getRawY());
 					return true;
 				}
 
@@ -224,8 +216,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 			public void onLongPress(MotionEvent motionEvent)
 			{
-				hideNote();
-
 				if (config.getCurrFile() != null)
 					fingerPosInfo = bv.getFingerPosInfo(motionEvent.getX(), motionEvent.getY());
 				openOptionsMenu();
@@ -233,8 +223,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 			public boolean onFling(MotionEvent e1, MotionEvent e2, float v, float v1)
 			{
-				hideNote();
-
 				float p1, p2;
 				switch (config.getPagingDirect()) {
 					case up:
@@ -283,6 +271,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	public void onConfigurationChanged(Configuration newConfig)
 	{
 		currOrient = newConfig.orientation;
+		updateWH();
+		if (bookmarkManager.isShowing())
+			bookmarkManager.update(screenWidth >> 1, screenHeight);
 		super.onConfigurationChanged(newConfig);
 	}
 
@@ -414,25 +405,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		et.requestFocus();
 	}
 
-	private void updateBookmarkList()
-	{
-		bookmarkListStrings.clear();
-		bookMarkList = config.getBookmarkList(ri);
-		if (bookMarkList != null)
-			for (BookmarkManager.Bookmark b : bookMarkList) {
-				HashMap<String, Object> map = new HashMap<String, Object>();
-				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
-				map.put(BOOKMARK_LIST_TITLE_POS, b.line + " : " + b.offset);
-				bookmarkListStrings.add(map);
-			}
-		sa.notifyDataSetChanged();
-	}
-
 	private void hideSeekPanel()
 	{
 		skp.setEnabled(false);
 		skp.setVisibility(View.GONE);
-		blp.setVisibility(View.GONE);
 	}
 
 	private void showSeekPanel()
@@ -442,8 +418,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		skp.setVisibility(View.VISIBLE);
 		skp.setEnabled(true);
 		sb.setProgress(bv.getPos());
-		blp.setVisibility(View.VISIBLE);
-		updateBookmarkList();
 	}
 
 	private void hideStatusPanel()
@@ -603,6 +577,11 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 					config.setViewOrient(currOrient);
 				setViewLock(config.getViewOrient());
 				break;
+			case menuBookmarkMgr:
+				if (config.getCurrFile() != null)
+					bookmarkManager.show(ri, tf, bv.getTop(), (screenWidth >> 1),
+							     screenHeight - bv.getTop());
+				break;
 			case menuSeek:
 				showSeekPanel();
 				break;
@@ -635,9 +614,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				assert fingerPosInfo.str.length() > 0;
 
 				if (ri != null) {
-					if (BOOKMARK_DESC_DEFAULT_LEN < fingerPosInfo.str.length())
+					if (BookmarkManager.BOOKMARK_DESC_DEFAULT_LEN < fingerPosInfo.str.length())
 						fingerPosInfo.str = fingerPosInfo.str
-							.substring(0, BOOKMARK_DESC_DEFAULT_LEN);
+							.substring(0, BookmarkManager.BOOKMARK_DESC_DEFAULT_LEN);
 
 					bookmarkManager.addDialog(BookmarkManager.createBookmark(fingerPosInfo, ri));
 				}
@@ -676,6 +655,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		menu.add(0, menuOption, menuOption, getResources().getString(R.string.menu_option));
 		menu.add(0, menuAbout, menuAbout, getResources().getString(R.string.menu_about));
 		menu.add(0, menuSearch, menuSearch, getResources().getString(R.string.menu_search));
+		menu.add(0, menuBookmarkMgr, menuBookmarkMgr, getResources().getString(R.string.menu_bookmark_mgr));
 		menu.add(0, menuSeek, menuSeek, getResources().getString(R.string.menu_seek));
 
 		return true;
@@ -892,16 +872,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		return sp.getVisibility() == View.VISIBLE;
 	}
 
-	private boolean isNoteOn()
-	{
-		return pw.isShowing();
-	}
-
-	private void hideNote()
-	{
-		pw.dismiss();
-	}
-
 	private void initSearchPanel()
 	{
 		sp = findViewById(R.id.search_panel);
@@ -983,69 +953,22 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				hideSeekPanel();
 			}
 		});
+	}
 
-		bookmarkListStrings = new ArrayList<HashMap<String, Object>>();
-		ListView bl = (ListView) findViewById(R.id.bookmark_list);
-		blp = findViewById(R.id.bookmark_list_panel);
-		sa = new SimpleAdapter(this, bookmarkListStrings, android.R.layout.two_line_list_item,
-				       new String[]{BOOKMARK_LIST_TITLE_DESC, BOOKMARK_LIST_TITLE_POS},
-				       new int[]{android.R.id.text1, android.R.id.text2})
+	private void initBookmarkMgr()
+	{
+		bookmarkManager = new BookmarkManager(this, config, new BookmarkManager.OnBookmarkSelectListener()
 		{
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent)
+			public void onBookmarkSelect(BookmarkManager.Bookmark bookmark)
 			{
-				View v = super.getView(position, convertView, parent);
-				TextView tv = (TextView) v.findViewById(android.R.id.text1);
-				tv.setTypeface(tf);
-				tv.setTextColor(Color.BLACK);
-				tv = (TextView) v.findViewById(android.R.id.text2);
-				tv.setTextColor(Color.BLACK);
-				return v;
-			}
-		};
-		bl.setAdapter(sa);
-		bl.setOnItemClickListener(new AdapterView.OnItemClickListener()
-		{
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-			{
+				bookmarkManager.hide();
 				if (config.getCurrFile() == null)
 					return;
 
-				BookmarkManager.Bookmark bm = bookMarkList.get(position);
-				bv.setPos(bm.line, bm.offset);
+				ppi = bookmark.line;
+				ppo = bookmark.offset;
+				bv.setPos(ppi, ppo);
 				bv.invalidate();
-			}
-		});
-		bl.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
-		{
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
-			{
-				bookmarkManager.editDialog(bookMarkList.get(position));
-				return true;
-			}
-		});
-
-		bookmarkManager = new BookmarkManager(this, new BookmarkManager.OnBookmarkEditListener()
-		{
-			public void onBookmarkAdd(BookmarkManager.Bookmark bookmark)
-			{
-				config.addBookmark(bookmark);
-				if (isSeekPanelOn())
-					updateBookmarkList();
-			}
-
-			public void onBookmarkDelete(BookmarkManager.Bookmark bookmark)
-			{
-				config.deleteBookmark(bookmark);
-				if (isSeekPanelOn())
-					updateBookmarkList();
-			}
-
-			public void onBookmarkEdit(BookmarkManager.Bookmark bookmark)
-			{
-				config.updateBookmark(bookmark);
-				if (isSeekPanelOn())
-					updateBookmarkList();
 			}
 		});
 	}
@@ -1061,10 +984,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			hideSearchPanel();
 			ret = true;
 		}
-		if (isNoteOn()) {
-			hideNote();
-			ret = true;
-		}
 		return ret;
 	}
 
@@ -1077,5 +996,11 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				tf = Typeface.createFromFile(fn);
 		} else
 			tf = null;
+	}
+
+	private void updateWH()
+	{
+		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
+		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
 	}
 }
