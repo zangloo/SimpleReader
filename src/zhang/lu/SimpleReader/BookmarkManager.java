@@ -105,9 +105,9 @@ public class BookmarkManager extends PopupWindow
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTypeface(tf);
-				tv.setTextColor(Color.LTGRAY);
+				tv.setTextColor(Color.BLACK);
 				tv = (TextView) v.findViewById(android.R.id.text2);
-				tv.setTextColor(Color.LTGRAY);
+				tv.setTextColor(Color.BLACK);
 				return v;
 			}
 		};
