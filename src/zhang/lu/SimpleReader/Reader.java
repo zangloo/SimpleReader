@@ -36,8 +36,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	public static final String DATE_FORMAT_STRING = "kk:mm";
 
-	private static final int MAX_NOTE_HEIGHT = 180;
-
 	private static final int menuSearch = 0;
 	private static final int menuBookmarkMgr = 1;
 	private static final int menuExit = 2;
@@ -125,12 +123,9 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		initSeekBarPanel();
 		initBookmarkMgr();
 
-		npw = new PopupWindow(this);
+
 		View v = getLayoutInflater().inflate(R.layout.notedlg, null, true);
-		npw.setContentView(v);
-		npw.setWidth(screenWidth >> 1);
-		npw.setHeight(MAX_NOTE_HEIGHT);
-		npw.setFocusable(true);
+		npw = new PopupWindow(v, screenWidth >> 1, screenHeight >> 1);
 		nt = (TextView) v.findViewById(R.id.note_text);
 		nsv = (ScrollView) v.findViewById(R.id.note_scroll);
 
@@ -166,18 +161,13 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 			public boolean onSingleTapUp(MotionEvent e)
 			{
+				if (isNoteOn()) {
+					hideNote();
+					return true;
+				}
 				String note = bv.getFingerPosNote(e.getX(), e.getY());
 				if (note != null) {
-					nt.setText(note);
-					nt.measure((screenWidth >> 1) + View.MeasureSpec.EXACTLY,
-						   MAX_NOTE_HEIGHT + View.MeasureSpec.AT_MOST);
-					if (nt.getMeasuredHeight() > MAX_NOTE_HEIGHT)
-						npw.setHeight(MAX_NOTE_HEIGHT);
-					else
-						npw.setHeight(nt.getMeasuredHeight());
-					nsv.scrollTo(0, 0);
-					npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX(),
-							   (int) e.getRawY());
+					showNote(note, e);
 					return true;
 				}
 
@@ -379,6 +369,19 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				break;
 			default:
 		}
+	}
+
+	private void showNote(String note, MotionEvent e)
+	{
+		nt.setText(note);
+		nt.measure((screenWidth >> 1) + View.MeasureSpec.EXACTLY,
+			   (screenHeight >> 1) + View.MeasureSpec.AT_MOST);
+		if (nt.getMeasuredHeight() > (screenHeight >> 1))
+			npw.setHeight(screenHeight >> 1);
+		else
+			npw.setHeight(nt.getMeasuredHeight());
+		nsv.scrollTo(0, 0);
+		npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX(), (int) e.getRawY());
 	}
 
 	private void setDictEnable(boolean de)
@@ -984,6 +987,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			hideSearchPanel();
 			ret = true;
 		}
+		if (isNoteOn()) {
+			hideNote();
+			ret = true;
+		}
 		return ret;
 	}
 
@@ -1002,5 +1009,15 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	{
 		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
+	}
+
+	private boolean isNoteOn()
+	{
+		return npw.isShowing();
+	}
+
+	private void hideNote()
+	{
+		npw.dismiss();
 	}
 }
