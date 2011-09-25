@@ -20,7 +20,7 @@
 	<string name="menu_exit">退出</string>
 	<string name="menu_dict">字典：</string>
 	<string name="menu_bookmark">標記書籤：</string>
-	<string name="menu_bookmark_mgr">管理書籤</string>
+	<string name="menu_bookmark_mgr">書籤</string>
 	<string name="menu_about">關於</string>
 	<string name="menu_seek">定位</string>
 

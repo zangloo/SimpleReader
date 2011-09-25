@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="8da49b8d-901f-4985-8fc2-f52a3cdd17c3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/layout/notedlg.xml" afterPath="$PROJECT_DIR$/res/layout/notedlg.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/values/strings.xml" afterPath="$PROJECT_DIR$/res/values/strings.xml" />
     </list>
     <ignored path="SimpleReader.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -102,19 +103,7 @@
     <favorites_list name="SimpleReader" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="Reader.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="55" column="60" selection-start="2393" selection-end="2393" vertical-scroll-proportion="0.5974026">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -142,12 +131,12 @@
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookContent.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Util.java" />
         <option value="$PROJECT_DIR$/res/layout/reader.xml" />
-        <option value="$PROJECT_DIR$/res/values/strings.xml" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java" />
         <option value="$PROJECT_DIR$/res/layout/bookmark.xml" />
         <option value="$PROJECT_DIR$/res/values/style.xml" />
-        <option value="$PROJECT_DIR$/res/layout/notedlg.xml" />
         <option value="$PROJECT_DIR$/res/layout/filedlg.xml" />
+        <option value="$PROJECT_DIR$/res/layout/notedlg.xml" />
+        <option value="$PROJECT_DIR$/res/values/strings.xml" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
       </list>
     </option>
@@ -729,7 +718,7 @@
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
     <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="improve:clean code" />
+    <option name="LAST_COMMIT_MESSAGE" value="improve UI:change note display mode" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -742,7 +731,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="when file not exist, remove file entry from recently file list" />
     <MESSAGE value="improve ui:show notes with plain text dialog" />
     <MESSAGE value="replace TAB by space" />
     <MESSAGE value="bug fix:bookmark on book not read before will exit program" />
@@ -767,6 +755,7 @@
     <MESSAGE value="improve UI:change bookmark background" />
     <MESSAGE value="improve UI:change note display style" />
     <MESSAGE value="improve:clean code" />
+    <MESSAGE value="improve UI:change note display mode" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -827,20 +816,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/values/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="55" selection-start="682" selection-end="682" vertical-scroll-proportion="0.18282989">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/bookmark.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="50" selection-start="592" selection-end="592" vertical-scroll-proportion="0.20349762">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="149" column="65" selection-start="4195" selection-end="4195" vertical-scroll-proportion="3.790143">
@@ -864,13 +839,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/notedlg.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="31" selection-start="398" selection-end="398" vertical-scroll-proportion="0.17806041">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/res/layout/optdlg.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-3.527822">
@@ -885,9 +853,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/res/layout/bookmark.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="50" selection-start="592" selection-end="592" vertical-scroll-proportion="0.20349762">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/res/values/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="41" selection-start="972" selection-end="972" vertical-scroll-proportion="0.36406994">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/res/layout/notedlg.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="49" selection-start="546" selection-end="546" vertical-scroll-proportion="0.25437203">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="60" selection-start="2393" selection-end="2393" vertical-scroll-proportion="0.5974026">
+        <state line="68" column="38" selection-start="2773" selection-end="2773" vertical-scroll-proportion="0.8051948">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
