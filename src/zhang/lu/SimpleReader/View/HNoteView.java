@@ -6,7 +6,6 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.TextView;
 
 /**
@@ -73,14 +72,14 @@ public class HNoteView extends TextView
 				h = hs;
 				break;
 			case MeasureSpec.AT_MOST:
-				h = Math.min(View.MeasureSpec.getSize(heightMeasureSpec), c * fh);
+				h = Math.min(hs, c * fh);
 				break;
 			case MeasureSpec.UNSPECIFIED:
 			default:
-				h = (int) fh * c;
+				h = fh * c;
 				break;
 		}
-		int lc = (int) (h / fh);
+		int lc = (int) (Math.max(h, hs) / fh);
 		switch (wm) {
 			case MeasureSpec.EXACTLY:
 				w = ws;
@@ -93,7 +92,8 @@ public class HNoteView extends TextView
 				w = ((c + lc - 1) / lc) * fw;
 				break;
 		}
-		setMeasuredDimension((int) w, (int) h);
+		// +1 for float to int will lost a little, and reenter this function will cause some problem
+		setMeasuredDimension((int) w + 1, (int) h + 1);
 	}
 
 	private void calcFont(Paint paint)
@@ -103,6 +103,6 @@ public class HNoteView extends TextView
 		fw = paint.measureText("漢", 0, 1);
 		fd = fm.descent;
 		xoffset = 0;
-		yoffset = -fd;
+		yoffset = -fd + 1;
 	}
 }
