@@ -52,7 +52,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
 
-	// don't know how to get it , so define it for 4
+	// don't know how to get it , so define it for 4(3 for popupWindow board and 1 for scrollView board)
 	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
 
 	private SimpleTextView hbv, xbv;
@@ -67,7 +67,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private SeekBar sb = null;
 	private PopupWindow npw = null;
 	private TextView nt = null;
-	private ScrollView nsv = null;
+	private FrameLayout nsv = null;
 	private int ppi, ppo;
 	private boolean loading = false;
 	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
@@ -125,17 +125,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		initSearchPanel();
 		initSeekBarPanel();
 		initBookmarkMgr();
-
-
-		View v = getLayoutInflater().inflate(R.layout.notedlg, null, true);
-		//npw = new PopupWindow(v, screenWidth >> 1, screenHeight >> 1);
-		npw = new PopupWindow(this);
-		npw.setContentView(v);
-		npw.setWidth((screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE);
-		npw.setHeight(screenHeight >> 1);
-		npw.setFocusable(true);
-		nt = (TextView) v.findViewById(R.id.note_text);
-		nsv = (ScrollView) v.findViewById(R.id.note_scroll);
+		initNote();
 
 		// if external font exist, load it
 		setTypeface(config.getFontFile());
@@ -348,8 +338,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 						VFile.setDefaultEncode(config.getZipEncode());
 						setTypeface(config.getFontFile());
 
-						if (config.isHanStyle() != han)
+						if (config.isHanStyle() != han) {
 							setView(config.isHanStyle());
+							initNote();
+						}
 						setColorAndFont();
 						setDictEnable(config.isDictEnabled());
 						bv.invalidate();
@@ -378,14 +370,30 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private void showNote(String note, MotionEvent e)
 	{
 		nt.setText(note);
-		nt.measure((screenWidth >> 1) + View.MeasureSpec.EXACTLY,
+		nt.measure((screenWidth >> 1) + View.MeasureSpec.AT_MOST,
 			   (screenHeight >> 1) + View.MeasureSpec.AT_MOST);
-		if (nt.getMeasuredHeight() > (screenHeight >> 1))
-			npw.setHeight((screenHeight >> 1) + POPUP_WINDOW_BOARD_SIZE);
-		else
-			npw.setHeight(nt.getMeasuredHeight() + POPUP_WINDOW_BOARD_SIZE);
-		nsv.scrollTo(0, 0);
-		npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX(), (int) e.getRawY());
+		int w = Math.min(nt.getMeasuredWidth(), screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE;
+		npw.setWidth(w);
+		npw.setHeight(Math.min(nt.getMeasuredHeight(), screenHeight >> 1) + POPUP_WINDOW_BOARD_SIZE);
+
+		if (config.isHanStyle()) {
+			// this code block is dirty, so ...
+			// if anyone know any better way that can make scrollTo take effect, tell me
+			nsv.postDelayed(new Runnable()
+			{
+				public void run()
+				{
+					nsv.scrollTo(npw.getWidth(), 0);
+				}
+			}, 10);
+			// not work, so do it manually. if you know why, tell me please
+			// npw.showAtLocation(bv, Gravity.TOP | Gravity.RIGHT, (int) e.getRawX(), (int) e.getRawY());
+			npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX() - w + 2/* scrollView board*/,
+					   (int) e.getRawY());
+		} else {
+			nsv.scrollTo(0, 0);
+			npw.showAtLocation(bv, Gravity.TOP | Gravity.LEFT, (int) e.getRawX(), (int) e.getRawY());
+		}
 	}
 
 	private void setDictEnable(boolean de)
@@ -1011,4 +1019,21 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
 	}
 
+	private void initNote()
+	{
+		int id;
+		if (config.isHanStyle())
+			id = R.layout.hnotedlg;
+		else
+			id = R.layout.notedlg;
+		View v = getLayoutInflater().inflate(id, null, true);
+
+		npw = new PopupWindow(this);
+		npw.setContentView(v);
+		npw.setWidth((screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE);
+		npw.setHeight((screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE);
+		npw.setFocusable(true);
+		nt = (TextView) v.findViewById(R.id.note_text);
+		nsv = (FrameLayout) v.findViewById(R.id.note_scroll);
+	}
 }

@@ -29,9 +29,6 @@ public class HTextView extends SimpleTextView
 		fw *= 1.15;
 	}
 
-	private static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', 9};
-	private static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '　'};
-
 	@Override
 	protected void drawText(Canvas canvas)
 	{
