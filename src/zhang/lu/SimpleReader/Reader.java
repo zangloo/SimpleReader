@@ -370,20 +370,19 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private void showNote(String note, MotionEvent e)
 	{
 		nt.setText(note);
-		nt.measure((screenWidth >> 1) + View.MeasureSpec.AT_MOST,
-			   (screenHeight >> 1) + View.MeasureSpec.AT_MOST);
-		int w = Math.min(nt.getMeasuredWidth(), screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE;
-		npw.setWidth(w);
-		npw.setHeight(Math.min(nt.getMeasuredHeight(), screenHeight >> 1) + POPUP_WINDOW_BOARD_SIZE);
 
 		if (config.isHanStyle()) {
+			nt.measure(View.MeasureSpec.UNSPECIFIED, (screenHeight >> 1) + View.MeasureSpec.AT_MOST);
+			int w = Math.min(nt.getMeasuredWidth(), screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE;
+			npw.setWidth(w);
+			npw.setHeight(Math.min(nt.getMeasuredHeight(), screenHeight >> 1) + POPUP_WINDOW_BOARD_SIZE);
 			// this code block is dirty, so ...
 			// if anyone know any better way that can make scrollTo take effect, tell me
 			nsv.postDelayed(new Runnable()
 			{
 				public void run()
 				{
-					nsv.scrollTo(npw.getWidth(), 0);
+					nsv.scrollTo(nt.getMeasuredWidth(), 0);
 				}
 			}, 10);
 			// not work, so do it manually. if you know why, tell me please
@@ -391,6 +390,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX() - w + 2/* scrollView board*/,
 					   (int) e.getRawY());
 		} else {
+			nt.measure((screenWidth >> 1) + View.MeasureSpec.AT_MOST, View.MeasureSpec.UNSPECIFIED);
+			int w = Math.min(nt.getMeasuredWidth(), screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE;
+			npw.setWidth(w);
+			npw.setHeight(Math.min(nt.getMeasuredHeight(), screenHeight >> 1) + POPUP_WINDOW_BOARD_SIZE);
 			nsv.scrollTo(0, 0);
 			npw.showAtLocation(bv, Gravity.TOP | Gravity.LEFT, (int) e.getRawX(), (int) e.getRawY());
 		}
