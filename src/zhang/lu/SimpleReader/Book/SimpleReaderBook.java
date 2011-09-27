@@ -248,7 +248,7 @@ public class SimpleReaderBook extends Loader implements BookContent
 		return chapterCount;
 	}
 
-	public String getChapterTitle()
+	public String getChapterTitle(int index)
 	{
 		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(chapter)});
 		if (!c.moveToFirst()) {

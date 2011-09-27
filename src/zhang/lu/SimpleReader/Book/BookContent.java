@@ -21,7 +21,7 @@ public interface BookContent
 	public int getChapterCount();
 
 	// return current chapter title
-	public String getChapterTitle();
+	public String getChapterTitle(int index);
 
 	// return all chapter title
 	public ArrayList<String> getChapterTitleList();

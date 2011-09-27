@@ -538,7 +538,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		String n = config.getCurrFile();
 		n = n.substring(n.lastIndexOf('/') + 1);
 		if (book.getChapterCount() > 1)
-			n += "#" + book.getChapterTitle();
+			n += "#" + book.getChapterTitle(book.getCurrChapter());
 		tv.setText(n);
 	}
 
@@ -603,7 +603,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				break;
 			case menuBookmarkMgr:
 				if (config.getCurrFile() != null)
-					bookmarkManager.show(ri, tf, bv.getTop(), (screenWidth >> 1),
+					bookmarkManager.show(ri, bv.getContent(), tf, bv.getTop(), (screenWidth >> 1),
 							     screenHeight - bv.getTop());
 				break;
 			case menuChapterMgr:

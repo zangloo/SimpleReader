@@ -48,7 +48,7 @@ public class PlainTextContent implements BookContent
 		return 1;
 	}
 
-	public String getChapterTitle()
+	public String getChapterTitle(int index)
 	{
 		return null;
 	}

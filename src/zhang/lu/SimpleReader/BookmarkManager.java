@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import zhang.lu.SimpleReader.Book.BookContent;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ public class BookmarkManager extends PopupWindow
 
 	private Config config = null;
 	private Config.ReadingInfo readingInfo = null;
+	private BookContent book = null;
 
 	private EditText et;
 	private Context reader;
@@ -108,6 +110,7 @@ public class BookmarkManager extends PopupWindow
 			{
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
+				tv.setTextSize(20);
 				tv.setTypeface(tf);
 				tv.setTextColor(Color.BLACK);
 				tv = (TextView) v.findViewById(android.R.id.text2);
@@ -141,16 +144,18 @@ public class BookmarkManager extends PopupWindow
 			for (BookmarkManager.Bookmark b : bml) {
 				HashMap<String, Object> map = new HashMap<String, Object>();
 				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
-				map.put(BOOKMARK_LIST_TITLE_POS, b.line + " : " + b.offset);
+				map.put(BOOKMARK_LIST_TITLE_POS,
+					book.getChapterTitle(b.chapter) + "(" + b.line + " : " + b.offset + ")");
 				bls.add(map);
 			}
 		sa.notifyDataSetChanged();
 	}
 
-	public void show(Config.ReadingInfo ri, Typeface typeface, int top, int width, int height)
+	public void show(Config.ReadingInfo ri, BookContent bookContent, Typeface typeface, int top, int width, int height)
 	{
 		readingInfo = ri;
 		tf = typeface;
+		book = bookContent;
 		setWidth(width);
 		setHeight(height);
 		updateBookmarkList();
@@ -161,6 +166,7 @@ public class BookmarkManager extends PopupWindow
 	{
 		readingInfo = null;
 		tf = null;
+		book = null;
 		dismiss();
 	}
 
