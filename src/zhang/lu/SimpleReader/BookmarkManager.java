@@ -144,8 +144,12 @@ public class BookmarkManager extends PopupWindow
 			for (BookmarkManager.Bookmark b : bml) {
 				HashMap<String, Object> map = new HashMap<String, Object>();
 				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
-				map.put(BOOKMARK_LIST_TITLE_POS,
-					book.getChapterTitle(b.chapter) + "(" + b.line + " : " + b.offset + ")");
+				if (book.getChapterCount() > 1)
+					map.put(BOOKMARK_LIST_TITLE_POS,
+						book.getChapterTitle(b.chapter) + "(" + b.line + " : " + b.offset +
+							")");
+				else
+					map.put(BOOKMARK_LIST_TITLE_POS, "(" + b.line + " : " + b.offset + ")");
 				bls.add(map);
 			}
 		sa.notifyDataSetChanged();
