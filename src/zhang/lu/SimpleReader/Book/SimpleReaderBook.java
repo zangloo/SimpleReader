@@ -3,6 +3,7 @@ package zhang.lu.SimpleReader.Book;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -21,29 +22,42 @@ public class SimpleReaderBook extends Loader implements BookContent
 	private static final String configHasNotes = "hasNotes";
 	private static final String configIndexBase = "indexBase";
 	private static final String configNoteMarkChar = "noteMark";
-	// select lines from <begin> to <end> index
+
+	// select lines for <chapter> from <begin> to <end> index
 	// return line string
 	private static final String configLineSQL = "selectLineSQL";
 
-	// select note for <line> and <offset>
+	// select note for <chapter> <line> and <offset>
 	// return note string
 	private static final String configNoteSQL = "selectNoteSQL";
 
-	// select size sum from line 1 to <index>
+	// select size sum for <chapter> from line 1 to <index>
 	// return size
 	private static final String configSizeSQL = "selectSizeSQL";
 
-	// get the min index of the lines that size big then <size>
+	// get the min line index of the <chapter> lines for <chapter> that size big then <size>
 	// return index, line text, size
 	private static final String configPosSQL = "selectPosSQL";
 
-	// get lines count
+	// get lines count for <chapter>
 	// return count
 	private static final String configCountSQL = "selectCountSQL";
 
-	// search line from <index> for <string>
+	// search <chapter> lines for <chapter> from <index> for <string>
 	// return line index and line text
 	private static final String configSearchSQL = "selectSearchSQL";
+
+	// get chapter <index> title
+	// return chapter title
+	private static final String configChapterSQL = "selectChapterSQL";
+
+	// get all chapter title
+	// return chapter titles
+	private static final String configChapterListSQL = "selectChapterListSQL";
+
+	// get chapter count
+	// return count
+	private static final String configChapterCountSQL = "selectChapterCountSQL";
 
 	private SQLiteDatabase db;
 	//private int version;
@@ -55,8 +69,13 @@ public class SimpleReaderBook extends Loader implements BookContent
 	private String sizeSQL;
 	private String posSQL;
 	private String searchSQL;
+	private String chapterSQL;
+	private String chapterListSQL;
+	private String countSQL;
+	private int chapterCount;
 	private int booksize;
 	private int lineCount;
+	private int chapter;
 
 	// cache size
 	private static final int LINE_CACHE_SIZE = 90;
@@ -91,34 +110,30 @@ public class SimpleReaderBook extends Loader implements BookContent
 		sizeSQL = map.get(configSizeSQL);
 		posSQL = map.get(configPosSQL);
 		searchSQL = map.get(configSearchSQL);
-		String countSQL = map.get(configCountSQL);
+		chapterSQL = map.get(configChapterSQL);
+		String chapterCountSQL = map.get(configChapterCountSQL);
+		countSQL = map.get(configCountSQL);
+		chapterListSQL = map.get(configChapterListSQL);
 
-		// get count
-		cursor = db.rawQuery(countSQL, null);
-		if (!cursor.moveToNext()) {
-			cursor.close();
-			return null;
-		}
-		lineCount = cursor.getInt(0);
-		cursor.close();
-		if (lineCount == 0)
-			return null;
-
-		// get book size
-		cursor = db.rawQuery(sizeSQL, new String[]{String.valueOf(lineCount)});
+		cursor = db.rawQuery(chapterCountSQL, null);
 		if (!cursor.moveToFirst()) {
 			cursor.close();
 			return null;
 		}
-		booksize = cursor.getInt(0);
+		chapterCount = cursor.getInt(0);
 		cursor.close();
+		if (chapterCount == 0)
+			return null;
+
+		chapter = indexBase;
+		lineCount = selectLineCount();
+		if (lineCount == 0)
+			return null;
+
+		booksize = selectSize(lineCount);
 		if (booksize == 0)
 			return null;
 
-		cursor.close();
-
-		//		lineCacheBegin = lineCount + indexBase;
-		//		lineCacheEnd = indexBase - 1;
 		return this;
 	}
 
@@ -130,7 +145,8 @@ public class SimpleReaderBook extends Loader implements BookContent
 		int b = Math.max(lineno - LINE_CACHE_PREFETCH_SIZE, indexBase);
 		int e = Math.min(lineno + LINE_CACHE_SIZE, lineCount + indexBase - 1);
 
-		Cursor c = db.rawQuery(lineSQL, new String[]{String.valueOf(b), String.valueOf(e)});
+		Cursor c = db
+			.rawQuery(lineSQL, new String[]{String.valueOf(chapter), String.valueOf(b), String.valueOf(e)});
 		int i = b - indexBase;
 		while (c.moveToNext()) {
 			if (!lineCache.containsKey(i))
@@ -153,15 +169,7 @@ public class SimpleReaderBook extends Loader implements BookContent
 		if (end >= lineCount)
 			return booksize;
 
-		Cursor c = db.rawQuery(sizeSQL, new String[]{String.valueOf(end + indexBase - 1)});
-		if (!c.moveToFirst()) {
-			c.close();
-			return 0;
-		}
-		int s = c.getInt(0);
-		c.close();
-
-		return s;
+		return selectSize(end);
 	}
 
 	public int size()
@@ -181,8 +189,9 @@ public class SimpleReaderBook extends Loader implements BookContent
 			return null;
 		if (l.charAt(offset) != markChar)
 			return null;
-		Cursor c = db
-			.rawQuery(noteSQL, new String[]{String.valueOf(index + indexBase), String.valueOf(offset)});
+		Cursor c = db.rawQuery(noteSQL,
+				       new String[]{String.valueOf(chapter), String.valueOf(index + indexBase), String
+					       .valueOf(offset)});
 		if (c.moveToFirst())
 			n = c.getString(0);
 		c.close();
@@ -202,7 +211,8 @@ public class SimpleReaderBook extends Loader implements BookContent
 			cpi.line++;
 		}
 
-		Cursor c = db.rawQuery(searchSQL, new String[]{String.valueOf(cpi.line + indexBase), txt});
+		Cursor c = db.rawQuery(searchSQL, new String[]{String.valueOf(chapter), String.valueOf(chapter), String
+			.valueOf(cpi.line + indexBase), txt});
 		if (c.moveToFirst()) {
 			cpi.line = c.getInt(0) - indexBase;
 			cpi.offset = c.getString(1).indexOf(txt);
@@ -218,7 +228,8 @@ public class SimpleReaderBook extends Loader implements BookContent
 		int p = booksize * percent / 100;
 		ContentPosInfo cpi = new ContentPosInfo();
 
-		Cursor c = db.rawQuery(posSQL, new String[]{String.valueOf(p)});
+		Cursor c = db.rawQuery(posSQL, new String[]{String.valueOf(chapter), String.valueOf(chapter), String
+			.valueOf(p)});
 		if (!c.moveToFirst()) {
 			cpi.line = 0;
 			cpi.offset = 0;
@@ -230,5 +241,103 @@ public class SimpleReaderBook extends Loader implements BookContent
 		c.close();
 		return cpi;
 
+	}
+
+	public int getChapterCount()
+	{
+		return chapterCount;
+	}
+
+	public String getChapterTitle()
+	{
+		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(chapter)});
+		if (!c.moveToFirst()) {
+			c.close();
+			return "";
+		}
+		String s = c.getString(0);
+		c.close();
+
+		return s;
+	}
+
+	public ArrayList<String> getChapterTitleList()
+	{
+		ArrayList<String> l = new ArrayList<String>(getChapterCount());
+		Cursor c = db.rawQuery(chapterListSQL, null);
+		while (c.moveToNext())
+			l.add(c.getString(0));
+		c.close();
+		return l;
+	}
+
+	public int getCurrChapter()
+	{
+		return chapter - indexBase;
+	}
+
+	public boolean prevChapter()
+	{
+		if (chapter == indexBase)
+			return false;
+		chapter--;
+		updateValues();
+		return true;
+	}
+
+	public boolean nextChapter()
+	{
+		if (chapter == indexBase + chapterCount - 1)
+			return false;
+		chapter++;
+		updateValues();
+		return true;
+	}
+
+	public boolean gotoChapter(int index)
+	{
+		if (index < 0 || index >= chapterCount)
+			return false;
+
+		if (chapter == index + indexBase)
+			return false;
+
+		chapter = index + indexBase;
+		updateValues();
+		return true;
+	}
+
+	private void updateValues()
+	{
+		lineCache.clear();
+		lineCount = selectLineCount();
+		booksize = selectSize(lineCount);
+	}
+
+	private int selectLineCount()
+	{
+		Cursor cursor = db.rawQuery(countSQL, new String[]{String.valueOf(chapter)});
+
+		if (!cursor.moveToNext()) {
+			cursor.close();
+			return 0;
+		}
+		int cnt = cursor.getInt(0);
+		cursor.close();
+		return cnt;
+	}
+
+	private int selectSize(int end)
+	{
+		Cursor c = db
+			.rawQuery(sizeSQL, new String[]{String.valueOf(chapter), String.valueOf(end + indexBase - 1)});
+		if (!c.moveToFirst()) {
+			c.close();
+			return 0;
+		}
+		int s = c.getInt(0);
+		c.close();
+
+		return s;
 	}
 }

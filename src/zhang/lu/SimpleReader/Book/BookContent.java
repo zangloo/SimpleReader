@@ -1,5 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
+import java.util.ArrayList;
+
 /**
  * Created by IntelliJ IDEA.
  * User: zhanglu
@@ -14,6 +16,27 @@ public interface BookContent
 	}
 
 	public String line(int index);
+
+	// return chapter count
+	public int getChapterCount();
+
+	// return current chapter title
+	public String getChapterTitle();
+
+	// return all chapter title
+	public ArrayList<String> getChapterTitleList();
+
+	// get current chapter index
+	public int getCurrChapter();
+
+	// goto prev chapter
+	public boolean prevChapter();
+
+	// goto next chapter
+	public boolean nextChapter();
+
+	// switch to chapter index
+	public boolean gotoChapter(int index);
 
 	// return line count
 	public int getLineCount();

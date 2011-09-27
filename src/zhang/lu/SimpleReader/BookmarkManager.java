@@ -5,7 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.view.*;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
@@ -23,6 +26,7 @@ public class BookmarkManager extends PopupWindow
 	public static class Bookmark
 	{
 		String desc;
+		int chapter;
 		int line, offset;
 		long bookid;
 		private long id;
@@ -193,13 +197,14 @@ public class BookmarkManager extends PopupWindow
 
 	public static Bookmark createBookmark(SimpleTextView.FingerPosInfo pi, Config.ReadingInfo ri)
 	{
-		return createBookmark(pi.str, pi.line, pi.offset, 0, ri);
+		return createBookmark(pi.str, ri.chapter, pi.line, pi.offset, 0, ri);
 	}
 
-	public static Bookmark createBookmark(String str, int l, int o, int id, Config.ReadingInfo ri)
+	public static Bookmark createBookmark(String str, int c, int l, int o, int id, Config.ReadingInfo ri)
 	{
 		Bookmark bm = new Bookmark();
 		bm.desc = str;
+		bm.chapter = c;
 		bm.line = l;
 		bm.offset = o;
 		bm.bookid = ri.getID();

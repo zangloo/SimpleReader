@@ -358,6 +358,20 @@ public abstract class SimpleTextView extends View
 		hli = hightlightInfo;
 	}
 
+	public BookContent getContent()
+	{
+		return content;
+	}
+
+	public void gotoEnd()
+	{
+		pi = content.getLineCount();
+		po = 0;
+		calcPrevPos();
+		if ((mOnPosChangeListener != null) && calcPos())
+			mOnPosChangeListener.onPosChange(pos, false);
+	}
+
 	public abstract int calcNextLineOffset();
 
 	protected abstract int calcPosOffset(int npo);

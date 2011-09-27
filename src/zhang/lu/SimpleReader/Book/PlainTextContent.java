@@ -43,6 +43,41 @@ public class PlainTextContent implements BookContent
 		return lines.get(index);
 	}
 
+	public int getChapterCount()
+	{
+		return 1;
+	}
+
+	public String getChapterTitle()
+	{
+		return null;
+	}
+
+	public ArrayList<String> getChapterTitleList()
+	{
+		return null;
+	}
+
+	public int getCurrChapter()
+	{
+		return 0;
+	}
+
+	public boolean prevChapter()
+	{
+		return false;
+	}
+
+	public boolean nextChapter()
+	{
+		return false;
+	}
+
+	public boolean gotoChapter(int index)
+	{
+		return false;
+	}
+
 	public int getLineCount()
 	{
 		return lines.size();

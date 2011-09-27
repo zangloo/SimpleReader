@@ -3,9 +3,7 @@ package zhang.lu.SimpleReader.View;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
-import zhang.lu.SimpleReader.Book.BookContent;
 
 import java.util.ArrayList;
 
@@ -17,8 +15,6 @@ import java.util.ArrayList;
  */
 public class XTextView extends SimpleTextView
 {
-	private ArrayList<Integer> pl = new ArrayList<Integer>();
-	private int pli = 0;
 	private int mll;
 
 	private class ViewLineInfo
@@ -40,13 +36,6 @@ public class XTextView extends SimpleTextView
 	public XTextView(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);
-	}
-
-	@Override
-	public void setPos(int posIndex, int posOffset)
-	{
-		super.setPos(posIndex, posOffset);
-		clearpl();
 	}
 
 	@Override
@@ -74,26 +63,6 @@ public class XTextView extends SimpleTextView
 		return (npo == line.length()) ? -1 : npo;
 	}
 
-	private void clearpl()
-	{
-		pli = 0;
-		pl.clear();
-	}
-
-	@Override
-	public void setColorAndFont(int color, int aBcolor, int fontSize, Typeface typeface)
-	{
-		super.setColorAndFont(color, aBcolor, fontSize, typeface);
-		clearpl();
-	}
-
-	@Override
-	public void setContent(BookContent newContent)
-	{
-		super.setContent(newContent);
-		clearpl();
-	}
-
 	@Override
 	protected void resetValues()
 	{
@@ -101,17 +70,6 @@ public class XTextView extends SimpleTextView
 		xoffset = boardGAP;
 		yoffset = (h - (fh * ml)) / 2 - fd;
 		mll = w - 2 * boardGAP;
-		clearpl();
-	}
-
-	@Override
-	protected boolean calcNextPos()
-	{
-		if (super.calcNextPos()) {
-			clearpl();
-			return true;
-		}
-		return false;
 	}
 
 	@Override
@@ -123,20 +81,6 @@ public class XTextView extends SimpleTextView
 		int lc = 0, cp;
 		String line;
 
-		if (pli >= ml) {
-			pli -= ml;
-			po = pl.get(pli);
-			if (pli == 0)
-				pl.clear();
-			return true;
-		}
-		if (pli > 0) {
-			lc = pli;
-			po = 0;
-			clearpl();
-			if (pi == 0)
-				return true;
-		}
 		if (po == 0) {
 			pi--;
 			line = content.line(pi);
@@ -146,13 +90,11 @@ public class XTextView extends SimpleTextView
 			cp = po;
 		}
 
+		ArrayList<Integer> li = new ArrayList<Integer>();
 		while (true) {
-			lc += calcLines(line, cp);
+			lc += calcLines(line, cp, li);
 			if (lc >= ml) {
-				pli = lc - ml;
-				po = pl.get(lc - ml);
-				if (pli == 0)
-					pl.clear();
+				po = li.get(lc - ml);
 				return true;
 			}
 			if (pi == 0)
@@ -218,11 +160,11 @@ public class XTextView extends SimpleTextView
 	protected FingerPosInfo calcFingerPos(float x, float y)
 	{
 		int l = (int) ((y - yoffset - fd) / fh);
-		if (l < 0)
-			l = 0;
-		if (l >= ml)
-			l = ml - 1;
+		if ((l < 0) || (l >= ml))
+			return null;
 
+		if (l >= vls.size())
+			return null;
 		ViewLineInfo vli = vls.get(l);
 		if (vli == null)
 			return null;
@@ -249,15 +191,14 @@ public class XTextView extends SimpleTextView
 		return paint.breakText(line, posFrom, posTo, true, mll, null) + posFrom;
 	}
 
-	private int calcLines(String line, int posTo)
+	private int calcLines(String line, int posTo, ArrayList<Integer> li)
 	{
-		int i = 0, c, lc = 0;
-		pl.clear();
+		int i = 0, lc = 0;
 
+		li.clear();
 		do {
-			pl.add(i);
-			c = paint.breakText(line, i, posTo, true, mll, null);
-			i += c;
+			li.add(i);
+			i += paint.breakText(line, i, posTo, true, mll, null);
 			lc++;
 		} while (i < posTo);
 		return lc;

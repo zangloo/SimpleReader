@@ -41,13 +41,14 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private static final int menuExit = 2;
 	private static final int menuDict = 3;
 	private static final int menuBookmark = 4;
-	private static final int menuSeek = 5;
-	private static final int menuViewLock = 6;
-	private static final int menuStatusBar = 7;
-	private static final int menuColorBright = 8;
-	private static final int menuFile = 9;
-	private static final int menuOption = 10;
-	private static final int menuAbout = 11;
+	private static final int menuChapterMgr = 5;
+	private static final int menuSeek = 6;
+	private static final int menuViewLock = 7;
+	private static final int menuStatusBar = 8;
+	private static final int menuColorBright = 9;
+	private static final int menuFile = 10;
+	private static final int menuOption = 11;
+	private static final int menuAbout = 12;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
@@ -73,6 +74,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
 	private Config.ReadingInfo ri = null;
 	private BookmarkManager bookmarkManager = null;
+	private ChapterManager chapterManager = null;
 	private DictManager dictManager;
 	private Typeface tf = null;
 	private int screenWidth, screenHeight;
@@ -125,6 +127,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		initSearchPanel();
 		initSeekBarPanel();
 		initBookmarkMgr();
+		initChapterMgr();
 		initNote();
 
 		// if external font exist, load it
@@ -527,13 +530,16 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		tv.setText(DateFormat.format(DATE_FORMAT_STRING, new Date(System.currentTimeMillis())));
 	}
 
-	private void updateStatusPanelFile()
+	private void updateStatusPanelFile(BookContent book)
 	{
 		if (!config.isShowStatus())
 			return;
 		TextView tv = (TextView) findViewById(R.id.reading_book_text);
 		String n = config.getCurrFile();
-		tv.setText(n.substring(n.lastIndexOf('/') + 1));
+		n = n.substring(n.lastIndexOf('/') + 1);
+		if (book.getChapterCount() > 1)
+			n += "#" + book.getChapterTitle();
+		tv.setText(n);
 	}
 
 	private void setColorAndFont()
@@ -600,6 +606,11 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 					bookmarkManager.show(ri, tf, bv.getTop(), (screenWidth >> 1),
 							     screenHeight - bv.getTop());
 				break;
+			case menuChapterMgr:
+				if (config.getCurrFile() != null)
+					chapterManager.show(bv.getContent().getChapterTitleList(), tf, bv.getTop(),
+							    (screenWidth >> 1), screenHeight - bv.getTop());
+				break;
 			case menuSeek:
 				showSeekPanel();
 				break;
@@ -613,7 +624,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				} else {
 					config.setShowStatus(true);
 					showStatusPanel();
-					updateStatusPanelFile();
+					updateStatusPanelFile(bv.getContent());
 				}
 				break;
 			case menuDict:
@@ -675,6 +686,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		menu.add(0, menuSearch, menuSearch, getResources().getString(R.string.menu_search));
 		menu.add(0, menuBookmarkMgr, menuBookmarkMgr, getResources().getString(R.string.menu_bookmark_mgr));
 		menu.add(0, menuSeek, menuSeek, getResources().getString(R.string.menu_seek));
+		menu.add(0, menuChapterMgr, menuChapterMgr, getResources().getString(R.string.menu_chapter));
 
 		return true;
 	}
@@ -697,6 +709,8 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			menu.findItem(menuBookmark).setVisible(false);
 			de = false;
 		}
+		menu.findItem(menuChapterMgr).setVisible(bv.getContent().getChapterCount() > 1);
+
 		mi = menu.findItem(menuDict).setVisible(de);
 		if (de)
 			mi.setTitle(getString(R.string.menu_dict) + c);
@@ -718,7 +732,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		tv.setText("  " + pos + "%");
 
 		if (isSeekPanelOn())
-			sb.setProgress(bv.getPos());
+			sb.setProgress(pos);
 	}
 
 	private void pageDown()
@@ -736,6 +750,13 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			return;
 		}
 
+		BookContent book = bv.getContent();
+		if (book.getChapterCount() > 1)
+			if (book.nextChapter()) {
+				switchChapterUpdate(book, 0, 0);
+				loading = false;
+				return;
+			}
 		String pwd, fn;
 		int pos = path.lastIndexOf('/');
 		if (pos > 0)
@@ -781,6 +802,14 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			return;
 		}
 
+		BookContent book = bv.getContent();
+		if (book.getChapterCount() > 1)
+			if (book.prevChapter()) {
+				bv.gotoEnd();
+				switchChapterUpdate(book, bv.getPosIndex(), bv.getPosOffset());
+				loading = false;
+				return;
+			}
 		String pwd, fn;
 		int pos = path.lastIndexOf('/');
 		if (pos > 0)
@@ -815,6 +844,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	{
 		if (ri == null)
 			return;
+		ri.chapter = bv.getContent().getCurrChapter();
 		ri.line = bv.getPosIndex();
 		ri.offset = bv.getPosOffset();
 		ri.percent = bv.getPos();
@@ -837,10 +867,12 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 				ppi = ri.line;
 				ppo = ri.offset;
+				if (bv.getContent().getChapterCount() > 1)
+					bv.getContent().gotoChapter(ri.chapter);
 				bv.setPos(ppi, ppo);
 
 				hidePanels();
-				updateStatusPanelFile();
+				updateStatusPanelFile(bv.getContent());
 				bv.invalidate();
 			}
 			loading = false;
@@ -973,6 +1005,20 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		});
 	}
 
+	private void initChapterMgr()
+	{
+		chapterManager = new ChapterManager(this, new ChapterManager.OnChapterSelectListener()
+		{
+			public void onChapterSelect(int chapter)
+			{
+				chapterManager.hide();
+				BookContent book = bv.getContent();
+				book.gotoChapter(chapter);
+				switchChapterUpdate(book, 0, 0);
+			}
+		});
+	}
+
 	private void initBookmarkMgr()
 	{
 		bookmarkManager = new BookmarkManager(this, config, new BookmarkManager.OnBookmarkSelectListener()
@@ -982,11 +1028,16 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				bookmarkManager.hide();
 				if (config.getCurrFile() == null)
 					return;
-
+				BookContent book = bv.getContent();
 				ppi = bookmark.line;
 				ppo = bookmark.offset;
-				bv.setPos(ppi, ppo);
-				bv.invalidate();
+				if (book.getCurrChapter() != bookmark.chapter) {
+					book.gotoChapter(bookmark.chapter);
+					switchChapterUpdate(book, ppi, ppo);
+				} else {
+					bv.setPos(ppi, ppo);
+					bv.invalidate();
+				}
 			}
 		});
 	}
@@ -1038,5 +1089,17 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		npw.setFocusable(true);
 		nt = (TextView) v.findViewById(R.id.note_text);
 		nsv = (FrameLayout) v.findViewById(R.id.note_scroll);
+	}
+
+	private void switchChapterUpdate(BookContent book, int line, int offset)
+	{
+		ppi = line;
+		ppo = offset;
+		bv.setPos(ppi, ppo);
+		ri.chapter = book.getCurrChapter();
+
+		updateStatusPanel();
+		updateStatusPanelFile(book);
+		bv.invalidate();
 	}
 }

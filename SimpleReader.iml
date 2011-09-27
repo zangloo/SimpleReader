@@ -43,16 +43,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/juniversalchardet-1.0.3.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/annotations.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/commons-compress.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -70,7 +61,25 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/commons-compress.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/annotations.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/juniversalchardet-1.0.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/epublib-core-latest.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -38,6 +38,7 @@ public class Config extends SQLiteOpenHelper
 	public static class ReadingInfo
 	{
 		String name;
+		int chapter;
 		int line, offset;
 		int percent;
 		private long id;
@@ -51,9 +52,9 @@ public class Config extends SQLiteOpenHelper
 	private static final String[] CONFIG_TABLE_COLS = {"key", "value"};
 	private static final String BOOK_INFO_TABLE_NAME = "bookinfo";
 	//last reading status, percent is reserved, rowid for link with bookmark
-	private static final String[] BOOK_INFO_TABLE_COLS = {"name", "line", "offset", "percent", "rowid"};
+	private static final String[] BOOK_INFO_TABLE_COLS = {"name", "chapter", "line", "offset", "percent", "rowid"};
 	private static final String BOOKMARKS_TABLE_NAME = "bookmark";
-	private static final String[] BOOKMARKS_TABLE_COLS = {"bookrowid", "desc", "line", "offset", "rowid"};
+	private static final String[] BOOKMARKS_TABLE_COLS = {"bookrowid", "desc", "chapter", "line", "offset", "rowid"};
 
 	private static final String configCurrFile = "currfile";
 	private static final String configFontSize = "fontsize";
@@ -101,10 +102,11 @@ public class Config extends SQLiteOpenHelper
 		db.execSQL(
 			"create table " + BOOK_INFO_TABLE_NAME + "(" + BOOK_INFO_TABLE_COLS[0] + " text primary key, " +
 				BOOK_INFO_TABLE_COLS[1] + " integer, " + BOOK_INFO_TABLE_COLS[2] + " integer, " +
-				BOOK_INFO_TABLE_COLS[3] + " integer)");
-		db.execSQL("create table " + BOOKMARKS_TABLE_NAME + "(" + BOOKMARKS_TABLE_COLS[0] + "  integer, " +
-				   BOOKMARKS_TABLE_COLS[1] + " text, " + BOOKMARKS_TABLE_COLS[2] + " integer, " +
-				   BOOKMARKS_TABLE_COLS[3] + " integer)");
+				BOOK_INFO_TABLE_COLS[3] + " integer, " + BOOK_INFO_TABLE_COLS[4] + " integer)");
+		db.execSQL("create table " + BOOKMARKS_TABLE_NAME + "(" + BOOKMARKS_TABLE_COLS[0] + " integer, " +
+				   BOOKMARKS_TABLE_COLS[1] + "  text, " + BOOKMARKS_TABLE_COLS[2] + " integer, " +
+				   BOOKMARKS_TABLE_COLS[3] + " integer, " + BOOKMARKS_TABLE_COLS[4] + " integer)");
+
 		// will this database be so big, that need to be indexed?
 		db.execSQL(
 			"create index bookmark_index on " + BOOKMARKS_TABLE_NAME + "(" + BOOKMARKS_TABLE_COLS[0] + ")");
@@ -152,8 +154,10 @@ public class Config extends SQLiteOpenHelper
 			sql.append(BOOK_INFO_TABLE_COLS[2]);
 			sql.append(',');
 			sql.append(BOOK_INFO_TABLE_COLS[3]);
-			sql.append(", bi.");
+			sql.append(',');
 			sql.append(BOOK_INFO_TABLE_COLS[4]);
+			sql.append(", bi.");
+			sql.append(BOOK_INFO_TABLE_COLS[5]);
 			sql.append(" from ");
 			sql.append(BOOK_INFO_TABLE_NAME);
 			sql.append(" bi, ");
@@ -174,10 +178,11 @@ public class Config extends SQLiteOpenHelper
 			while (cursor.moveToNext()) {
 				ReadingInfo ri = new ReadingInfo();
 				ri.name = cursor.getString(0);
-				ri.line = cursor.getInt(1);
-				ri.offset = cursor.getInt(2);
-				ri.percent = cursor.getInt(3);
-				ri.id = cursor.getInt(4);
+				ri.chapter = cursor.getInt(1);
+				ri.line = cursor.getInt(2);
+				ri.offset = cursor.getInt(3);
+				ri.percent = cursor.getInt(4);
+				ri.id = cursor.getInt(5);
 				rfl.add(ri);
 			}
 			cursor.close();
@@ -287,6 +292,7 @@ public class Config extends SQLiteOpenHelper
 		SQLiteDatabase db = getReadableDatabase();
 		ReadingInfo ri = new ReadingInfo();
 		ri.name = filename;
+		ri.chapter = 0;
 		ri.line = 0;
 		ri.offset = 0;
 		ri.percent = 0;
@@ -296,10 +302,11 @@ public class Config extends SQLiteOpenHelper
 			.query(BOOK_INFO_TABLE_NAME, BOOK_INFO_TABLE_COLS, "name = ?", new String[]{filename}, null,
 			       null, null);
 		if (cursor.moveToFirst()) {
-			ri.line = cursor.getInt(1);
-			ri.offset = cursor.getInt(2);
-			ri.percent = cursor.getInt(3);
-			ri.id = cursor.getInt(4);
+			ri.chapter = cursor.getInt(1);
+			ri.line = cursor.getInt(2);
+			ri.offset = cursor.getInt(3);
+			ri.percent = cursor.getInt(4);
+			ri.id = cursor.getInt(5);
 		}
 		cursor.close();
 
@@ -329,11 +336,12 @@ public class Config extends SQLiteOpenHelper
 		if (ri == null)
 			return;
 		SQLiteDatabase db = getWritableDatabase();
-		ContentValues cv = new ContentValues(4);
+		ContentValues cv = new ContentValues(5);
 		cv.put(BOOK_INFO_TABLE_COLS[0], ri.name);
-		cv.put(BOOK_INFO_TABLE_COLS[1], ri.line);
-		cv.put(BOOK_INFO_TABLE_COLS[2], ri.offset);
-		cv.put(BOOK_INFO_TABLE_COLS[3], ri.percent);
+		cv.put(BOOK_INFO_TABLE_COLS[1], ri.chapter);
+		cv.put(BOOK_INFO_TABLE_COLS[2], ri.line);
+		cv.put(BOOK_INFO_TABLE_COLS[3], ri.offset);
+		cv.put(BOOK_INFO_TABLE_COLS[4], ri.percent);
 		if (insert)
 			ri.id = db.insert(BOOK_INFO_TABLE_NAME, null, cv);
 		else
@@ -499,13 +507,14 @@ public class Config extends SQLiteOpenHelper
 
 		Cursor cursor = db
 			.query(BOOKMARKS_TABLE_NAME, BOOKMARKS_TABLE_COLS, BOOKMARKS_TABLE_COLS[0] + " = " + ri.id,
-			       null, null, null, BOOKMARKS_TABLE_COLS[2] + "," + BOOKMARKS_TABLE_COLS[3]);
+			       null, null, null,
+			       BOOKMARKS_TABLE_COLS[2] + "," + BOOKMARKS_TABLE_COLS[3] + "," + BOOKMARKS_TABLE_COLS[4]);
 
 		ArrayList<BookmarkManager.Bookmark> bml = new ArrayList<BookmarkManager.Bookmark>();
 
 		while (cursor.moveToNext())
 			bml.add(BookmarkManager.createBookmark(cursor.getString(1), cursor.getInt(2), cursor.getInt(3),
-							       cursor.getInt(4), ri));
+							       cursor.getInt(4), cursor.getInt(5), ri));
 		cursor.close();
 
 		return bml;
@@ -516,11 +525,12 @@ public class Config extends SQLiteOpenHelper
 		assert bm.bookid != 0;
 
 		SQLiteDatabase db = getWritableDatabase();
-		ContentValues cv = new ContentValues(4);
+		ContentValues cv = new ContentValues(5);
 		cv.put(BOOKMARKS_TABLE_COLS[0], bm.bookid);
 		cv.put(BOOKMARKS_TABLE_COLS[1], bm.desc);
-		cv.put(BOOKMARKS_TABLE_COLS[2], bm.line);
-		cv.put(BOOKMARKS_TABLE_COLS[3], bm.offset);
+		cv.put(BOOKMARKS_TABLE_COLS[2], bm.chapter);
+		cv.put(BOOKMARKS_TABLE_COLS[3], bm.line);
+		cv.put(BOOKMARKS_TABLE_COLS[4], bm.offset);
 
 		db.insert(BOOKMARKS_TABLE_NAME, null, cv);
 	}
@@ -531,11 +541,12 @@ public class Config extends SQLiteOpenHelper
 		assert bm.getID() != 0;
 
 		SQLiteDatabase db = getWritableDatabase();
-		ContentValues cv = new ContentValues(4);
+		ContentValues cv = new ContentValues(5);
 		cv.put(BOOKMARKS_TABLE_COLS[0], bm.bookid);
 		cv.put(BOOKMARKS_TABLE_COLS[1], bm.desc);
-		cv.put(BOOKMARKS_TABLE_COLS[2], bm.line);
-		cv.put(BOOKMARKS_TABLE_COLS[3], bm.offset);
+		cv.put(BOOKMARKS_TABLE_COLS[2], bm.chapter);
+		cv.put(BOOKMARKS_TABLE_COLS[3], bm.line);
+		cv.put(BOOKMARKS_TABLE_COLS[4], bm.offset);
 
 		db.update(BOOKMARKS_TABLE_NAME, cv, "rowid = " + bm.getID(), null);
 	}
