@@ -1,7 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
 import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.domain.SpineReference;
+import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,11 +20,9 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"epub"};
 
-	private Book book;
-	private List<SpineReference> srs;
 	private ArrayList<String> titles = new ArrayList<String>();
 	private int chapter;
-	private String currChapterTitle = "";
+	private List<TOCReference> tocrs;
 
 	public String[] getSuffixes()
 	{
@@ -33,15 +31,12 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 
 	public BookContent load(VFile file) throws Exception
 	{
-		book = (new EpubReader()).readEpub(new FileInputStream(file));
-		srs = book.getSpine().getSpineReferences();
+		Book book = (new EpubReader()).readEpub(new FileInputStream(file));
 		titles.clear();
 
-		for (SpineReference sr : srs) {
-			String t = sr.getResource().getHref();
-			t = t.substring(0, t.lastIndexOf('.'));
-			titles.add(t);
-		}
+		tocrs = book.getTableOfContents().getTocReferences();
+		for (TOCReference tocr : tocrs)
+			titles.add(tocr.getTitle());
 		chapter = 0;
 
 		loadChapter();
@@ -50,20 +45,13 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 
 	public void unload(BookContent aBook)
 	{
-		book = null;
-		srs = null;
+		tocrs = null;
 		titles.clear();
 	}
 
 	public int getChapterCount()
 	{
 		return titles.size();
-	}
-
-	public String getChapterTitle()
-	{
-		// epublib cannot get actual title, so use first line instead
-		return currChapterTitle;
 	}
 
 	public String getChapterTitle(int index)
@@ -94,9 +82,8 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 	{
 		try {
 			ArrayList<String> ls = new ArrayList<String>();
-			Document doc = Jsoup.parse(srs.get(chapter).getResource().getInputStream(),
-						   srs.get(chapter).getResource().getInputEncoding(), "");
-			currChapterTitle = doc.title();
+			Document doc = Jsoup.parse(tocrs.get(chapter).getResource().getInputStream(),
+						   tocrs.get(chapter).getResource().getInputEncoding(), "");
 			BookUtil.HTML2Text(doc.body(), ls);
 			setContent(ls);
 		} catch (Exception e) {

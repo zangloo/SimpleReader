@@ -38,17 +38,20 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 	private static final int menuSearch = 0;
 	private static final int menuBookmarkMgr = 1;
-	private static final int menuExit = 2;
-	private static final int menuDict = 3;
-	private static final int menuBookmark = 4;
-	private static final int menuChapterMgr = 5;
-	private static final int menuSeek = 6;
+	private static final int menuFile = 2;
+	private static final int menuChapterMgr = 3;
+	private static final int menuSeek = 4;
+	private static final int menuStatusBar = 5;
+	private static final int menuColorBright = 6;
 	private static final int menuViewLock = 7;
-	private static final int menuStatusBar = 8;
-	private static final int menuColorBright = 9;
-	private static final int menuFile = 10;
-	private static final int menuOption = 11;
-	private static final int menuAbout = 12;
+	private static final int menuOption = 8;
+	private static final int menuAbout = 9;
+
+	private static final int menuBookmark = 100;
+	private static final int menuDict = 101;
+	private static final int menuMenu = 102;
+	private static final int menuExit = 103;
+	private static final int menuCancel = 104;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
@@ -205,7 +208,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			{
 				if (config.getCurrFile() != null)
 					fingerPosInfo = bv.getFingerPosInfo(motionEvent.getX(), motionEvent.getY());
-				openOptionsMenu();
+				openContextMenu(bv);
 			}
 
 			public boolean onFling(MotionEvent e1, MotionEvent e2, float v, float v1)
@@ -536,7 +539,12 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			return;
 		TextView tv = (TextView) findViewById(R.id.reading_book_text);
 		String n = config.getCurrFile();
-		n = n.substring(n.lastIndexOf('/') + 1);
+		int p = n.lastIndexOf('/');
+		if (p >= 0)
+			n = n.substring(p + 1);
+		p = n.lastIndexOf('.');
+		if (p > 0)
+			n = n.substring(0, p);
 		if (book.getChapterCount() > 1)
 			n += "#" + book.getChapterTitle();
 		tv.setText(n);
@@ -566,6 +574,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			hbv.setVisibility(View.GONE);
 			xbv.setVisibility(View.VISIBLE);
 		}
+		registerForContextMenu(bv);
 		if (config.isShowStatus())
 			bv.setOnPosChangeListener(this);
 		else
@@ -579,6 +588,62 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		if (config.isShowStatus())
 			showStatusPanel();
 		bv.invalidate();
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
+	{
+		if ((fingerPosInfo != null) && (fingerPosInfo.str != null) && (fingerPosInfo.str.length() > 0)) {
+			menu.setHeaderTitle(fingerPosInfo.str);
+			menu.add(0, menuBookmark, menuBookmark, getString(R.string.menu_bookmark));
+			if (config.isDictEnabled())
+				menu.add(0, menuDict, menuDict, getString(R.string.menu_dict));
+		}
+		menu.add(0, menuMenu, menuMenu, getString(R.string.menu_menu));
+		menu.add(0, menuExit, menuExit, getString(R.string.menu_exit));
+		menu.add(0, menuCancel, menuCancel, getString(R.string.menu_cancel));
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item)
+	{
+		switch (item.getItemId()) {
+			case menuDict:
+				assert fingerPosInfo != null;
+				assert fingerPosInfo.str != null;
+				assert fingerPosInfo.str.length() > 0;
+
+				if (dictManager.getDictMaxWordLen() < fingerPosInfo.str.length())
+					fingerPosInfo.str = fingerPosInfo.str
+						.substring(0, dictManager.getDictMaxWordLen());
+				dictManager.showDict(fingerPosInfo);
+				break;
+			case menuBookmark:
+				assert fingerPosInfo != null;
+				assert fingerPosInfo.str != null;
+				assert fingerPosInfo.str.length() > 0;
+
+				if (ri != null)
+					bookmarkManager.addDialog(BookmarkManager.createBookmark(fingerPosInfo, ri));
+				break;
+			case menuMenu:
+				openOptionsMenu();
+				break;
+			case menuExit:
+				finish();
+				break;
+			case menuCancel:
+				closeContextMenu();
+				break;
+		}
+		return true;
+	}
+
+	@Override
+	public void onContextMenuClosed(Menu menu)
+	{
+		fingerPosInfo = null;
+		super.onContextMenuClosed(menu);
 	}
 
 	@Override
@@ -628,32 +693,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 					updateStatusPanelFile(bv.getContent());
 				}
 				break;
-			case menuDict:
-				assert fingerPosInfo != null;
-				assert fingerPosInfo.str != null;
-				assert fingerPosInfo.str.length() > 0;
-
-				if (dictManager.getDictMaxWordLen() < fingerPosInfo.str.length())
-					fingerPosInfo.str = fingerPosInfo.str
-						.substring(0, dictManager.getDictMaxWordLen());
-				dictManager.showDict(fingerPosInfo);
-				break;
-			case menuBookmark:
-				assert fingerPosInfo != null;
-				assert fingerPosInfo.str != null;
-				assert fingerPosInfo.str.length() > 0;
-
-				if (ri != null) {
-					if (BookmarkManager.BOOKMARK_DESC_DEFAULT_LEN < fingerPosInfo.str.length())
-						fingerPosInfo.str = fingerPosInfo.str
-							.substring(0, BookmarkManager.BOOKMARK_DESC_DEFAULT_LEN);
-
-					bookmarkManager.addDialog(BookmarkManager.createBookmark(fingerPosInfo, ri));
-				}
-				break;
-			case menuExit:
-				finish();
-				break;
 			case menuAbout:
 				Util.showDialog(this, ABOUT_MESSAGE, R.string.about_title);
 				break;
@@ -662,32 +701,22 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	}
 
 	@Override
-	public void onOptionsMenuClosed(Menu menu)
-	{
-		fingerPosInfo = null;
-		super.onOptionsMenuClosed(menu);
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
-		menu.add(0, menuFile, menuFile, getResources().getString(R.string.menu_file));
+		menu.add(0, menuFile, menuFile, getString(R.string.menu_file));
 		if (config.isViewLock())
-			menu.add(0, menuViewLock, menuViewLock, getResources().getString(R.string.menu_unlock_view));
+			menu.add(0, menuViewLock, menuViewLock, getString(R.string.menu_unlock_view));
 		else
-			menu.add(0, menuViewLock, menuViewLock, getResources().getString(R.string.menu_lock_view));
-		menu.add(0, menuDict, menuDict, getResources().getString(R.string.menu_dict));
-		menu.add(0, menuBookmark, menuBookmark, getResources().getString(R.string.menu_bookmark));
+			menu.add(0, menuViewLock, menuViewLock, getString(R.string.menu_lock_view));
 		menu.add(0, menuColorBright, menuColorBright, getResources()
 			.getString(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night));
-		menu.add(0, menuStatusBar, menuStatusBar, getResources().getString(R.string.menu_status_bar));
-		menu.add(0, menuExit, menuExit, getResources().getString(R.string.menu_exit));
-		menu.add(0, menuOption, menuOption, getResources().getString(R.string.menu_option));
-		menu.add(0, menuAbout, menuAbout, getResources().getString(R.string.menu_about));
-		menu.add(0, menuSearch, menuSearch, getResources().getString(R.string.menu_search));
-		menu.add(0, menuBookmarkMgr, menuBookmarkMgr, getResources().getString(R.string.menu_bookmark_mgr));
-		menu.add(0, menuSeek, menuSeek, getResources().getString(R.string.menu_seek));
-		menu.add(0, menuChapterMgr, menuChapterMgr, getResources().getString(R.string.menu_chapter));
+		menu.add(0, menuStatusBar, menuStatusBar, getString(R.string.menu_status_bar));
+		menu.add(0, menuOption, menuOption, getString(R.string.menu_option));
+		menu.add(0, menuAbout, menuAbout, getString(R.string.menu_about));
+		menu.add(0, menuSearch, menuSearch, getString(R.string.menu_search));
+		menu.add(0, menuBookmarkMgr, menuBookmarkMgr, getString(R.string.menu_bookmark_mgr));
+		menu.add(0, menuSeek, menuSeek, getString(R.string.menu_seek));
+		menu.add(0, menuChapterMgr, menuChapterMgr, getString(R.string.menu_chapter));
 
 		return true;
 	}
@@ -699,23 +728,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			menu.findItem(menuViewLock).setTitle(R.string.menu_unlock_view);
 		else
 			menu.findItem(menuViewLock).setTitle(R.string.menu_lock_view);
-		boolean de = config.isDictEnabled();
-		char c = 0;
-		MenuItem mi;
-		if ((fingerPosInfo != null) && (fingerPosInfo.str != null) && (fingerPosInfo.str.length() > 0)) {
-			c = fingerPosInfo.str.charAt(0);
-			mi = menu.findItem(menuBookmark).setVisible(true);
-			mi.setTitle(getString(R.string.menu_bookmark) + c);
-		} else {
-			menu.findItem(menuBookmark).setVisible(false);
-			de = false;
-		}
 		menu.findItem(menuChapterMgr).setVisible(bv.getContent().getChapterCount() > 1);
-
-		mi = menu.findItem(menuDict).setVisible(de);
-		if (de)
-			mi.setTitle(getString(R.string.menu_dict) + c);
-
 		menu.findItem(menuColorBright)
 		    .setTitle(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night);
 		return true;

@@ -66,7 +66,7 @@ public class BookmarkManager extends PopupWindow
 			updateBookmarkList();
 		}
 	};
-	public static final int BOOKMARK_DESC_DEFAULT_LEN = 10;
+	public static final int BOOKMARK_DESC_DEFAULT_LEN = 15;
 	private static final String BOOKMARK_LIST_TITLE_DESC = "desc";
 	private static final String BOOKMARK_LIST_TITLE_POS = "pos";
 
@@ -179,6 +179,8 @@ public class BookmarkManager extends PopupWindow
 		bm = bookmark;
 		assert bm.id == 0;
 
+		if (bm.desc.length() > BOOKMARK_DESC_DEFAULT_LEN)
+			bm.desc = bm.desc.substring(0, BOOKMARK_DESC_DEFAULT_LEN);
 		et = new EditText(reader);
 		et.setText(bm.desc);
 		et.selectAll();

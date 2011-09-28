@@ -53,11 +53,10 @@ public class ChapterManager extends PopupWindow
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTypeface(tf);
-				tv.setTextColor(Color.BLACK);
 				if (position == chapter)
-					tv.setBackgroundResource(android.R.color.darker_gray);
+					tv.setTextColor(Color.RED);
 				else
-					tv.setBackgroundResource(android.R.color.background_light);
+					tv.setTextColor(Color.BLACK);
 				return v;
 			}
 		};

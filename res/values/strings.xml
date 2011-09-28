@@ -10,7 +10,6 @@
 	<string name="error_write_config">無法保存配置文件</string>
 	<string name="error_empty_file">文件為空</string>
 
-	<string name="menu_title">菜單</string>
 	<string name="menu_file">文件</string>
 	<string name="menu_search">檢索</string>
 	<string name="menu_option">設置</string>
@@ -18,12 +17,14 @@
 	<string name="menu_unlock_view">解鎖</string>
 	<string name="menu_status_bar">狀態欄</string>
 	<string name="menu_exit">退出</string>
-	<string name="menu_dict">字典：</string>
-	<string name="menu_bookmark">標記書籤：</string>
+	<string name="menu_dict">檢索字典</string>
+	<string name="menu_bookmark">標記書籤</string>
 	<string name="menu_bookmark_mgr">書籤</string>
 	<string name="menu_about">關於</string>
 	<string name="menu_seek">定位</string>
 	<string name="menu_chapter">卷章</string>
+	<string name="menu_menu">菜單</string>
+	<string name="menu_cancel">取消</string>
 
 	<string name="dialog_option_title">配置選項</string>
 	<string name="dialog_file_title">選擇書籍</string>
