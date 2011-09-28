@@ -37,8 +37,11 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 		srs = book.getSpine().getSpineReferences();
 		titles.clear();
 
-		for (SpineReference sr : srs)
-			titles.add(sr.getResource().getHref());
+		for (SpineReference sr : srs) {
+			String t = sr.getResource().getHref();
+			t = t.substring(0, t.lastIndexOf('.'));
+			titles.add(t);
+		}
 		chapter = 0;
 
 		loadChapter();
