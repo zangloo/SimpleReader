@@ -12,7 +12,7 @@ import java.util.HashMap;
  * Date: 11-9-6
  * Time: 下午8:21
  */
-public class SimpleReaderBook extends Loader implements BookContent
+public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 {
 	public static final String[] suffixes = {"srb"};
 	public static final String[] INFO_TABLE_COLS = new String[]{"key", "value"};
@@ -83,14 +83,12 @@ public class SimpleReaderBook extends Loader implements BookContent
 	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
 	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
 
-	@Override
-	protected String[] getSuffixes()
+	public String[] getSuffixes()
 	{
 		return suffixes;
 	}
 
-	@Override
-	protected BookContent load(VFile f)
+	public BookContent load(VFile f)
 	{
 		db = SQLiteDatabase.openDatabase(f.getPath(), null,
 						 SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
@@ -134,6 +132,7 @@ public class SimpleReaderBook extends Loader implements BookContent
 		if (booksize == 0)
 			return null;
 
+		lineCache.clear();
 		return this;
 	}
 
@@ -198,9 +197,10 @@ public class SimpleReaderBook extends Loader implements BookContent
 		return n;
 	}
 
-	protected void unload(BookContent book)
+	public void unload(BookContent book)
 	{
 		db.close();
+		lineCache.clear();
 	}
 
 	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
@@ -248,9 +248,14 @@ public class SimpleReaderBook extends Loader implements BookContent
 		return chapterCount;
 	}
 
+	public String getChapterTitle()
+	{
+		return getChapterTitle(getCurrChapter());
+	}
+
 	public String getChapterTitle(int index)
 	{
-		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(chapter)});
+		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(index + indexBase)});
 		if (!c.moveToFirst()) {
 			c.close();
 			return "";
@@ -274,24 +279,6 @@ public class SimpleReaderBook extends Loader implements BookContent
 	public int getCurrChapter()
 	{
 		return chapter - indexBase;
-	}
-
-	public boolean prevChapter()
-	{
-		if (chapter == indexBase)
-			return false;
-		chapter--;
-		updateValues();
-		return true;
-	}
-
-	public boolean nextChapter()
-	{
-		if (chapter == indexBase + chapterCount - 1)
-			return false;
-		chapter++;
-		updateValues();
-		return true;
 	}
 
 	public boolean gotoChapter(int index)

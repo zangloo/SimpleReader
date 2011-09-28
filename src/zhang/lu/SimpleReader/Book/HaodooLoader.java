@@ -52,7 +52,7 @@ import java.util.Vector;
     第N+2筆資料是書籤，預設是-1。可以不理。
 
  */
-public class HaodooLoader extends Loader
+public class HaodooLoader implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"pdb", "updb"};
 
@@ -235,14 +235,12 @@ public class HaodooLoader extends Loader
 	}
 
 
-	@Override
-	protected String[] getSuffixes()
+	public String[] getSuffixes()
 	{
 		return suffixes;
 	}
 
-	@Override
-	protected BookContent load(VFile file) throws Exception
+	public BookContent load(VFile file) throws Exception
 	{
 		encrypted = false;
 
@@ -258,8 +256,7 @@ public class HaodooLoader extends Loader
 		return new PlainTextContent(text);
 	}
 
-	@Override
-	protected void unload(BookContent aBook)
+	public void unload(BookContent aBook)
 	{
 	}
 }

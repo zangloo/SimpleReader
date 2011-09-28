@@ -13,12 +13,11 @@ import java.util.List;
  * Time: 上午10:23
  */
 
-public class TxtLoader extends Loader
+public class TxtLoader implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"txt"};
 
-	@Override
-	protected String[] getSuffixes()
+	public String[] getSuffixes()
 	{
 		return suffixes;
 	}
@@ -28,14 +27,13 @@ public class TxtLoader extends Loader
 		return txt.replace("\r", "");
 	}
 
-	@Override
-	protected BookContent load(VFile f) throws Exception
+	public BookContent load(VFile f) throws Exception
 	{
 		List<String> lines = new ArrayList<String>();
 		String cs;
 
 		InputStream fs = f.getInputStream();
-		cs = detect(fs);
+		cs = BookLoader.detect(fs);
 		fs.close();
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(f.getInputStream(), cs));
@@ -46,8 +44,7 @@ public class TxtLoader extends Loader
 		return new PlainTextContent(lines);
 	}
 
-	@Override
-	protected void unload(BookContent aBook)
+	public void unload(BookContent aBook)
 	{
 	}
 }

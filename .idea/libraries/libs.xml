@@ -6,6 +6,8 @@
       <root url="jar://$PROJECT_DIR$/libs/android-support-v4.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/annotations.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/juniversalchardet-1.0.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/slf4j-android-1.6.1-RC1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/epublib-core-latest.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

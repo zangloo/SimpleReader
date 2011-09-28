@@ -8,51 +8,101 @@ import java.util.ArrayList;
  * Date: 11-9-6
  * Time: 下午8:32
  */
-public interface BookContent
+public abstract class BookContent
 {
-	class ContentPosInfo
+	public static class ContentPosInfo
 	{
 		public int line, offset;
 	}
 
-	public String line(int index);
-
 	// return chapter count
-	public int getChapterCount();
+	public int getChapterCount()
+	{
+		return 1;
+	}
 
 	// return current chapter title
-	public String getChapterTitle(int index);
+	public String getChapterTitle()
+	{
+		return getChapterTitle(getCurrChapter());
+	}
+
+	// return chapter title at index
+	public String getChapterTitle(int index)
+	{
+		return null;
+	}
 
 	// return all chapter title
-	public ArrayList<String> getChapterTitleList();
+	public ArrayList<String> getChapterTitleList()
+	{
+		return null;
+	}
 
 	// get current chapter index
-	public int getCurrChapter();
-
-	// goto prev chapter
-	public boolean prevChapter();
-
-	// goto next chapter
-	public boolean nextChapter();
+	public int getCurrChapter()
+	{
+		return 0;
+	}
 
 	// switch to chapter index
-	public boolean gotoChapter(int index);
-
-	// return line count
-	public int getLineCount();
-
-	// return book size from line[0] to line[end - 1]
-	public int size(int end);
-
-	// return book total size
-	public int size();
+	public boolean gotoChapter(int index)
+	{
+		return false;
+	}
 
 	// return null when no note at line:offset
-	public String getNote(int line, int offset);
+	public String getNote(int line, int offset)
+	{
+		return null;
+	}
 
 	// search txt from cpi
-	public ContentPosInfo searchText(String txt, ContentPosInfo cpi);
+	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
+	{
+		for (int i = cpi.line; i < getLineCount(); i++) {
+			int pos = line(i).indexOf(txt, cpi.offset);
+			if (pos >= 0) {
+				cpi.line = i;
+				cpi.offset = pos;
+				return cpi;
+			}
+			cpi.offset = 0;
+		}
+		return null;
+	}
 
 	// get position info for <x>%
-	public ContentPosInfo getPercentPos(int percent);
+	public ContentPosInfo getPercentPos(int percent)
+	{
+		int p = size() * percent / 100;
+		int c = 0, i;
+
+		for (i = 0; i < getLineCount(); i++) {
+			c += line(i).length();
+			if (c > p)
+				break;
+		}
+		ContentPosInfo cpi = new ContentPosInfo();
+		if (c > p) {
+			cpi.line = i;
+			cpi.offset = line(i).length() - (c - p);
+		} else {
+			cpi.line = i - 1;
+			cpi.offset = 0;
+		}
+		return cpi;
+	}
+
+	// return line at index
+	public abstract String line(int index);
+
+	// return line count
+	public abstract int getLineCount();
+
+	// return book size from line[0] to line[end - 1]
+	public abstract int size(int end);
+
+	// return book total size
+	public abstract int size();
 }

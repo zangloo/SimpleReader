@@ -15,7 +15,7 @@ import android.text.format.DateFormat;
 import android.view.*;
 import android.widget.*;
 import zhang.lu.SimpleReader.Book.BookContent;
-import zhang.lu.SimpleReader.Book.Loader;
+import zhang.lu.SimpleReader.Book.BookLoader;
 import zhang.lu.SimpleReader.Book.VFile;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
@@ -313,7 +313,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		bv.setPos(0, 0);
 		config.close();
 		dictManager.unloadDict();
-		Loader.unloadBook();
+		BookLoader.unloadBook();
 	}
 
 	protected Dialog onCreateDialog(int id)
@@ -538,7 +538,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		String n = config.getCurrFile();
 		n = n.substring(n.lastIndexOf('/') + 1);
 		if (book.getChapterCount() > 1)
-			n += "#" + book.getChapterTitle(book.getCurrChapter());
+			n += "#" + book.getChapterTitle();
 		tv.setText(n);
 	}
 
@@ -752,7 +752,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 		BookContent book = bv.getContent();
 		if (book.getChapterCount() > 1)
-			if (book.nextChapter()) {
+			if (book.gotoChapter(book.getCurrChapter() + 1)) {
 				switchChapterUpdate(book, 0, 0);
 				loading = false;
 				return;
@@ -804,7 +804,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 
 		BookContent book = bv.getContent();
 		if (book.getChapterCount() > 1)
-			if (book.prevChapter()) {
+			if (book.gotoChapter(book.getCurrChapter() - 1)) {
 				bv.gotoEnd();
 				switchChapterUpdate(book, bv.getPosIndex(), bv.getPosOffset());
 				loading = false;
@@ -893,7 +893,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				msg = handler.obtainMessage();
 
 				saveReadingInfo();
-				BookContent bc = Loader.loadFile(pathPrefix + fp);
+				BookContent bc = BookLoader.loadFile(pathPrefix + fp);
 				if (bc != null) {
 					config.setReadingFile(fp);
 					bv.setContent(bc);

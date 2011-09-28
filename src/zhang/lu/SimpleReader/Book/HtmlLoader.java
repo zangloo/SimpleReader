@@ -16,17 +16,16 @@ import java.util.List;
  * Time: 上午10:23
  */
 
-public class HtmlLoader extends Loader
+public class HtmlLoader implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"htm", "html"};
 
-	@Override
-	protected String[] getSuffixes()
+	public String[] getSuffixes()
 	{
 		return suffixes;
 	}
 
-	static private void HTMLText(Element node, List<String> lines)
+	static public void HTMLText(Element node, List<String> lines)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
@@ -38,22 +37,20 @@ public class HtmlLoader extends Loader
 		}
 	}
 
-	@Override
-	protected BookContent load(VFile f) throws Exception
+	public BookContent load(VFile f) throws Exception
 	{
 		List<String> lines = new ArrayList<String>();
 		String cs;
 
 		InputStream fs = f.getInputStream();
-		cs = detect(fs);
+		cs = BookLoader.detect(fs);
 		fs.close();
 
 		HTMLText(Jsoup.parse(f.getInputStream(), cs, "").body(), lines);
 		return new PlainTextContent(lines);
 	}
 
-	@Override
-	protected void unload(BookContent aBook)
+	public void unload(BookContent aBook)
 	{
 	}
 }

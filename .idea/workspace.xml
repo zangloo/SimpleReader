@@ -2,7 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8da49b8d-901f-4985-8fc2-f52a3cdd17c3" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/libs/epublib-core-latest.jar" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/libs/slf4j-android-1.6.1-RC1.jar" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/EPubBook.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/libs.xml" afterPath="$PROJECT_DIR$/.idea/libraries/libs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/SimpleReader.iml" afterPath="$PROJECT_DIR$/SimpleReader.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookContent.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookContent.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HaodooLoader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HaodooLoader.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HtmlLoader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HtmlLoader.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/TxtLoader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/TxtLoader.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
+      <change type="MOVED" beforePath="D:\android\works\SimpleReader\src\zhang\lu\SimpleReader\Book\Loader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookLoader.java" />
     </list>
     <ignored path="SimpleReader.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,6 +39,21 @@
     <disable_hints />
   </component>
   <component name="DebuggerManager">
+    <line_breakpoints>
+      <breakpoint url="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/EPubBook.java" line="62" class="zhang.lu.SimpleReader.Book.EPubBook" package="zhang.lu.SimpleReader.Book">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <breakpoint_any>
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -87,10 +115,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Reader.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
+      <file leaf-file-name="EPubBook.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/EPubBook.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1090" column="37" selection-start="27846" selection-end="27847" vertical-scroll-proportion="0.0">
+            <state line="97" column="16" selection-start="2040" selection-end="2040" vertical-scroll-proportion="0.6363636">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ChapterManager.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="50" column="0" selection-start="1354" selection-end="1354" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -98,24 +135,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BookmarkManager.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java">
+      <file leaf-file-name="BookLoader.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookLoader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="207" column="45" selection-start="5797" selection-end="5797" vertical-scroll-proportion="0.4237013">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Config.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Config.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="500" column="79" selection-start="13400" selection-end="13400" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state line="72" column="0" selection-start="1626" selection-end="1753" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -123,8 +147,10 @@
       <file leaf-file-name="SimpleReaderBook.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="237" column="45" selection-start="6500" selection-end="6500" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -148,22 +174,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HaodooLoader.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HtmlLoader.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/TxtLoader.java" />
-        <option value="$PROJECT_DIR$/res/layout/chapter.xml" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/Loader.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/HTextView.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/XTextView.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Config.java" />
         <option value="$PROJECT_DIR$/res/values/strings.xml" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/Loader.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HaodooLoader.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HtmlLoader.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/TxtLoader.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookLoader.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookContent.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/EPubBook.java" />
       </list>
     </option>
   </component>
@@ -369,10 +395,6 @@
               <option name="myItemId" value="res" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="layout" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -384,7 +406,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="res" />
+              <option name="myItemId" value="libs" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -395,22 +417,22 @@
   </component>
   <component name="PropertiesComponent">
     <property name="project.structure.last.edited" value="Libraries" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="58" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="57" />
     <property name="OverrideImplement.combined" value="true" />
     <property name="project.structure.proportion" value="0.15" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="66" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="65" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
     <property name="MemberChooser.sorted" value="false" />
     <property name="recentsLimit" value="5" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="73" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="72" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="77" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="731" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="744" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="76" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="76" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="721" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="734" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="75" />
     <property name="DEBUGGABLE_DEVICE" value="emulator-5554 (320x480)" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="65" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="64" />
     <property name="DEBUGGABLE_PROCESS" value="zhang.lu.SimpleReader" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
@@ -435,11 +457,11 @@
       <recent name="zhang.lu.SimpleReader" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\android\works\SimpleReader\res\layout" />
       <recent name="D:\android\works\SimpleReader\libs" />
+      <recent name="D:\android\works\SimpleReader\src\zhang\lu\SimpleReader\Book" />
+      <recent name="D:\android\works\SimpleReader\res\layout" />
       <recent name="D:\android\works\SimpleReader\src\zhang\lu\SimpleReader" />
       <recent name="D:\android\works\SimpleReader\src\afzkl\development\mColorPicker" />
-      <recent name="D:\android\works\SimpleReader\src" />
     </key>
     <key name="MoveMembersDialog.RECENTS_KEY">
       <recent name="zhang.lu.SimpleReader.Book.BookContent" />
@@ -699,22 +721,22 @@
     <frame x="-4" y="-4" width="1004" height="776" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31659058" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34398782" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32724506" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.32522798" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39917696" sideWeight="0.48784193" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27057612" sideWeight="0.61187214" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32267883" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.38812786" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="12" y="284" width="972" height="200" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.325723" sideWeight="0.0" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31659058" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32724506" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.61187214" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39917696" sideWeight="0.48784193" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27057612" sideWeight="0.61187214" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3196347" sideWeight="0.0" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Android Logcat" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3196347" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.325723" sideWeight="0.0" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.6803653" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32267883" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Kahlua" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="SVN Repositories" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3292683" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5631659" order="1" side_tool="false" content_ui="tabs" />
@@ -794,90 +816,9 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/widget/ArrayAdapter.java">
+    <entry file="jar://$PROJECT_DIR$/libs/epublib-core-latest.jar!/nl/siegmann/epublib/domain/Book.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="13" selection-start="1832" selection-end="1832" vertical-scroll-proportion="-1.2798092">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/graphics/Paint.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1123" column="15" selection-start="38326" selection-end="38326" vertical-scroll-proportion="0.3327869">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/HTextView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="98" column="64" selection-start="2320" selection-end="2320" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/widget/ProgressBar.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="543" column="29" selection-start="18434" selection-end="18434" vertical-scroll-proportion="0.3327869">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/values/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="36" selection-start="1090" selection-end="1090" vertical-scroll-proportion="0.6557377">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/HNoteView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="69" column="0" selection-start="1672" selection-end="1672" vertical-scroll-proportion="0.19344263">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/XTextView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="122" column="16" selection-start="2143" selection-end="2143" vertical-scroll-proportion="-0.845787">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="371" column="67" selection-start="8514" selection-end="8514" vertical-scroll-proportion="0.45454547">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="75" column="28" selection-start="1997" selection-end="1997" vertical-scroll-proportion="0.6055195">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookContent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="47" selection-start="402" selection-end="402" vertical-scroll-proportion="0.07949126">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="50" column="47" selection-start="849" selection-end="849" vertical-scroll-proportion="0.78219396">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="237" column="45" selection-start="6500" selection-end="6500" vertical-scroll-proportion="0.0">
+        <state line="37" column="58" selection-start="2091" selection-end="2091" vertical-scroll-proportion="0.3468697">
           <folding />
         </state>
       </provider>
@@ -891,28 +832,111 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/widget/TextView.java">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="967" column="60" selection-start="36410" selection-end="36423" vertical-scroll-proportion="0.6375199">
-          <folding />
+        <state line="150" column="88" selection-start="4312" selection-end="4312" vertical-scroll-proportion="0.2718601">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1090" column="37" selection-start="27846" selection-end="27847" vertical-scroll-proportion="0.0">
+        <state line="806" column="68" selection-start="21583" selection-end="21583" vertical-scroll-proportion="0.33279222">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HaodooLoader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="207" column="45" selection-start="5797" selection-end="5797" vertical-scroll-proportion="0.4237013">
+        <state line="258" column="8" selection-start="7839" selection-end="7839" vertical-scroll-proportion="5.428571">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/TxtLoader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="35" selection-start="516" selection-end="516" vertical-scroll-proportion="0.26232114">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="332" column="48" selection-start="7431" selection-end="7431" vertical-scroll-proportion="-0.5584416">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookLoader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="72" column="0" selection-start="1626" selection-end="1753" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libs/epublib-core-latest.jar!/nl/siegmann/epublib/domain/Spine.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="25" selection-start="972" selection-end="1019" vertical-scroll-proportion="0.3468697">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="50" column="0" selection-start="1354" selection-end="1354" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/BookContent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="22" selection-start="174" selection-end="174" vertical-scroll-proportion="0.25437203">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/PlainTextContent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="27" selection-start="675" selection-end="675" vertical-scroll-proportion="0.17806041">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HtmlLoader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="27" selection-start="516" selection-end="516" vertical-scroll-proportion="0.3315508">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libs/jsoup-1.5.2.jar!/org/jsoup/Jsoup.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="37" selection-start="955" selection-end="965" vertical-scroll-proportion="0.35714287">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/EPubBook.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="97" column="16" selection-start="2040" selection-end="2040" vertical-scroll-proportion="0.6363636">
+          <folding />
         </state>
       </provider>
     </entry>
@@ -974,7 +998,6 @@
             <option name="proportions">
               <list>
                 <option value="0.2" />
-                <option value="0.5" />
               </list>
             </option>
           </splitter-proportions>
