@@ -1,9 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,28 +22,16 @@ public class HtmlLoader implements BookLoader.Loader
 		return suffixes;
 	}
 
-	static public void HTMLText(Element node, List<String> lines)
-	{
-		for (Node child : node.childNodes()) {
-			if (child instanceof TextNode) {
-				String t = ((TextNode) child).text();
-				if (t.trim().length() > 0)
-					lines.add(t);
-			} else if (child instanceof Element)
-				HTMLText((Element) child, lines);
-		}
-	}
-
 	public BookContent load(VFile f) throws Exception
 	{
 		List<String> lines = new ArrayList<String>();
 		String cs;
 
 		InputStream fs = f.getInputStream();
-		cs = BookLoader.detect(fs);
+		cs = BookUtil.detect(fs);
 		fs.close();
 
-		HTMLText(Jsoup.parse(f.getInputStream(), cs, "").body(), lines);
+		BookUtil.HTML2Text(Jsoup.parse(f.getInputStream(), cs, "").body(), lines);
 		return new PlainTextContent(lines);
 	}
 

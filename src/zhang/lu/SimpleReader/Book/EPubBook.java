@@ -94,7 +94,7 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 			Document doc = Jsoup.parse(srs.get(chapter).getResource().getInputStream(),
 						   srs.get(chapter).getResource().getInputEncoding(), "");
 			currChapterTitle = doc.title();
-			HtmlLoader.HTMLText(doc.body(), ls);
+			BookUtil.HTML2Text(doc.body(), ls);
 			setContent(ls);
 		} catch (Exception e) {
 			ArrayList<String> list = new ArrayList<String>();

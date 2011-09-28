@@ -33,7 +33,7 @@ public class TxtLoader implements BookLoader.Loader
 		String cs;
 
 		InputStream fs = f.getInputStream();
-		cs = BookLoader.detect(fs);
+		cs = BookUtil.detect(fs);
 		fs.close();
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(f.getInputStream(), cs));
