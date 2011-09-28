@@ -54,7 +54,7 @@ public class HNoteView extends TextView
 				x -= fw;
 			}
 		}
-		SimpleTextView.replaceTextChar(str, SimpleTextView.SC, SimpleTextView.TC);
+		SimpleTextView.replaceTextChar(str, HTextView.SC, HTextView.TC);
 		canvas.drawPosText(str, 0, str.length, xy, p);
 	}
 

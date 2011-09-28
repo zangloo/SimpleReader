@@ -49,9 +49,6 @@ public abstract class SimpleTextView extends View
 	public static final int defaultNightBackgroundColor = Color.BLACK;
 	public static final int defaultFontSize = 26;
 
-	public static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', 9};
-	public static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '　'};
-
 	private static final BookContent defaultContent = new PlainTextContent();
 	protected static BookContent content = defaultContent;
 	protected static int pi = 0, po = 0;

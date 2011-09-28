@@ -13,6 +13,9 @@ import android.util.AttributeSet;
  */
 public class HTextView extends SimpleTextView
 {
+	public static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', 9, '(', ')', '[', ']', '<', '>', '{', '}'};
+	public static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '　', '︵', '︶', '︹', '︺', '︻', '︼', '︷', '︸'};
+
 	private int mc;
 	private int[] fingerPosIndex;
 	private int[] fingerPosOffset;
