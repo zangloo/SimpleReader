@@ -29,6 +29,8 @@ public class ChapterManager extends PopupWindow
 	private ArrayList<String> cls = new ArrayList<String>();
 	private ArrayAdapter<String> aa;
 	private View layout;
+	private ListView cl;
+	private int chapter;
 
 	public ChapterManager(Context context, OnChapterSelectListener onChapterSelectListener)
 	{
@@ -42,7 +44,7 @@ public class ChapterManager extends PopupWindow
 		setWidth(100);
 
 		csl = onChapterSelectListener;
-		ListView cl = (ListView) layout.findViewById(R.id.chapter_list);
+		cl = (ListView) layout.findViewById(R.id.chapter_list);
 		aa = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, cls)
 		{
 			@Override
@@ -52,6 +54,10 @@ public class ChapterManager extends PopupWindow
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTypeface(tf);
 				tv.setTextColor(Color.BLACK);
+				if (position == chapter)
+					tv.setBackgroundResource(android.R.color.darker_gray);
+				else
+					tv.setBackgroundResource(android.R.color.background_light);
 				return v;
 			}
 		};
@@ -65,7 +71,7 @@ public class ChapterManager extends PopupWindow
 		});
 	}
 
-	public void show(ArrayList<String> ls, Typeface typeface, int top, int width, int height)
+	public void show(ArrayList<String> ls, int index, Typeface typeface, int top, int width, int height)
 	{
 		cls.clear();
 		cls.addAll(ls);
@@ -75,6 +81,7 @@ public class ChapterManager extends PopupWindow
 		setWidth(width);
 		setHeight(height);
 		showAtLocation(layout, Gravity.LEFT | Gravity.CENTER, 0, top);
+		cl.setSelection(chapter = index);
 	}
 
 	public void hide()
