@@ -49,26 +49,31 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 		titles.clear();
 	}
 
+	@Override
 	public int getChapterCount()
 	{
 		return titles.size();
 	}
 
+	@Override
 	public String getChapterTitle(int index)
 	{
 		return titles.get(index);
 	}
 
+	@Override
 	public ArrayList<String> getChapterTitleList()
 	{
 		return titles;
 	}
 
+	@Override
 	public int getCurrChapter()
 	{
 		return chapter;
 	}
 
+	@Override
 	public boolean gotoChapter(int index)
 	{
 		if ((index < 0) || (index >= titles.size()))

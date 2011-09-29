@@ -203,6 +203,7 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		lineCache.clear();
 	}
 
+	@Override
 	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
 	{
 		if (cpi.offset > 0) {
@@ -223,6 +224,7 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return cpi;
 	}
 
+	@Override
 	public ContentPosInfo getPercentPos(int percent)
 	{
 		int p = booksize * percent / 100;
@@ -240,19 +242,21 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		}
 		c.close();
 		return cpi;
-
 	}
 
+	@Override
 	public int getChapterCount()
 	{
 		return chapterCount;
 	}
 
+	@Override
 	public String getChapterTitle()
 	{
 		return getChapterTitle(getCurrChapter());
 	}
 
+	@Override
 	public String getChapterTitle(int index)
 	{
 		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(index + indexBase)});
@@ -266,6 +270,7 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return s;
 	}
 
+	@Override
 	public ArrayList<String> getChapterTitleList()
 	{
 		ArrayList<String> l = new ArrayList<String>(getChapterCount());
@@ -276,11 +281,13 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return l;
 	}
 
+	@Override
 	public int getCurrChapter()
 	{
 		return chapter - indexBase;
 	}
 
+	@Override
 	public boolean gotoChapter(int index)
 	{
 		if (index < 0 || index >= chapterCount)

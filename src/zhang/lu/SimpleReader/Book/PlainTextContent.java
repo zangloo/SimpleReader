@@ -44,21 +44,25 @@ public class PlainTextContent extends BookContent
 		return s;
 	}
 
+	@Override
 	public String line(int index)
 	{
 		return lines.get(index);
 	}
 
+	@Override
 	public int getLineCount()
 	{
 		return lines.size();
 	}
 
+	@Override
 	public int size()
 	{
 		return booksize;
 	}
 
+	@Override
 	public int size(int end)
 	{
 		if (end >= lines.size())
