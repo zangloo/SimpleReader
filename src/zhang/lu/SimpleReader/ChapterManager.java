@@ -36,15 +36,17 @@ public class ChapterManager extends PopupWindow
 	{
 		super(context);
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		layout = inflater.inflate(R.layout.chapter, null, true);
+		layout = inflater.inflate(R.layout.popuplist, null, true);
 
 		setContentView(layout);
 		setFocusable(true);
 		setHeight(100);
 		setWidth(100);
 
+		TextView tv = (TextView) layout.findViewById(R.id.popup_list_label);
+		tv.setText(context.getString(R.string.menu_chapter));
 		csl = onChapterSelectListener;
-		cl = (ListView) layout.findViewById(R.id.chapter_list);
+		cl = (ListView) layout.findViewById(R.id.popup_list);
 		aa = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, cls)
 		{
 			@Override

@@ -90,7 +90,7 @@ public class BookmarkManager extends PopupWindow
 		super(context);
 		reader = context;
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		layout = inflater.inflate(R.layout.bookmark, null, true);
+		layout = inflater.inflate(R.layout.popuplist, null, true);
 
 		setContentView(layout);
 		setFocusable(true);
@@ -100,7 +100,9 @@ public class BookmarkManager extends PopupWindow
 		bsl = onBookmarkSelectListener;
 		config = conf;
 		bls = new ArrayList<HashMap<String, Object>>();
-		ListView bl = (ListView) layout.findViewById(R.id.bookmark_list);
+		TextView tv = (TextView) layout.findViewById(R.id.popup_list_label);
+		tv.setText(context.getString(R.string.menu_bookmark_mgr));
+		ListView bl = (ListView) layout.findViewById(R.id.popup_list);
 		sa = new SimpleAdapter(reader, bls, android.R.layout.two_line_list_item,
 				       new String[]{BOOKMARK_LIST_TITLE_DESC, BOOKMARK_LIST_TITLE_POS},
 				       new int[]{android.R.id.text1, android.R.id.text2})

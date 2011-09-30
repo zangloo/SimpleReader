@@ -24,7 +24,6 @@
 	<string name="menu_seek">定位</string>
 	<string name="menu_chapter">卷章</string>
 	<string name="menu_menu">菜單</string>
-	<string name="menu_cancel">取消</string>
 
 	<string name="dialog_option_title">配置選項</string>
 	<string name="dialog_file_title">選擇書籍</string>
