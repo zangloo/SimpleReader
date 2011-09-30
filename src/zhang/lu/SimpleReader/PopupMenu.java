@@ -24,14 +24,31 @@ public class PopupMenu extends PopupWindow
 		void onMenuSelect(int id);
 	}
 
+	private static class PopupMenuItem
+	{
+		private int id;
+
+		public PopupMenuItem(int id)
+		{
+			this.id = id;
+		}
+
+		@Override
+		public String toString()
+		{
+			return menuInfo.get(id);
+		}
+	}
+
 	// same order with enum menu
 	private static final int[] menuTitleIDS = new int[]{R.string.menu_bookmark, R.string.menu_dict, R.string.menu_menu, R.string.menu_exit};
 	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
 
+	private static HashMap<Integer, String> menuInfo = new HashMap<Integer, String>();
+
 	private View layout;
-	private ArrayAdapter<Integer> aa;
+	private ArrayAdapter<PopupMenuItem> aa;
 	private ListView ml;
-	private HashMap<Integer, String> menuInfo = new HashMap<Integer, String>();
 
 	public PopupMenu(Context context, final OnMenuSelectListener onMenuSelectListener)
 	{
@@ -44,15 +61,16 @@ public class PopupMenu extends PopupWindow
 		setHeight(100);
 		setWidth(100);
 
+		menuInfo.clear();
 		for (int id : menuTitleIDS)
 			menuInfo.put(id, context.getString(id));
 		ml = (ListView) layout.findViewById(R.id.popup_list);
-		aa = new ArrayAdapter<Integer>(context, android.R.layout.simple_list_item_1)
+		aa = new ArrayAdapter<PopupMenuItem>(context, android.R.layout.simple_list_item_1)
 		{
 			@Override
 			public long getItemId(int position)
 			{
-				return getItem(position);
+				return getItem(position).id;
 			}
 
 			@Override
@@ -61,7 +79,6 @@ public class PopupMenu extends PopupWindow
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTextColor(Color.BLACK);
-				tv.setText(menuInfo.get(getItem(position)));
 				return v;
 			}
 		};
@@ -83,12 +100,12 @@ public class PopupMenu extends PopupWindow
 
 		aa.clear();
 		if (title != null) {
-			aa.add(R.string.menu_bookmark);
+			aa.add(new PopupMenuItem(R.string.menu_bookmark));
 			if (showDict)
-				aa.add(R.string.menu_dict);
+				aa.add(new PopupMenuItem(R.string.menu_dict));
 		}
-		aa.add(R.string.menu_menu);
-		aa.add(R.string.menu_exit);
+		aa.add(new PopupMenuItem(R.string.menu_menu));
+		aa.add(new PopupMenuItem(R.string.menu_exit));
 		aa.notifyDataSetChanged();
 
 		int h = 0;
