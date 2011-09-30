@@ -35,16 +35,16 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 	// return size
 	private static final String configSizeSQL = "selectSizeSQL";
 
-	// get the min line index of the <chapter> lines for <chapter> that size big then <size>
-	// return index, line text, size
+	// get the line index for <chapter> that size big then <size>
+	// return index
 	private static final String configPosSQL = "selectPosSQL";
 
 	// get lines count for <chapter>
 	// return count
 	private static final String configCountSQL = "selectCountSQL";
 
-	// search <chapter> lines for <chapter> from <index> for <string>
-	// return line index and line text
+	// search for <chapter> from <index> for <string>
+	// return line index
 	private static final String configSearchSQL = "selectSearchSQL";
 
 	// get chapter <index> title
@@ -212,14 +212,19 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 			cpi.line++;
 		}
 
-		Cursor c = db.rawQuery(searchSQL, new String[]{String.valueOf(chapter), String.valueOf(chapter), String
+		int idx = indexBase - 1;
+		Cursor c = db.rawQuery(searchSQL, new String[]{String.valueOf(chapter), String
 			.valueOf(cpi.line + indexBase), txt});
-		if (c.moveToFirst()) {
-			cpi.line = c.getInt(0) - indexBase;
-			cpi.offset = c.getString(1).indexOf(txt);
-		} else
-			cpi = null;
+		if (c.moveToFirst())
+			idx = c.getInt(0);
 		c.close();
+		if (idx < indexBase)
+			return null;
+
+		idx -= indexBase;
+		String line = line(idx);
+		cpi.line = idx;
+		cpi.offset = line.indexOf(txt);
 
 		return cpi;
 	}
@@ -230,17 +235,21 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		int p = booksize * percent / 100;
 		ContentPosInfo cpi = new ContentPosInfo();
 
-		Cursor c = db.rawQuery(posSQL, new String[]{String.valueOf(chapter), String.valueOf(chapter), String
-			.valueOf(p)});
+		int idx = indexBase - 1;
+		Cursor c = db.rawQuery(posSQL, new String[]{String.valueOf(chapter), String.valueOf(p)});
 		if (!c.moveToFirst()) {
 			cpi.line = 0;
 			cpi.offset = 0;
-		} else {
-			cpi.line = c.getInt(0) - indexBase;
-			String l = c.getString(1);
-			cpi.offset = p - (c.getInt(2) - l.length());
-		}
+		} else
+			idx = c.getInt(0);
 		c.close();
+		if (idx < indexBase)
+			return cpi;
+
+		idx -= indexBase;
+		cpi.line = idx;
+		String l = line(idx);
+		cpi.offset = p - (size(idx + 1) - l.length());
 		return cpi;
 	}
 
