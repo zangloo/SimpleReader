@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8da49b8d-901f-4985-8fc2-f52a3cdd17c3" name="Default" comment="improve UI: useing PopupWindow for menu instead ContextMenu">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/PopupMenu.java" />
-      <change type="DELETED" beforePath="D:\android\works\SimpleReader\res\layout\bookmark.xml" afterPath="" />
-      <change type="DELETED" beforePath="D:\android\works\SimpleReader\res\layout\chapter.xml" afterPath="" />
+    <list default="true" id="8da49b8d-901f-4985-8fc2-f52a3cdd17c3" name="Default" comment="bug fi">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/values/strings.xml" afterPath="$PROJECT_DIR$/res/values/strings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/PopupMenu.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/PopupMenu.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
-      <change type="MOVED" beforePath="D:\android\works\SimpleReader\res\layout\bookmark.xml" afterPath="$PROJECT_DIR$/res/layout/popuplist.xml" />
     </list>
     <ignored path="SimpleReader.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -110,37 +105,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="SimpleTextView.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="0" selection-start="2278" selection-end="2278" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ChapterManager.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="62" column="0" selection-start="1516" selection-end="1784" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="PopupMenu.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="PopupMenu.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/PopupMenu.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="63" column="59" selection-start="1868" selection-end="1868" vertical-scroll-proportion="-0.37662336">
+            <state line="60" column="54" selection-start="1681" selection-end="1681" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="popuplist.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/res/layout/popuplist.xml">
+      <file leaf-file-name="ChapterManager.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="10" column="59" selection-start="808" selection-end="808" vertical-scroll-proportion="0.0">
+            <state line="61" column="40" selection-start="1725" selection-end="1725" vertical-scroll-proportion="0.36363637">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Reader.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="980" column="52" selection-start="24645" selection-end="24645" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -174,13 +160,13 @@
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Config.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java" />
         <option value="$PROJECT_DIR$/res/values/strings.xml" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
         <option value="$PROJECT_DIR$/res/layout/popupmenu.xml" />
         <option value="$PROJECT_DIR$/res/layout/popuplist.xml" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/PopupMenu.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java" />
       </list>
     </option>
   </component>
@@ -761,7 +747,7 @@
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
     <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="improve: clean code" />
+    <option name="LAST_COMMIT_MESSAGE" value="improve UI: useing PopupWindow for menu instead ContextMenu" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -774,7 +760,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="improve:add seek menu" />
     <MESSAGE value="improve:add search highlight display" />
     <MESSAGE value="bug fix:set color mode incorrectly" />
     <MESSAGE value="improve:code reconstruction for book loader" />
@@ -799,6 +784,7 @@
     <MESSAGE value="improve UI: HTextView display" />
     <MESSAGE value="improve UI: menu, chapter, bookmark" />
     <MESSAGE value="improve: clean code" />
+    <MESSAGE value="improve UI: useing PopupWindow for menu instead ContextMenu" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -808,92 +794,114 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$PROJECT_DIR$/../../sdk/platforms/android-8/android.jar!/java/util/Arrays.class">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/HTextView.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="44" selection-start="260" selection-end="260" vertical-scroll-proportion="0.22377622" />
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/widget/ArrayAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="268" column="17" selection-start="9375" selection-end="9375" vertical-scroll-proportion="0.3327869" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/SimpleReaderBook.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="28" selection-start="1362" selection-end="1362" vertical-scroll-proportion="0.45786965" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Config.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="54" selection-start="1580" selection-end="1580" vertical-scroll-proportion="0.3068182" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/values/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="59" column="19" selection-start="2589" selection-end="2589" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/widget/PopupWindow.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1064" column="0" selection-start="38896" selection-end="38896" vertical-scroll-proportion="0.20349762" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/optdlg.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="229" selection-end="408" vertical-scroll-proportion="0.1399046" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/notedlg.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="54" selection-start="299" selection-end="310" vertical-scroll-proportion="0.24024025" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="378" column="34" selection-start="9970" selection-end="9977" vertical-scroll-proportion="0.3322034" />
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/view/View.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8157" column="22" selection-start="295110" selection-end="295110" vertical-scroll-proportion="0.07790143" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/filedlg.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="113" selection-start="398" selection-end="410" vertical-scroll-proportion="0.1526232">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/popuplist.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="59" selection-start="808" selection-end="808" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="112" column="44" selection-start="3219" selection-end="3219" vertical-scroll-proportion="0.16057234">
+        <state line="13" column="13" selection-start="267" selection-end="267" vertical-scroll-proportion="0.25974026">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/SimpleTextView.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="0" selection-start="2278" selection-end="2278" vertical-scroll-proportion="0.0" />
+        <state line="93" column="0" selection-start="2278" selection-end="2278" vertical-scroll-proportion="0.025974026">
+          <folding />
+        </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/XTextView.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="0" selection-start="1516" selection-end="1784" vertical-scroll-proportion="0.0">
+        <state line="15" column="13" selection-start="296" selection-end="296" vertical-scroll-proportion="0.25974026">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Config.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="25" column="13" selection-start="633" selection-end="633" vertical-scroll-proportion="0.2857143">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/DictManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="21" column="13" selection-start="536" selection-end="536" vertical-scroll-proportion="0.25974026">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/FileDialog.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="13" selection-start="522" selection-end="522" vertical-scroll-proportion="0.25974026">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/OptionDialog.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="13" selection-start="386" selection-end="386" vertical-scroll-proportion="0.25974026">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Util.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="13" selection-start="339" selection-end="339" vertical-scroll-proportion="0.25974026">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Book/HaodooLoader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="128" column="56" selection-start="4379" selection-end="4379" vertical-scroll-proportion="0.36038962">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/View/HNoteView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="13" selection-start="376" selection-end="376" vertical-scroll-proportion="0.25437203">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="980" column="52" selection-start="24645" selection-end="24645" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/widget/ArrayAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-0.33068362">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../packages/android-sdk-2.2_r2-src.jar!/android/widget/SimpleAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/PopupMenu.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="63" column="59" selection-start="1868" selection-end="1868" vertical-scroll-proportion="-0.37662336">
+        <state line="60" column="54" selection-start="1681" selection-end="1681" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/BookmarkManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="155" column="25" selection-start="4543" selection-end="4543" vertical-scroll-proportion="0.6136725">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/ChapterManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="61" column="40" selection-start="1725" selection-end="1725" vertical-scroll-proportion="0.36363637">
           <folding />
         </state>
       </provider>

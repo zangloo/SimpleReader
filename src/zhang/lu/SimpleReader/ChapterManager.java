@@ -26,7 +26,6 @@ public class ChapterManager extends PopupWindow
 
 	private OnChapterSelectListener csl;
 	private Typeface tf = null;
-	private ArrayList<String> cls = new ArrayList<String>();
 	private ArrayAdapter<String> aa;
 	private View layout;
 	private ListView cl;
@@ -47,7 +46,7 @@ public class ChapterManager extends PopupWindow
 		tv.setText(context.getString(R.string.menu_chapter));
 		csl = onChapterSelectListener;
 		cl = (ListView) layout.findViewById(R.id.popup_list);
-		aa = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, cls)
+		aa = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
 		{
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
@@ -74,8 +73,9 @@ public class ChapterManager extends PopupWindow
 
 	public void show(ArrayList<String> ls, int index, Typeface typeface, int top, int width, int height)
 	{
-		cls.clear();
-		cls.addAll(ls);
+		aa.clear();
+		for (String s : ls)
+			aa.add(s);
 		aa.notifyDataSetChanged();
 
 		tf = typeface;

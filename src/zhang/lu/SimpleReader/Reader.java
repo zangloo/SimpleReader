@@ -978,10 +978,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	{
 		pm = new PopupMenu(this, new PopupMenu.OnMenuSelectListener()
 		{
-			public void onMenuSelect(PopupMenu.menu id)
+			public void onMenuSelect(int id)
 			{
 				switch (id) {
-					case dict:
+					case R.string.menu_dict:
 						assert fingerPosInfo != null;
 						assert fingerPosInfo.str != null;
 						assert fingerPosInfo.str.length() > 0;
@@ -991,7 +991,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 								.substring(0, dictManager.getDictMaxWordLen());
 						dictManager.showDict(fingerPosInfo);
 						break;
-					case bookmark:
+					case R.string.menu_bookmark:
 						assert fingerPosInfo != null;
 						assert fingerPosInfo.str != null;
 						assert fingerPosInfo.str.length() > 0;
@@ -1000,10 +1000,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 							bookmarkManager.addDialog(
 								BookmarkManager.createBookmark(fingerPosInfo, ri));
 						break;
-					case menu:
+					case R.string.menu_menu:
 						openOptionsMenu();
 						break;
-					case exit:
+					case R.string.menu_exit:
 						finish();
 						break;
 				}

@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -22,12 +21,7 @@ public class PopupMenu extends PopupWindow
 {
 	public static interface OnMenuSelectListener
 	{
-		void onMenuSelect(menu id);
-	}
-
-	public static enum menu
-	{
-		bookmark, dict, menu, exit
+		void onMenuSelect(int id);
 	}
 
 	// same order with enum menu
@@ -35,8 +29,7 @@ public class PopupMenu extends PopupWindow
 	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
 
 	private View layout;
-	private ArrayList<String> mls = new ArrayList<String>();
-	private ArrayAdapter<String> aa;
+	private ArrayAdapter<Integer> aa;
 	private ListView ml;
 	private HashMap<Integer, String> menuInfo = new HashMap<Integer, String>();
 
@@ -54,14 +47,21 @@ public class PopupMenu extends PopupWindow
 		for (int id : menuTitleIDS)
 			menuInfo.put(id, context.getString(id));
 		ml = (ListView) layout.findViewById(R.id.popup_list);
-		aa = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, mls)
+		aa = new ArrayAdapter<Integer>(context, android.R.layout.simple_list_item_1)
 		{
+			@Override
+			public long getItemId(int position)
+			{
+				return getItem(position);
+			}
+
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
 			{
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTextColor(Color.BLACK);
+				tv.setText(menuInfo.get(getItem(position)));
 				return v;
 			}
 		};
@@ -70,7 +70,7 @@ public class PopupMenu extends PopupWindow
 		{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
-				onMenuSelectListener.onMenuSelect(menu.values()[position]);
+				onMenuSelectListener.onMenuSelect((int) id);
 			}
 		});
 	}
@@ -81,14 +81,14 @@ public class PopupMenu extends PopupWindow
 		tv.setText(title);
 		tv.setTypeface(typeface);
 
-		mls.clear();
+		aa.clear();
 		if (title != null) {
-			mls.add(menuInfo.get(R.string.menu_bookmark));
+			aa.add(R.string.menu_bookmark);
 			if (showDict)
-				mls.add(menuInfo.get(R.string.menu_dict));
+				aa.add(R.string.menu_dict);
 		}
-		mls.add(menuInfo.get(R.string.menu_menu));
-		mls.add(menuInfo.get(R.string.menu_exit));
+		aa.add(R.string.menu_menu);
+		aa.add(R.string.menu_exit);
 		aa.notifyDataSetChanged();
 
 		int h = 0;
