@@ -249,6 +249,7 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 		}
 
 		saf.notifyDataSetChanged();
+		setTitle(getContext().getString(R.string.dialog_file_title) + ((pwd.length() == 0) ? "/" : pwd));
 		return pos;
 	}
 

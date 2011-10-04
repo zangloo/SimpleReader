@@ -26,7 +26,7 @@
 	<string name="menu_menu">菜單</string>
 
 	<string name="dialog_option_title">配置選項</string>
-	<string name="dialog_file_title">選擇書籍</string>
+	<string name="dialog_file_title">選擇書籍:</string>
 
 	<string name="text_preview">揩面、汰腳、睏覺</string>
 	<string name="text_preview_label">效果預覽：</string>
