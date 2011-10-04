@@ -71,10 +71,16 @@ public class HaodooLoader implements BookLoader.Loader
 	//"★★★★★★★以下內容★★︽本版︾★★無法顯示★★★★★★★";
 	public static final byte[] ENCRYPT_MARK = {(byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xA5, (byte) 0x48, (byte) 0xA4, (byte) 0x55, (byte) 0xA4, (byte) 0xBA, (byte) 0xAE, (byte) 0x65, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0x6F, (byte) 0xA5, (byte) 0xBB, (byte) 0xAA, (byte) 0xA9, (byte) 0xA1, (byte) 0x70, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xB5, (byte) 0x4C, (byte) 0xAA, (byte) 0x6B, (byte) 0xC5, (byte) 0xE3, (byte) 0xA5, (byte) 0xDC, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A};
 
+	enum BookType
+	{
+		pdb, updb
+	}
+
 	private int recordCount;
 	private Vector<Long> recordOffsets;
-	String encode;
-	boolean encrypted = false;
+	private String encode;
+	private boolean encrypted = false;
+	private BookType bookType;
 
 	List<String> text;
 	InputStream is;
@@ -83,18 +89,19 @@ public class HaodooLoader implements BookLoader.Loader
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
 
-	private void unEncrypt(byte[] rec)
+	private void unEncrypt(byte[] rec, int offset)
 	{
-		for (int i = 0; i < rec.length; i += 2)
-			if (rec[i] != 0x0a)
-				rec[i]--;
+		for (int i = offset; i < rec.length; i++)
+			// byte is signed, so this code ugly
+			if (rec[i] < -1)
+				rec[++i]--;
 	}
 
 	private void formatTitle(byte[] rec)
 	{
 		String s;
-		int len = (PDBEncode.equals(encode)) ? rec.length - 1 - 8 : rec.length - 8;
-		String separator = (PDBEncode.equals(encode)) ? PDB_TITLE_SEPARATOR : UPDB_TITLE_SEPARATOR;
+		int len = (bookType == BookType.pdb) ? rec.length - 1 - 8 : rec.length - 8;
+		String separator = (bookType == BookType.pdb) ? PDB_TITLE_SEPARATOR : UPDB_TITLE_SEPARATOR;
 		try {
 			s = new String(rec, 8, len, encode);
 		} catch (UnsupportedEncodingException e) {
@@ -120,10 +127,10 @@ public class HaodooLoader implements BookLoader.Loader
 	{
 		String s;
 		int offset = 0;
-		int len = (PDBEncode.equals(encode)) ? rec.length - 1 : rec.length - 2;
+		int len = (bookType == BookType.pdb) ? rec.length - 1 : rec.length - 2;
 		try {
 			// updb has no encrypted, check pdb only
-			if (PDBEncode.equals(encode)) {
+			if (bookType == BookType.pdb) {
 				if (!encrypted) {
 					int i;
 					for (i = 0; i < ENCRYPT_MARK.length; i++)
@@ -136,7 +143,7 @@ public class HaodooLoader implements BookLoader.Loader
 					}
 				}
 				if (encrypted)
-					unEncrypt(rec);
+					unEncrypt(rec, offset);
 			}
 			s = new String(rec, offset, len, encode);
 		} catch (UnsupportedEncodingException e) {
@@ -249,6 +256,7 @@ public class HaodooLoader implements BookLoader.Loader
 
 		is = f.getInputStream();
 		encode = readHeader();
+		bookType = PDBEncode.equals(encode) ? BookType.pdb : BookType.updb;
 		formatTitle(readRecord(0));
 		for (int i = 1; i < recordCount - 1; i++)
 			format(readRecord(i));
