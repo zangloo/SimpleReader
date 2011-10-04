@@ -85,7 +85,7 @@ public class HaodooLoader implements BookLoader.Loader
 
 	private void unEncrypt(byte[] rec)
 	{
-		for (int i = 1; i < rec.length; i += 2)
+		for (int i = 0; i < rec.length; i += 2)
 			if (rec[i] != 0x0a)
 				rec[i]--;
 	}
