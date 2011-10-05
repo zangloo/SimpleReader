@@ -614,7 +614,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				break;
 			case menuChapterMgr:
 				if (config.getCurrFile() != null)
-					chapterManager.show(bv.getContent().getChapterTitleList(),
+					chapterManager.show(bv.getContent().getChapterInfoList(),
 							    bv.getContent().getCurrChapter(), tf, bv.getTop(),
 							    (screenWidth >> 1), screenHeight - bv.getTop());
 				break;

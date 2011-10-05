@@ -20,7 +20,7 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"epub"};
 
-	private ArrayList<String> titles = new ArrayList<String>();
+	private ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
 	private int chapter;
 	private List<TOCReference> tocrs;
 
@@ -32,39 +32,39 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 	public BookContent load(VFile file) throws Exception
 	{
 		Book book = (new EpubReader()).readEpub(new FileInputStream(file));
-		titles.clear();
+		chapters.clear();
 
 		tocrs = book.getTableOfContents().getTocReferences();
 		for (TOCReference tocr : tocrs)
-			titles.add(tocr.getTitle());
-		chapter = 0;
+			chapters.add(new ChapterInfo(tocr.getTitle()));
 
-		loadChapter();
+		chapter = 0;
+		loadChapter(0);
 		return this;
 	}
 
 	public void unload(BookContent aBook)
 	{
 		tocrs = null;
-		titles.clear();
+		chapters.clear();
 	}
 
 	@Override
 	public int getChapterCount()
 	{
-		return titles.size();
+		return chapters.size();
 	}
 
 	@Override
 	public String getChapterTitle(int index)
 	{
-		return titles.get(index);
+		return chapters.get(index).title;
 	}
 
 	@Override
-	public ArrayList<String> getChapterTitleList()
+	public ArrayList<ChapterInfo> getChapterInfoList()
 	{
-		return titles;
+		return chapters;
 	}
 
 	@Override
@@ -74,18 +74,10 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 	}
 
 	@Override
-	public boolean gotoChapter(int index)
-	{
-		if ((index < 0) || (index >= titles.size()))
-			return false;
-		chapter = index;
-		loadChapter();
-		return true;
-	}
-
-	private void loadChapter()
+	protected boolean loadChapter(int index)
 	{
 		try {
+			chapter = index;
 			ArrayList<String> ls = new ArrayList<String>();
 			Document doc = Jsoup.parse(tocrs.get(chapter).getResource().getInputStream(),
 						   tocrs.get(chapter).getResource().getInputEncoding(), "");
@@ -96,5 +88,6 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 			list.add(e.getMessage());
 			setContent(list);
 		}
+		return true;
 	}
 }

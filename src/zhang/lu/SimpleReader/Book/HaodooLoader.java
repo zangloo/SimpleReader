@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 /**
@@ -52,7 +51,7 @@ import java.util.Vector;
     第N+2筆資料是書籤，預設是-1。可以不理。
 
  */
-public class HaodooLoader implements BookLoader.Loader
+public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"pdb", "updb"};
 
@@ -71,9 +70,20 @@ public class HaodooLoader implements BookLoader.Loader
 	//"★★★★★★★以下內容★★︽本版︾★★無法顯示★★★★★★★";
 	public static final byte[] ENCRYPT_MARK = {(byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xA5, (byte) 0x48, (byte) 0xA4, (byte) 0x55, (byte) 0xA4, (byte) 0xBA, (byte) 0xAE, (byte) 0x65, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0x6F, (byte) 0xA5, (byte) 0xBB, (byte) 0xAA, (byte) 0xA9, (byte) 0xA1, (byte) 0x70, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xB5, (byte) 0x4C, (byte) 0xAA, (byte) 0x6B, (byte) 0xC5, (byte) 0xE3, (byte) 0xA5, (byte) 0xDC, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0xA1, (byte) 0xB9, (byte) 0x0D, (byte) 0x0A};
 
-	enum BookType
+	private enum BookType
 	{
 		pdb, updb
+	}
+
+	private static class HaodooChapterInfo extends ChapterInfo
+	{
+		ArrayList<String> lines;
+
+		HaodooChapterInfo(String t)
+		{
+			super(t);
+			lines = new ArrayList<String>();
+		}
 	}
 
 	private int recordCount;
@@ -82,9 +92,10 @@ public class HaodooLoader implements BookLoader.Loader
 	private boolean encrypted = false;
 	private BookType bookType;
 
-	List<String> text;
-	InputStream is;
-	VFile f;
+	private ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
+	private int currChapter;
+	private InputStream is;
+	private VFile f;
 
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
@@ -109,21 +120,19 @@ public class HaodooLoader implements BookLoader.Loader
 		}
 		//title
 		int np = s.indexOf(0x1b);
-		text.add(s.substring(0, np));
 
 		int p = s.indexOf(0x1b, np + 3) + 1;
 		while ((np = s.indexOf(separator, p)) >= 0) {
-			text.add(s.substring(p, np));
+			//text.add(s.substring(p, np));
+			chapters.add(new HaodooChapterInfo(s.substring(p, np)));
 			p = np + separator.length();
 		}
 
 		if (p < s.length())
-			text.add(s.substring(p));
-
-		text.add("");
+			chapters.add(new HaodooChapterInfo(s.substring(p)));
 	}
 
-	private void format(byte[] rec)
+	private void format(byte[] rec, HaodooChapterInfo ci)
 	{
 		String s;
 		int offset = 0;
@@ -152,14 +161,13 @@ public class HaodooLoader implements BookLoader.Loader
 
 		int p = 0, np;
 		while ((np = s.indexOf("\r\n", p)) >= 0) {
-			text.add(s.substring(p, np));
+			ci.lines.add(s.substring(p, np));
 			p = np + 2;
 		}
 
-		if (p < s.length())
-			text.add(s.substring(p));
-
-		text.add("");
+		if (p < s.length()) {
+			ci.lines.add(s.substring(p));
+		}
 	}
 
 	private String readHeader() throws IOException
@@ -241,7 +249,6 @@ public class HaodooLoader implements BookLoader.Loader
 		return recBytes;
 	}
 
-
 	public String[] getSuffixes()
 	{
 		return suffixes;
@@ -252,19 +259,54 @@ public class HaodooLoader implements BookLoader.Loader
 		encrypted = false;
 
 		f = file;
-		text = new ArrayList<String>();
+		chapters.clear();
 
 		is = f.getInputStream();
 		encode = readHeader();
 		bookType = PDBEncode.equals(encode) ? BookType.pdb : BookType.updb;
 		formatTitle(readRecord(0));
 		for (int i = 1; i < recordCount - 1; i++)
-			format(readRecord(i));
+			format(readRecord(i), (HaodooChapterInfo) chapters.get(i - 1));
 		is.close();
-		return new PlainTextContent(text);
+
+		currChapter = 0;
+		setContent(((HaodooChapterInfo) chapters.get(0)).lines);
+		return this;
 	}
 
 	public void unload(BookContent aBook)
 	{
+	}
+
+	@Override
+	public int getChapterCount()
+	{
+		return chapters.size();
+	}
+
+	@Override
+	public String getChapterTitle(int index)
+	{
+		return chapters.get(index).title;
+	}
+
+	@Override
+	public ArrayList<ChapterInfo> getChapterInfoList()
+	{
+		return chapters;
+	}
+
+	@Override
+	public int getCurrChapter()
+	{
+		return currChapter;
+	}
+
+	@Override
+	protected boolean loadChapter(int index)
+	{
+		currChapter = index;
+		setContent(((HaodooChapterInfo) chapters.get(index)).lines);
+		return true;
 	}
 }

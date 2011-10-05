@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import zhang.lu.SimpleReader.Book.BookContent;
 
 import java.util.ArrayList;
 
@@ -71,11 +72,11 @@ public class ChapterManager extends PopupWindow
 		});
 	}
 
-	public void show(ArrayList<String> ls, int index, Typeface typeface, int top, int width, int height)
+	public void show(ArrayList<BookContent.ChapterInfo> cs, int index, Typeface typeface, int top, int width, int height)
 	{
 		aa.clear();
-		for (String s : ls)
-			aa.add(s);
+		for (BookContent.ChapterInfo c : cs)
+			aa.add(c.title());
 		aa.notifyDataSetChanged();
 
 		tf = typeface;

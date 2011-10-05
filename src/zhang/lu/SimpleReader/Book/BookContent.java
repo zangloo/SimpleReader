@@ -15,6 +15,15 @@ public abstract class BookContent
 		public int line, offset;
 	}
 
+	public static class ChapterInfo
+	{
+		protected String title;
+
+		public ChapterInfo(String t) {title = t;}
+
+		public String title() {return title;}
+	}
+
 	// return chapter count
 	public int getChapterCount()
 	{
@@ -34,7 +43,7 @@ public abstract class BookContent
 	}
 
 	// return all chapter title
-	public ArrayList<String> getChapterTitleList()
+	public ArrayList<ChapterInfo> getChapterInfoList()
 	{
 		return null;
 	}
@@ -47,6 +56,13 @@ public abstract class BookContent
 
 	// switch to chapter index
 	public boolean gotoChapter(int index)
+	{
+		return !((index < 0) || (index >= getChapterCount()) || (index == getCurrChapter())) &&
+			loadChapter(index);
+	}
+
+	// load chapter info
+	protected boolean loadChapter(int index)
 	{
 		return false;
 	}

@@ -280,12 +280,12 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 	}
 
 	@Override
-	public ArrayList<String> getChapterTitleList()
+	public ArrayList<ChapterInfo> getChapterInfoList()
 	{
-		ArrayList<String> l = new ArrayList<String>(getChapterCount());
+		ArrayList<ChapterInfo> l = new ArrayList<ChapterInfo>(getChapterCount());
 		Cursor c = db.rawQuery(chapterListSQL, null);
 		while (c.moveToNext())
-			l.add(c.getString(0));
+			l.add(new ChapterInfo(c.getString(0)));
 		c.close();
 		return l;
 	}
@@ -297,14 +297,8 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 	}
 
 	@Override
-	public boolean gotoChapter(int index)
+	public boolean loadChapter(int index)
 	{
-		if (index < 0 || index >= chapterCount)
-			return false;
-
-		if (chapter == index + indexBase)
-			return false;
-
 		chapter = index + indexBase;
 		updateValues();
 		return true;
