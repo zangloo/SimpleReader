@@ -64,6 +64,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	public static final byte[] UPDB_TITLE_SEPARATOR = new byte[]{0x0d, 0x00, 0x0a, 0x00};
 	public static final byte[] UPDB_ESCAPE_SEPARATOR = new byte[]{0x1b, 0x00};
 
+	public static final int TEXT_COUNT_OFFSET = 8;
 	public static final int RECODES_COUNT_OFFSET = 76;
 	public static final int ID_OFFSET = 64;
 	public static final int ID_LENGTH = 4;
@@ -208,7 +209,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 
 
 		//line records count
-		recordCount = (header[RECODES_COUNT_OFFSET] << 8) + header[RECODES_COUNT_OFFSET + 1];
+		recordCount = fromUInt16(header, RECODES_COUNT_OFFSET);
 
 		//read all records offset
 		recordOffsets = new Vector<Long>(recordCount);
@@ -218,6 +219,13 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 			throw new IOException("readHeader: failed to read record info.");
 		for (int i = 0; i < recordCount; i++)
 			recordOffsets.add(fromUInt32(recordBuffer, i * 8));
+	}
+
+	public static int fromUInt16(byte buf[], int i)
+	{
+		int b1 = (0x000000FF & (int) buf[i]);
+		int b2 = (0x000000FF & (int) buf[i + 1]);
+		return (((b1 << 8) | b2));
 	}
 
 	public static long fromUInt32(byte buf[], int i)
@@ -310,7 +318,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	private static void initPalmDocDB(byte[] rec)
 	{
 		compression = (rec[1] == 2);
-		txtCount = (rec[8] << 8) + rec[9];
+		txtCount = fromUInt16(rec, TEXT_COUNT_OFFSET);
 		chapters.add(new HaodooChapterInfo(null));
 		tail = null;
 	}
