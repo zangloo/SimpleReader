@@ -60,7 +60,7 @@ public class BookLoader
 			return book = currLoader.load(f);
 		} catch (Exception e) {
 			ArrayList<String> list = new ArrayList<String>();
-			list.add(e.getMessage());
+			list.add(e.toString());
 			return book = new PlainTextContent(list);
 		}
 	}

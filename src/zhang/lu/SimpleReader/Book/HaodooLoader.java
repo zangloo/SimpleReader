@@ -60,8 +60,9 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	public static final int TYPE_ID_OFFSET = 60;
 	public static final String PDB_ID = "MTIT";
 	public static final String UPDB_ID = "MTIU";
-	public static final String PDB_TITLE_SEPARATOR = "\u001b";
-	public static final String UPDB_TITLE_SEPARATOR = "\r\n";
+	public static final byte[] PDB_SEPARATOR = new byte[]{0x1b};
+	public static final byte[] UPDB_TITLE_SEPARATOR = new byte[]{0x0d, 0x00, 0x0a, 0x00};
+	public static final byte[] UPDB_ESCAPE_SEPARATOR = new byte[]{0x1b, 0x00};
 
 	public static final int RECODES_COUNT_OFFSET = 76;
 	public static final int ID_OFFSET = 64;
@@ -86,21 +87,18 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		}
 	}
 
-	private int recordCount;
-	private Vector<Long> recordOffsets;
-	private String encode;
-	private boolean encrypted = false;
-	private BookType bookType;
-
-	private ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
-	private int currChapter;
-	private InputStream is;
-	private VFile f;
+	private static int recordCount;
+	private static Vector<Long> recordOffsets;
+	private static String encode;
+	private static boolean encrypted = false;
+	private static BookType bookType;
+	private static ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
+	private static int currChapter;
 
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
 
-	private void unEncrypt(byte[] rec, int offset)
+	private static void unEncrypt(byte[] rec, int offset)
 	{
 		for (int i = offset; i < rec.length; i++)
 			// byte is signed, so this code ugly
@@ -108,35 +106,44 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 				rec[++i]--;
 	}
 
-	private void formatTitle(byte[] rec)
+	// return -1 for not found
+	private static int findSeparator(byte[] rec, byte[] separator, int offset)
 	{
-		String s;
-		int len = (bookType == BookType.pdb) ? rec.length - 1 - 8 : rec.length - 8;
-		String separator = (bookType == BookType.pdb) ? PDB_TITLE_SEPARATOR : UPDB_TITLE_SEPARATOR;
-		try {
-			s = new String(rec, 8, len, encode);
-		} catch (UnsupportedEncodingException e) {
-			return;
-		}
-		//title
-		int np = s.indexOf(0x1b);
-
-		int p = s.indexOf(0x1b, np + 3) + 1;
-		while ((np = s.indexOf(separator, p)) >= 0) {
-			//text.add(s.substring(p, np));
-			chapters.add(new HaodooChapterInfo(s.substring(p, np)));
-			p = np + separator.length();
-		}
-
-		if (p < s.length())
-			chapters.add(new HaodooChapterInfo(s.substring(p)));
+		for (int i = offset; i < rec.length; i++)
+			if (rec[i] == separator[0]) {
+				int j;
+				for (j = 1; j < separator.length; j++)
+					if (rec[i + j] != separator[j])
+						break;
+				if (j == separator.length)
+					return i;
+			}
+		return -1;
 	}
 
-	private void format(byte[] rec, HaodooChapterInfo ci)
+	private static void formatTitle(byte[] rec) throws UnsupportedEncodingException
+	{
+		byte[] escape = (bookType == BookType.pdb) ? PDB_SEPARATOR : UPDB_ESCAPE_SEPARATOR;
+		int np = findSeparator(rec, escape, 8);
+		int p = findSeparator(rec, escape, np + 3 * escape.length) + escape.length;
+
+		byte[] separator = (bookType == BookType.pdb) ? PDB_SEPARATOR : UPDB_TITLE_SEPARATOR;
+		while ((np = findSeparator(rec, separator, p)) >= 0) {
+			//text.add(s.substring(p, np));
+			String s = new String(rec, p, np - p, encode);
+			chapters.add(new HaodooChapterInfo(s));
+			p = np + separator.length;
+		}
+
+		if (p < rec.length)
+			chapters.add(new HaodooChapterInfo(new String(rec, p, rec.length - p, encode)));
+	}
+
+	private static void format(byte[] rec, HaodooChapterInfo ci)
 	{
 		String s;
 		int offset = 0;
-		int len = (bookType == BookType.pdb) ? rec.length - 1 : rec.length - 2;
+		int len = (bookType == BookType.pdb) ? rec.length - 1 : rec.length;
 		try {
 			// updb has no encrypted, check pdb only
 			if (bookType == BookType.pdb) {
@@ -170,7 +177,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		}
 	}
 
-	private String readHeader() throws IOException
+	private static String readHeader(InputStream is) throws IOException
 	{
 		byte[] header = new byte[HEADER_LENGTH];
 
@@ -221,7 +228,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return ((long) ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4) & 0xFFFFFFFFL);
 	}
 
-	public byte[] readRecord(int recIndex) throws IOException, ArrayIndexOutOfBoundsException
+	public static byte[] readRecord(VFile f, InputStream is, int recIndex) throws IOException, ArrayIndexOutOfBoundsException
 	{
 		if ((recIndex < 0) || (recIndex >= recordCount))
 			throw new ArrayIndexOutOfBoundsException(
@@ -257,16 +264,14 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	public BookContent load(VFile file) throws Exception
 	{
 		encrypted = false;
-
-		f = file;
 		chapters.clear();
 
-		is = f.getInputStream();
-		encode = readHeader();
+		InputStream is = file.getInputStream();
+		encode = readHeader(is);
 		bookType = PDBEncode.equals(encode) ? BookType.pdb : BookType.updb;
-		formatTitle(readRecord(0));
+		formatTitle(readRecord(file, is, 0));
 		for (int i = 1; i < recordCount - 1; i++)
-			format(readRecord(i), (HaodooChapterInfo) chapters.get(i - 1));
+			format(readRecord(file, is, i), (HaodooChapterInfo) chapters.get(i - 1));
 		is.close();
 
 		currChapter = 0;
