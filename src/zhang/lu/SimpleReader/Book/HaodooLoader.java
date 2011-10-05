@@ -334,25 +334,20 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return -1;
 	}
 
-	private static int formatPalmDocDB(int size, HaodooChapterInfo ci) throws Exception
+	private static int formatPalmDocDB(byte[] buf, int size, HaodooChapterInfo ci) throws Exception
 	{
 		if (encode == null)
-			encode = BookUtil.detect(new ByteArrayInputStream(recBuf, 0, size));
+			encode = BookUtil.detect(new ByteArrayInputStream(buf, 0, size));
 
 		int p = 0, np;
-		while ((np = searchByte(recBuf, p, size, (byte) '\n')) >= 0) {
-			ci.lines.add(new String(recBuf, p, np - p, encode));
+		while ((np = searchByte(buf, p, size, (byte) '\n')) >= 0) {
+			ci.lines.add(new String(buf, p, np - p, encode));
 			p = np + 1;
 		}
 
 		int ret = size - p;
 		if (ret > 0)
-			if (size > recBuf.length - MAX_REC_SIZE) {
-				byte[] ob = recBuf;
-				recBuf = new byte[recBuf.length + MAX_REC_SIZE];
-				System.arraycopy(ob, p, recBuf, 0, ret);
-			} else
-				System.arraycopy(recBuf, p, recBuf, 0, ret);
+			System.arraycopy(buf, p, buf, 0, ret);
 
 		return ret;
 	}
@@ -372,12 +367,17 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		for (int i = 1; i <= txtCount; i++) {
 			byte[] rec = readRecord(file, is, i);
 			if (bookType == BookType.palmDoc) {
+				if (recPos + MAX_REC_SIZE > recBuf.length) {
+					byte[] ob = recBuf;
+					recBuf = new byte[recBuf.length + MAX_REC_SIZE];
+					System.arraycopy(ob, 0, recBuf, 0, recPos);
+				}
 				if (compression) {
 					int cc = decompress(rec, recBuf, recPos);
-					recPos = formatPalmDocDB(cc, (HaodooChapterInfo) chapters.get(0));
+					recPos = formatPalmDocDB(recBuf, cc, (HaodooChapterInfo) chapters.get(0));
 				} else {
 					System.arraycopy(rec, 0, recBuf, recPos, rec.length);
-					recPos = formatPalmDocDB(recPos + rec.length,
+					recPos = formatPalmDocDB(recBuf, recPos + rec.length,
 								 (HaodooChapterInfo) chapters.get(0));
 				}
 			} else
@@ -386,7 +386,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		is.close();
 
 		if ((bookType == BookType.palmDoc) && (recPos > 0))
-			formatPalmDocDB(recPos, (HaodooChapterInfo) chapters.get(0));
+			formatPalmDocDB(recBuf, recPos, (HaodooChapterInfo) chapters.get(0));
 		currChapter = 0;
 		setContent(((HaodooChapterInfo) chapters.get(0)).lines);
 		return this;
