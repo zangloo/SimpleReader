@@ -1,5 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -56,10 +57,9 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	private static final String[] suffixes = {"pdb", "updb"};
 
 	public static final int HEADER_LENGTH = 78;
-	public static final String TYPE_ID = "BOOK";
-	public static final int TYPE_ID_OFFSET = 60;
 	public static final String PDB_ID = "MTIT";
 	public static final String UPDB_ID = "MTIU";
+	public static final String PALMDOC_ID = "REAd";
 	public static final byte[] PDB_SEPARATOR = new byte[]{0x1b};
 	public static final byte[] UPDB_TITLE_SEPARATOR = new byte[]{0x0d, 0x00, 0x0a, 0x00};
 	public static final byte[] UPDB_ESCAPE_SEPARATOR = new byte[]{0x1b, 0x00};
@@ -73,7 +73,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 
 	private enum BookType
 	{
-		pdb, updb
+		palmDoc, pdb, updb
 	}
 
 	private static class HaodooChapterInfo extends ChapterInfo
@@ -94,6 +94,9 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	private static BookType bookType;
 	private static ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
 	private static int currChapter;
+	private static boolean compression;
+	private static int txtCount;
+	private static String tail;
 
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
@@ -137,6 +140,8 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 
 		if (p < rec.length)
 			chapters.add(new HaodooChapterInfo(new String(rec, p, rec.length - p, encode)));
+
+		txtCount = recordCount - 2;
 	}
 
 	private static void format(byte[] rec, HaodooChapterInfo ci)
@@ -177,32 +182,30 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		}
 	}
 
-	private static String readHeader(InputStream is) throws IOException
+	private static void readHeader(InputStream is) throws Exception
 	{
 		byte[] header = new byte[HEADER_LENGTH];
 
 		if (is.read(header) != HEADER_LENGTH)
 			throw new IOException("readHeader: failed to read header");
 
-		// check type id "BOOK"
 		String id = "";
-		for (int i = 0; i < TYPE_ID.length(); i++)
-			id += header[TYPE_ID_OFFSET + i];
-		if (TYPE_ID.equals(id))
-			throw new IOException("readHeader: Unrecognized type id:" + id);
-
 		// check book type "MTIT" or "MTIU"
-		id = "";
 		for (int i = 0; i < ID_LENGTH; i++)
 			id += (char) header[ID_OFFSET + i];
 
-		String encode;
-		if (id.equals(PDB_ID))
+		if (id.equals(PDB_ID)) {
 			encode = PDBEncode;
-		else if (id.equals(UPDB_ID))
+			bookType = BookType.pdb;
+		} else if (id.equals(UPDB_ID)) {
 			encode = UPDBEncode;
-		else
-			encode = PDBEncode;
+			bookType = BookType.updb;
+		} else if (id.equals(PALMDOC_ID)) {
+			encode = null;
+			bookType = BookType.palmDoc;
+		} else
+			throw new Exception("readHeader: Unrecognized type id:" + id);
+
 
 		//line records count
 		recordCount = (header[RECODES_COUNT_OFFSET] << 8) + header[RECODES_COUNT_OFFSET + 1];
@@ -215,8 +218,6 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 			throw new IOException("readHeader: failed to read record info.");
 		for (int i = 0; i < recordCount; i++)
 			recordOffsets.add(fromUInt32(recordBuffer, i * 8));
-
-		return encode;
 	}
 
 	public static long fromUInt32(byte buf[], int i)
@@ -261,19 +262,109 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return suffixes;
 	}
 
+	// this method get from http://gutenpalm.sourceforge.net/PalmIO/
+	private static int decompress(byte[] in, byte[] out)
+	{
+		int i = 0;
+		int j = 0;
+
+		while (i < in.length) {
+			// Get the next compressed input byte
+			int c = ((int) in[i++]) & 0x00FF;
+
+			if (c >= 0x00C0) {
+				// type C command (space + char)
+				out[j++] = ' ';
+				out[j++] = (byte) (c & 0x007F);
+			} else if (c >= 0x0080) {
+				// type B command (sliding window sequence)
+
+				// Move this to high bits and read low bits
+				c = (c << 8) | (((int) in[i++]) & 0x00FF);
+				// 3 + low 3 bits (Beirne's 'n'+3)
+				int windowLen = 3 + (c & 0x0007);
+				// next 11 bits (Beirne's 'm')
+				int windowDist = (c >> 3) & 0x07FF;
+				int windowCopyFrom = j - windowDist;
+
+				windowLen = Math.min(windowLen, out.length - j);
+				while (windowLen-- > 0)
+					out[j++] = out[windowCopyFrom++];
+			} else if (c >= 0x0009) {
+				// self-representing, no command
+				out[j++] = (byte) c;
+			} else if (c >= 0x0001) {
+				// type A command (next c chars are literal)
+				c = Math.min(c, out.length - j);
+				while (c-- > 0)
+					out[j++] = in[i++];
+			} else {
+				// c == 0, also self-representing
+				out[j++] = (byte) c;
+			}
+		}
+
+		return j;
+	}
+
+	private static void initPalmDocDB(byte[] rec)
+	{
+		compression = (rec[1] == 2);
+		txtCount = (rec[8] << 8) + rec[9];
+		chapters.add(new HaodooChapterInfo(null));
+		tail = null;
+	}
+
+	private static void formatPalmDocDB(byte[] buf, int size, HaodooChapterInfo ci) throws Exception
+	{
+		if (encode == null)
+			encode = BookUtil.detect(new ByteArrayInputStream(buf));
+
+		String s = new String(buf, 0, size, encode);
+		int p = 0, np;
+		while ((np = s.indexOf("\n", p)) >= 0) {
+			if (tail == null)
+				ci.lines.add(s.substring(p, np));
+			else {
+				ci.lines.add(tail + s.substring(p, np));
+				tail = null;
+			}
+			p = np + 1;
+		}
+
+		if (p < s.length())
+			tail = s.substring(p);
+
+	}
+
 	public BookContent load(VFile file) throws Exception
 	{
 		encrypted = false;
 		chapters.clear();
 
 		InputStream is = file.getInputStream();
-		encode = readHeader(is);
-		bookType = PDBEncode.equals(encode) ? BookType.pdb : BookType.updb;
-		formatTitle(readRecord(file, is, 0));
-		for (int i = 1; i < recordCount - 1; i++)
-			format(readRecord(file, is, i), (HaodooChapterInfo) chapters.get(i - 1));
+		readHeader(is);
+
+		byte[] buf = new byte[4096];
+		if (bookType == BookType.palmDoc)
+			initPalmDocDB(readRecord(file, is, 0));
+		else
+			formatTitle(readRecord(file, is, 0));
+		for (int i = 1; i <= txtCount; i++) {
+			byte[] rec = readRecord(file, is, i);
+			if (bookType == BookType.palmDoc) {
+				if (compression) {
+					int cc = decompress(rec, buf);
+					formatPalmDocDB(buf, cc, (HaodooChapterInfo) chapters.get(0));
+				} else
+					formatPalmDocDB(rec, rec.length, (HaodooChapterInfo) chapters.get(0));
+			} else
+				format(rec, (HaodooChapterInfo) chapters.get(i - 1));
+		}
 		is.close();
 
+		if ((bookType == BookType.palmDoc) && (tail != null))
+			((HaodooChapterInfo) chapters.get(0)).lines.add(tail);
 		currChapter = 0;
 		setContent(((HaodooChapterInfo) chapters.get(0)).lines);
 		return this;

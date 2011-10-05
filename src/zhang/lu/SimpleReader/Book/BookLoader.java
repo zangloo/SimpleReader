@@ -47,22 +47,16 @@ public class BookLoader
 		return defaultLoader;
 	}
 
-	public static BookContent loadFile(String filePath)
+	public static BookContent loadFile(String filePath) throws Exception
 	{
 		unloadBook();
 		VFile f = new VFile(filePath);
 		if (!f.exists())
 			return null;
-		try {
-			if (defaultLoader == null)
-				init();
-			currLoader = findLoader(filePath);
-			return book = currLoader.load(f);
-		} catch (Exception e) {
-			ArrayList<String> list = new ArrayList<String>();
-			list.add(e.toString());
-			return book = new PlainTextContent(list);
-		}
+		if (defaultLoader == null)
+			init();
+		currLoader = findLoader(filePath);
+		return book = currLoader.load(f);
 	}
 
 	public static void unloadBook()

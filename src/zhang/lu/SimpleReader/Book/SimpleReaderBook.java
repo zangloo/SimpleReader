@@ -88,7 +88,7 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return suffixes;
 	}
 
-	public BookContent load(VFile f)
+	public BookContent load(VFile f) throws Exception
 	{
 		db = SQLiteDatabase.openDatabase(f.getPath(), null,
 						 SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
@@ -116,21 +116,21 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		cursor = db.rawQuery(chapterCountSQL, null);
 		if (!cursor.moveToFirst()) {
 			cursor.close();
-			return null;
+			throw new Exception("Format incorrect");
 		}
 		chapterCount = cursor.getInt(0);
 		cursor.close();
 		if (chapterCount == 0)
-			return null;
+			throw new Exception("Format incorrect");
 
 		chapter = indexBase;
 		lineCount = selectLineCount();
 		if (lineCount == 0)
-			return null;
+			throw new Exception("Format incorrect");
 
 		booksize = selectSize(lineCount);
 		if (booksize == 0)
-			return null;
+			throw new Exception("Format incorrect");
 
 		lineCache.clear();
 		return this;
