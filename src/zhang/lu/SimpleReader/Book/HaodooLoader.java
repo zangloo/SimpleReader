@@ -63,6 +63,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	public static final byte[] PDB_SEPARATOR = new byte[]{0x1b};
 	public static final byte[] UPDB_TITLE_SEPARATOR = new byte[]{0x0d, 0x00, 0x0a, 0x00};
 	public static final byte[] UPDB_ESCAPE_SEPARATOR = new byte[]{0x1b, 0x00};
+	public static final int MAX_REC_SIZE = 4096;
 
 	public static final int TEXT_COUNT_OFFSET = 8;
 	public static final int RECODES_COUNT_OFFSET = 76;
@@ -97,7 +98,8 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	private static int currChapter;
 	private static boolean compression;
 	private static int txtCount;
-	private static String tail;
+	private static byte[] recBuf = new byte[MAX_REC_SIZE * 2];
+	private static int recPos = 0;
 
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
@@ -271,10 +273,10 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	}
 
 	// this method get from http://gutenpalm.sourceforge.net/PalmIO/
-	private static int decompress(byte[] in, byte[] out)
+	private static int decompress(byte[] in, byte[] out, int offset)
 	{
 		int i = 0;
-		int j = 0;
+		int j = offset;
 
 		while (i < in.length) {
 			// Get the next compressed input byte
@@ -320,29 +322,39 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		compression = (rec[1] == 2);
 		txtCount = fromUInt16(rec, TEXT_COUNT_OFFSET);
 		chapters.add(new HaodooChapterInfo(null));
-		tail = null;
+		recPos = 0;
 	}
 
-	private static void formatPalmDocDB(byte[] buf, int size, HaodooChapterInfo ci) throws Exception
+	// is java have such system method
+	private static int searchByte(byte[] buf, int from, int to, byte v)
+	{
+		for (int i = from; i < to; i++)
+			if (buf[i] == v)
+				return i;
+		return -1;
+	}
+
+	private static int formatPalmDocDB(int size, HaodooChapterInfo ci) throws Exception
 	{
 		if (encode == null)
-			encode = BookUtil.detect(new ByteArrayInputStream(buf));
+			encode = BookUtil.detect(new ByteArrayInputStream(recBuf, 0, size));
 
-		String s = new String(buf, 0, size, encode);
 		int p = 0, np;
-		while ((np = s.indexOf("\n", p)) >= 0) {
-			if (tail == null)
-				ci.lines.add(s.substring(p, np));
-			else {
-				ci.lines.add(tail + s.substring(p, np));
-				tail = null;
-			}
+		while ((np = searchByte(recBuf, p, size, (byte) '\n')) >= 0) {
+			ci.lines.add(new String(recBuf, p, np - p, encode));
 			p = np + 1;
 		}
 
-		if (p < s.length())
-			tail = s.substring(p);
+		int ret = size - p;
+		if (ret > 0)
+			if (size > recBuf.length - MAX_REC_SIZE) {
+				byte[] ob = recBuf;
+				recBuf = new byte[recBuf.length + MAX_REC_SIZE];
+				System.arraycopy(ob, p, recBuf, 0, ret);
+			} else
+				System.arraycopy(recBuf, p, recBuf, 0, ret);
 
+		return ret;
 	}
 
 	public BookContent load(VFile file) throws Exception
@@ -353,7 +365,6 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		InputStream is = file.getInputStream();
 		readHeader(is);
 
-		byte[] buf = new byte[4096];
 		if (bookType == BookType.palmDoc)
 			initPalmDocDB(readRecord(file, is, 0));
 		else
@@ -362,17 +373,20 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 			byte[] rec = readRecord(file, is, i);
 			if (bookType == BookType.palmDoc) {
 				if (compression) {
-					int cc = decompress(rec, buf);
-					formatPalmDocDB(buf, cc, (HaodooChapterInfo) chapters.get(0));
-				} else
-					formatPalmDocDB(rec, rec.length, (HaodooChapterInfo) chapters.get(0));
+					int cc = decompress(rec, recBuf, recPos);
+					recPos = formatPalmDocDB(cc, (HaodooChapterInfo) chapters.get(0));
+				} else {
+					System.arraycopy(rec, 0, recBuf, recPos, rec.length);
+					recPos = formatPalmDocDB(recPos + rec.length,
+								 (HaodooChapterInfo) chapters.get(0));
+				}
 			} else
 				format(rec, (HaodooChapterInfo) chapters.get(i - 1));
 		}
 		is.close();
 
-		if ((bookType == BookType.palmDoc) && (tail != null))
-			((HaodooChapterInfo) chapters.get(0)).lines.add(tail);
+		if ((bookType == BookType.palmDoc) && (recPos > 0))
+			formatPalmDocDB(recPos, (HaodooChapterInfo) chapters.get(0));
 		currChapter = 0;
 		setContent(((HaodooChapterInfo) chapters.get(0)).lines);
 		return this;
