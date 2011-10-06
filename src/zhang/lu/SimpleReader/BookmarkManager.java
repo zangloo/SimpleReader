@@ -165,7 +165,7 @@ public class BookmarkManager extends PopupWindow
 		setWidth(width);
 		setHeight(height);
 		updateBookmarkList();
-		showAtLocation(layout, Gravity.LEFT | Gravity.CENTER, 0, top);
+		showAtLocation(layout, Gravity.RIGHT | Gravity.CENTER, 0, top);
 	}
 
 	public void hide()

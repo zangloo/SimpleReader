@@ -21,6 +21,7 @@ import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.io.File;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class Reader extends Activity implements View.OnTouchListener, SimpleTextView.OnPosChangeListener
@@ -53,6 +54,11 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	// don't know how to get it , so define it for 4(3 for popupWindow board and 1 for scrollView board)
 	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
 
+	private interface GestureCallbackInterface
+	{
+		public void callback();
+	}
+
 	private SimpleTextView hbv, xbv;
 	private SimpleTextView bv;
 	private Config config;
@@ -76,6 +82,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 	private DictManager dictManager;
 	private Typeface tf = null;
 	private int screenWidth, screenHeight;
+	private HashMap<Config.GestureDirect, GestureCallbackInterface> gdCallback = new HashMap<Config.GestureDirect, GestureCallbackInterface>();
 
 	private BroadcastReceiver timeTickReceiver = new BroadcastReceiver()
 	{
@@ -85,7 +92,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			updateStatusPanelTime();
 		}
 	};
-
 	private BroadcastReceiver batteryChangedReceiver = new BroadcastReceiver()
 	{
 		@Override
@@ -96,6 +102,34 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 			//biv.setImageResource(batteryIcon);
 			TextView tv = (TextView) findViewById(R.id.battery_level_text);
 			tv.setText("  [" + batteryLevel + "%]  ");
+		}
+	};
+	private GestureCallbackInterface bookmarkCallback = new GestureCallbackInterface()
+	{
+		public void callback()
+		{
+			showBookmarkMgr();
+		}
+	};
+	private GestureCallbackInterface chapterCallback = new GestureCallbackInterface()
+	{
+		public void callback()
+		{
+			showChapterList();
+		}
+	};
+	private GestureCallbackInterface pageDownCallback = new GestureCallbackInterface()
+	{
+		public void callback()
+		{
+			pageDown();
+		}
+	};
+	private GestureCallbackInterface pageUpCallback = new GestureCallbackInterface()
+	{
+		public void callback()
+		{
+			pageUp();
 		}
 	};
 
@@ -128,6 +162,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		initChapterMgr();
 		initPopupMenu();
 		initNote();
+		initGesture();
 
 		// if external font exist, load it
 		setTypeface(config.getFontFile());
@@ -147,98 +182,6 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		setViewLock(config.getViewOrient());
 
 		currOrient = getResources().getConfiguration().orientation;
-		gs = new GestureDetector(new GestureDetector.OnGestureListener()
-		{
-
-			public boolean onDown(MotionEvent motionEvent)
-			{
-				return false;
-			}
-
-			public void onShowPress(MotionEvent motionEvent)
-			{
-			}
-
-			public boolean onSingleTapUp(MotionEvent e)
-			{
-				String note = bv.getFingerPosNote(e.getX(), e.getY());
-				if (note != null) {
-					showNote(note, e);
-					return true;
-				}
-
-				float p1, p2;
-				switch (config.getPagingDirect()) {
-					case clickUp:
-						p1 = bv.getHeight() / 2;
-						p2 = e.getY();
-						break;
-					case clickDown:
-						p2 = bv.getHeight() / 2;
-						p1 = e.getY();
-						break;
-					case clickRight:
-						p2 = bv.getWidth() / 2;
-						p1 = e.getX();
-						break;
-					case clickLeft:
-						p1 = bv.getWidth() / 2;
-						p2 = e.getX();
-						break;
-					default:
-						return false;
-				}
-				if (p1 > p2)
-					pageDown();
-				else
-					pageUp();
-				return true;
-			}
-
-			public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1)
-			{
-				return false;
-			}
-
-			public void onLongPress(MotionEvent e)
-			{
-				if (config.getCurrFile() != null)
-					fingerPosInfo = bv.getFingerPosInfo(e.getX(), e.getY());
-
-				pm.show(fingerPosInfo == null ? null : fingerPosInfo.str, tf, screenWidth >> 1,
-					(int) e.getRawX(), (int) e.getRawY(), config.isDictEnabled());
-			}
-
-			public boolean onFling(MotionEvent e1, MotionEvent e2, float v, float v1)
-			{
-				float p1, p2;
-				switch (config.getPagingDirect()) {
-					case up:
-						p1 = e1.getY();
-						p2 = e2.getY();
-						break;
-					case down:
-						p2 = e1.getY();
-						p1 = e2.getY();
-						break;
-					case right:
-						p2 = e1.getX();
-						p1 = e2.getX();
-						break;
-					case left:
-						p1 = e1.getX();
-						p2 = e2.getX();
-						break;
-					default:
-						return false;
-				}
-				if (p1 > p2)
-					pageDown();
-				else
-					pageUp();
-				return true;
-			}
-		});
 
 		File f = new File(pathPrefix);
 		if (!f.exists()) {
@@ -348,6 +291,7 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 						}
 						setColorAndFont();
 						setDictEnable(config.isDictEnabled());
+						updateGDCallback();
 						bv.invalidate();
 					}
 				});
@@ -608,15 +552,10 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 				setViewLock(config.getViewOrient());
 				break;
 			case menuBookmarkMgr:
-				if (config.getCurrFile() != null)
-					bookmarkManager.show(ri, bv.getContent(), tf, bv.getTop(), (screenWidth >> 1),
-							     screenHeight - bv.getTop());
+				showBookmarkMgr();
 				break;
 			case menuChapterMgr:
-				if (config.getCurrFile() != null)
-					chapterManager.show(bv.getContent().getChapterInfoList(),
-							    bv.getContent().getCurrChapter(), tf, bv.getTop(),
-							    (screenWidth >> 1), screenHeight - bv.getTop());
+				showChapterList();
 				break;
 			case menuSeek:
 				showSeekPanel();
@@ -1101,5 +1040,136 @@ public class Reader extends Activity implements View.OnTouchListener, SimpleText
 		updateStatusPanel();
 		updateStatusPanelFile(book);
 		bv.invalidate();
+	}
+
+	private void initGesture()
+	{
+		gs = new GestureDetector(new GestureDetector.OnGestureListener()
+		{
+
+			public boolean onDown(MotionEvent motionEvent)
+			{
+				return false;
+			}
+
+			public void onShowPress(MotionEvent motionEvent)
+			{
+			}
+
+			public boolean onSingleTapUp(MotionEvent e)
+			{
+				String note = bv.getFingerPosNote(e.getX(), e.getY());
+				if (note != null) {
+					showNote(note, e);
+					return true;
+				}
+
+				float p1, p2;
+				switch (config.getPagingDirect()) {
+					case clickUp:
+						p1 = bv.getHeight() / 2;
+						p2 = e.getY();
+						break;
+					case clickDown:
+						p2 = bv.getHeight() / 2;
+						p1 = e.getY();
+						break;
+					case clickRight:
+						p2 = bv.getWidth() / 2;
+						p1 = e.getX();
+						break;
+					case clickLeft:
+						p1 = bv.getWidth() / 2;
+						p2 = e.getX();
+						break;
+					default:
+						return false;
+				}
+				if (p1 > p2)
+					pageDown();
+				else
+					pageUp();
+				return true;
+			}
+
+			public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1)
+			{
+				return false;
+			}
+
+			public void onLongPress(MotionEvent e)
+			{
+				if (config.getCurrFile() != null)
+					fingerPosInfo = bv.getFingerPosInfo(e.getX(), e.getY());
+
+				pm.show(fingerPosInfo == null ? null : fingerPosInfo.str, tf, screenWidth >> 1,
+					(int) e.getRawX(), (int) e.getRawY(), config.isDictEnabled());
+			}
+
+			public boolean onFling(MotionEvent e1, MotionEvent e2, float v, float v1)
+			{
+				float dx, dy;
+
+				dx = e2.getX() - e1.getX();
+				dy = e2.getY() - e1.getY();
+
+				Config.GestureDirect gd;
+				if (Math.abs(dx) > Math.abs(dy)) {// fling horizontal
+					if (Math.abs(dx) < (screenWidth >> 2)) // fling not enough, ignore it
+						return false;
+					gd = (dx > 0) ? Config.GestureDirect.right : Config.GestureDirect.left;
+				} else { // fling vertical
+					if (Math.abs(dy) < (screenHeight >> 2)) // fling not enough, ignore it
+						return false;
+					gd = (dy > 0) ? Config.GestureDirect.down : Config.GestureDirect.up;
+				}
+
+				GestureCallbackInterface gci =  gdCallback.get(gd);
+				if (gci != null)
+					gci.callback();
+				return true;
+			}
+		});
+		updateGDCallback();
+	}
+
+	private void showBookmarkMgr()
+	{
+		if (config.getCurrFile() != null)
+			bookmarkManager.show(ri, bv.getContent(), tf, bv.getTop(), (screenWidth >> 1),
+					     screenHeight - bv.getTop());
+	}
+
+	private void showChapterList()
+	{
+		if ((config.getCurrFile() != null) && (bv.getContent().getChapterCount() > 1))
+			chapterManager.show(bv.getContent().getChapterInfoList(), bv.getContent().getCurrChapter(), tf,
+					    bv.getTop(), (screenWidth >> 1), screenHeight - bv.getTop());
+	}
+
+	private void updateGDCallback()
+	{
+		gdCallback.clear();
+		gdCallback.put(config.getBookmarkDirect(), bookmarkCallback);
+		gdCallback.put(config.getChapterDirect(), chapterCallback);
+		Config.GestureDirect gd;
+		switch (config.getPagingDirect()) {
+			case up:
+				gd = Config.GestureDirect.down;
+				break;
+			case down:
+				gd = Config.GestureDirect.up;
+				break;
+			case right:
+				gd = Config.GestureDirect.left;
+				break;
+			case left:
+				gd = Config.GestureDirect.right;
+				break;
+			default:
+				return;
+		}
+		gdCallback.put(config.getPagingDirect(), pageDownCallback);
+		gdCallback.put(gd, pageUpCallback);
 	}
 }

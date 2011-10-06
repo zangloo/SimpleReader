@@ -28,7 +28,6 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 	private static final int[] fontSizeList = new int[]{20, 22, 24, 26, 28, 30, 32, 34,};
 	private static final String colorFormatString = "%03d";
 	private static final String[] zipEncodeList = new String[]{"GBK", "BIG5", "UTF8"};
-	private static String[] pagingDirectList = null;
 	private static String[] colorModeList;
 	private TextView tp;
 	private OnOptionAcceptListener oal;
@@ -39,7 +38,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 	int fs;
 	boolean isBright;
 	private Config conf;
-	private Config.PagingDirect pds[] = Config.PagingDirect.values();
+	private Config.GestureDirect[] pds = Config.GestureDirect.values();
+	private Config.GestureDirect[] gds = new Config.GestureDirect[]{Config.GestureDirect.up, Config.GestureDirect.down, Config.GestureDirect.right, Config.GestureDirect.left};
 	private String[] fnl = null;
 
 	public OptionDialog(Context context)
@@ -82,18 +82,33 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		spinner = (Spinner) findViewById(R.id.zip_encode);
 		spinner.setAdapter(adapter);
 
-		//paging direct
-		if (pagingDirectList == null) {
-			pagingDirectList = new String[pds.length];
-			for (int i = 0; i < pds.length; i++)
-				pagingDirectList[i] = getPagingDirectText(pds[i]);
-		}
+		//paging direction
+		/*
+		  if (pagingDirectList == null) {
+			  pagingDirectList = new String[pds.length];
+			  for (int i = 0; i < pds.length; i++)
+				  pagingDirectList[i] = pds[i].v();
+		  }
+  */
 
-		adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item,
-						   pagingDirectList);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<Config.GestureDirect> aa = new ArrayAdapter<Config.GestureDirect>(getContext(),
+											       android.R.layout.simple_spinner_item,
+											       pds);
+		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.paging_direct);
-		spinner.setAdapter(adapter);
+		spinner.setAdapter(aa);
+
+		// bookmark direction
+		aa = new ArrayAdapter<Config.GestureDirect>(getContext(), android.R.layout.simple_spinner_item, gds);
+		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner = (Spinner) findViewById(R.id.bookmark_direct);
+		spinner.setAdapter(aa);
+
+		// chapter direction
+		aa = new ArrayAdapter<Config.GestureDirect>(getContext(), android.R.layout.simple_spinner_item, gds);
+		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner = (Spinner) findViewById(R.id.chapter_direct);
+		spinner.setAdapter(aa);
 
 		// color mode list
 		if (colorModeList == null)
@@ -177,8 +192,22 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 			}
 
 		spinner = (Spinner) findViewById(R.id.paging_direct);
-		for (int i = 0; i < pagingDirectList.length; i++)
-			if (pagingDirectList[i].equals(getPagingDirectText(conf.getPagingDirect()))) {
+		for (int i = 0; i < pds.length; i++)
+			if (pds[i] == conf.getPagingDirect()) {
+				spinner.setSelection(i, true);
+				break;
+			}
+
+		spinner = (Spinner) findViewById(R.id.bookmark_direct);
+		for (int i = 0; i < gds.length; i++)
+			if (gds[i] == conf.getBookmarkDirect()) {
+				spinner.setSelection(i, true);
+				break;
+			}
+
+		spinner = (Spinner) findViewById(R.id.chapter_direct);
+		for (int i = 0; i < gds.length; i++)
+			if (gds[i] == conf.getChapterDirect()) {
 				spinner.setSelection(i, true);
 				break;
 			}
@@ -240,12 +269,12 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		else
 			conf.setFontFile((String) fn);
 
-		String pdstring = ((Spinner) findViewById(R.id.paging_direct)).getSelectedItem().toString();
-		int i;
-		for (i = 0; i < pagingDirectList.length; i++)
-			if (pagingDirectList[i].equals(pdstring))
-				break;
-		conf.setPagingDirect(pds[i]);
+		conf.setPagingDirect(
+			(Config.GestureDirect) ((Spinner) findViewById(R.id.paging_direct)).getSelectedItem());
+		conf.setBookmarkDirect(
+			(Config.GestureDirect) ((Spinner) findViewById(R.id.bookmark_direct)).getSelectedItem());
+		conf.setChapterDirect(
+			(Config.GestureDirect) ((Spinner) findViewById(R.id.chapter_direct)).getSelectedItem());
 		conf.setZipEncode(((Spinner) findViewById(R.id.zip_encode)).getSelectedItem().toString());
 		oal.onOptionAccept(conf);
 		dismiss();
@@ -407,29 +436,6 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		seekBar.setOnSeekBarChangeListener(this);
 		v = (TextView) findViewById(R.id.font_bcolor_blue_value);
 		v.setText(String.format(colorFormatString, bb));
-	}
-
-	private String getPagingDirectText(Config.PagingDirect pd)
-	{
-		switch (pd) {
-			case up:
-				return getContext().getString(R.string.paging_up_label);
-			case down:
-				return getContext().getString(R.string.paging_down_label);
-			case left:
-				return getContext().getString(R.string.paging_left_label);
-			case right:
-				return getContext().getString(R.string.paging_right_label);
-			case clickUp:
-				return getContext().getString(R.string.paging_click_up_label);
-			case clickDown:
-				return getContext().getString(R.string.paging_click_down_label);
-			case clickLeft:
-				return getContext().getString(R.string.paging_click_left_label);
-			case clickRight:
-				return getContext().getString(R.string.paging_click_right_label);
-		}
-		return null;
 	}
 
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
