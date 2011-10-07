@@ -76,7 +76,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private DictManager dictManager;
 	private Typeface tf = null;
 	private int screenWidth, screenHeight;
-	private int flingLen;
+	private int flingLen, boardLen;
 	private HashMap<Config.GestureDirect, GestureCallbackInterface> gdCallback = new HashMap<Config.GestureDirect, GestureCallbackInterface>();
 
 	private GestureCallbackInterface pageDownCallback = new GestureCallbackInterface()
@@ -828,6 +828,8 @@ public class Reader extends Activity implements View.OnTouchListener
 		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
 		flingLen = Math.min(screenHeight, screenWidth) >> 4;
+		boardLen = Math.max(screenHeight, screenWidth) >> 4;
+		//boardLen = Math.min(Math.max(screenHeight, screenWidth) >> 3, 50);
 	}
 
 	private void initNote()
@@ -938,13 +940,13 @@ public class Reader extends Activity implements View.OnTouchListener
 		{
 			public boolean onDown(MotionEvent e)
 			{
-				if (e.getRawY() < flingLen)
+				if (e.getRawY() < boardLen)
 					draging = Draging.statusbar;
-				else if (e.getRawY() > screenHeight - flingLen)
+				else if (e.getRawY() > screenHeight - boardLen)
 					draging = Draging.menu;
-				else if (e.getRawX() < flingLen)
+				else if (e.getRawX() < boardLen)
 					draging = Draging.chapter;
-				else if (e.getRawX() > screenWidth - flingLen)
+				else if (e.getRawX() > screenWidth - boardLen)
 					draging = Draging.bookmark;
 				else
 					draging = Draging.nothing;
@@ -958,7 +960,7 @@ public class Reader extends Activity implements View.OnTouchListener
 					case statusbar:
 						if ((e2.getRawY() - e1.getRawY()) > flingLen) {
 							showStatusPanel();
-							draging = Draging.nothing;
+							draging = Draging.done;
 							return true;
 						}
 						break;

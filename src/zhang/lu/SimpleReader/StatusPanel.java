@@ -33,6 +33,7 @@ public class StatusPanel extends PopupWindow
 	}
 
 	public static final String DATE_FORMAT_STRING = "kk:mm";
+	public static final int POPUP_WIN_BOARD_SIZE = 3 * 2;
 
 	private OnPanelClickListener pcl;
 	private View layout;
@@ -116,7 +117,7 @@ public class StatusPanel extends PopupWindow
 		context.registerReceiver(batteryChangedReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 		setWidth(width);
 		layout.measure(width + View.MeasureSpec.EXACTLY, 0);
-		setHeight(layout.getMeasuredHeight());
+		setHeight(layout.getMeasuredHeight() + POPUP_WIN_BOARD_SIZE);
 		showAtLocation(layout, Gravity.TOP | Gravity.CENTER, 0, 0);
 	}
 
@@ -138,7 +139,7 @@ public class StatusPanel extends PopupWindow
 	public void update(int width, int height)
 	{
 		layout.measure(width + View.MeasureSpec.EXACTLY, 0);
-		super.update(width, layout.getMeasuredHeight());
+		super.update(width, layout.getMeasuredHeight() + POPUP_WIN_BOARD_SIZE);
 	}
 
 	private void updateTime()
