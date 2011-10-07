@@ -19,11 +19,6 @@ import zhang.lu.SimpleReader.Book.PlainTextContent;
  */
 public abstract class SimpleTextView extends View
 {
-	public static interface OnPosChangeListener
-	{
-		void onPosChange(int pos, boolean fromUser);
-	}
-
 	public static class FingerPosInfo
 	{
 		public int line, offset;
@@ -55,7 +50,6 @@ public abstract class SimpleTextView extends View
 	protected static int pos = 0;
 	protected static int boardGAP = 3;
 	protected static int bcolor, color;
-	protected static OnPosChangeListener mOnPosChangeListener = null;
 	protected static boolean reset = true;
 	protected static HighlightInfo hli = null;
 
@@ -192,8 +186,6 @@ public abstract class SimpleTextView extends View
 		boolean ret;
 		if (ret = calcNextPos())
 			invalidate();
-		if ((mOnPosChangeListener != null) && calcPos())
-			mOnPosChangeListener.onPosChange(pos, true);
 
 		return ret;
 	}
@@ -203,8 +195,6 @@ public abstract class SimpleTextView extends View
 		boolean ret;
 		if (ret = calcPrevPos())
 			invalidate();
-		if ((mOnPosChangeListener != null) && calcPos())
-			mOnPosChangeListener.onPosChange(pos, true);
 
 		return ret;
 	}
@@ -240,8 +230,6 @@ public abstract class SimpleTextView extends View
 
 		setPos(content.getPercentPos(np));
 		pos = np;
-		if (mOnPosChangeListener != null)
-			mOnPosChangeListener.onPosChange(pos, false);
 	}
 
 	public void setPos(BookContent.ContentPosInfo cpi)
@@ -265,22 +253,6 @@ public abstract class SimpleTextView extends View
 			pi = posIndex;
 			po = calcPosOffset(posOffset);
 		}
-
-		if (mOnPosChangeListener != null) {
-			calcPos();
-			mOnPosChangeListener.onPosChange(pos, false);
-		}
-	}
-
-	public void setOnPosChangeListener(@Nullable OnPosChangeListener listener)
-	{
-		mOnPosChangeListener = listener;
-		if (mOnPosChangeListener == null) {
-			pos = 0;
-			return;
-		}
-		calcPos();
-		mOnPosChangeListener.onPosChange(pos, false);
 	}
 
 	protected boolean calcPos()
@@ -345,9 +317,6 @@ public abstract class SimpleTextView extends View
 				if (txt[j] == oc[i])
 					txt[j] = nc[i];
 		return String.valueOf(txt);
-		//		return txt.replace('「', '﹁').replace('」', '﹂').replace('『', '﹃').replace('』', '﹄').replace('（', '︵')
-		//			  .replace('）', '︶').replace('《', '︽').replace('》', '︾').replace('〔', '︹').replace('〕', '︺')
-		//			  .replace('【', '︻').replace('】', '︼').replace('｛', '︷').replace('｝', '︸').replace('─', '︱');
 	}
 
 	public void setHighlightInfo(@Nullable HighlightInfo hightlightInfo)
@@ -365,8 +334,6 @@ public abstract class SimpleTextView extends View
 		pi = content.getLineCount();
 		po = 0;
 		calcPrevPos();
-		if ((mOnPosChangeListener != null) && calcPos())
-			mOnPosChangeListener.onPosChange(pos, false);
 	}
 
 	public abstract int calcNextLineOffset();
