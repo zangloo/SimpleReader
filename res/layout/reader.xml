@@ -3,31 +3,6 @@
 	      android:orientation="vertical" android:layout_width="fill_parent"
 	      android:layout_height="fill_parent">
 
-	<LinearLayout android:id="@+id/status_panel"
-		      android:orientation="horizontal" android:layout_width="fill_parent"
-		      android:layout_height="wrap_content" android:visibility="gone">
-		<TextView android:id="@+id/reading_percent_text"
-			  android:layout_width="wrap_content" android:layout_height="wrap_content"
-			  android:layout_gravity="center_vertical">
-		</TextView>
-		<TextView android:id="@+id/reading_book_text" android:layout_width="0dip"
-			  android:layout_height="wrap_content" android:layout_weight="1"
-			  android:gravity="center" android:layout_gravity="center_vertical">
-		</TextView>
-		<TextView android:id="@+id/reading_time_text"
-			  android:layout_width="wrap_content" android:layout_height="wrap_content"
-			  android:layout_gravity="center_vertical">
-		</TextView>
-		<TextView android:id="@+id/battery_level_text"
-			  android:layout_width="wrap_content" android:layout_height="wrap_content"
-			  android:layout_gravity="center_vertical">
-		</TextView>
-		<!--		<ImageView android:id="@+id/battery_icon"
-			     android:layout_width="wrap_content" android:layout_height="wrap_content"
-			     android:layout_gravity="center_vertical" android:background="#0106000d">
-		  </ImageView>
-  		-->
-	</LinearLayout>
 	<LinearLayout style="@android:style/ButtonBar" android:id="@+id/search_panel"
 		      android:orientation="horizontal" android:layout_width="fill_parent"
 		      android:layout_height="wrap_content" android:visibility="gone">

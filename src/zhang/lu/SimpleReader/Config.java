@@ -84,10 +84,7 @@ public class Config extends SQLiteOpenHelper
 	private static final String configHanStyle = "han";
 	private static final String configViewOrient = "orient";
 	private static final String configZipEncode = "zipencode";
-	private static final String configShowStatus = "showstatus";
 	private static final String configPagingDirect = "pagingdirect";
-	private static final String configBookmarkDirect = "bmdirect";
-	private static final String configChapterDirect = "cpdirect";
 	private static final String configDictEnabled = "dictenable";
 	private static final String configDictFile = "dictfile";
 	private static final String configFontFile = "fontfile";
@@ -166,16 +163,11 @@ public class Config extends SQLiteOpenHelper
 			hanStyle = config.get(configHanStyle).equals("true");
 			viewOrient = new Integer(config.get(configViewOrient));
 			zipEncode = config.get(configZipEncode);
-			showStatus = config.get(configShowStatus).equals("true");
 			dictEnabled = config.get(configDictEnabled).equals("true");
 			dictFile = config.get(configDictFile);
 			fontFile = config.get(configFontFile);
 			pagingDirect = GestureDirect
 				.valueOf(getValue(config, configPagingDirect, GestureDirect.up.s()));
-			bookmarkDirect = GestureDirect
-				.valueOf(getValue(config, configBookmarkDirect, GestureDirect.left.s()));
-			chapterDirect = GestureDirect
-				.valueOf(getValue(config, configChapterDirect, GestureDirect.right.s()));
 
 			StringBuilder sql = new StringBuilder("select ");
 			sql.append(BOOK_INFO_TABLE_COLS[0]);
@@ -243,13 +235,10 @@ public class Config extends SQLiteOpenHelper
 		config.put(configViewOrient, "" + viewOrient);
 		config.put(configZipEncode, zipEncode);
 		config.put(configColorBright, "" + colorBright);
-		config.put(configShowStatus, "" + showStatus);
 		config.put(configPagingDirect, pagingDirect.s());
 		config.put(configDictEnabled, "" + dictEnabled);
 		config.put(configDictFile, "" + dictFile);
 		config.put(configFontFile, "" + fontFile);
-		config.put(configBookmarkDirect, bookmarkDirect.s());
-		config.put(configChapterDirect, chapterDirect.s());
 
 		for (int i = 0; i < rfl.size(); i++)
 			config.put(RECENTLY_FILE_PREFIX + (i + 1), rfl.get(i).name);
@@ -491,16 +480,6 @@ public class Config extends SQLiteOpenHelper
 		this.colorBright = colorBright;
 	}
 
-	public boolean isShowStatus()
-	{
-		return showStatus;
-	}
-
-	public void setShowStatus(boolean show)
-	{
-		showStatus = show;
-	}
-
 	public GestureDirect getPagingDirect()
 	{
 		return pagingDirect;
@@ -611,25 +590,5 @@ public class Config extends SQLiteOpenHelper
 	public int getCurrentBColor()
 	{
 		return (colorBright) ? bcolor : nbcolor;
-	}
-
-	public GestureDirect getBookmarkDirect()
-	{
-		return bookmarkDirect;
-	}
-
-	public void setBookmarkDirect(GestureDirect bookmarkDirect)
-	{
-		this.bookmarkDirect = bookmarkDirect;
-	}
-
-	public GestureDirect getChapterDirect()
-	{
-		return chapterDirect;
-	}
-
-	public void setChapterDirect(GestureDirect chapterDirect)
-	{
-		this.chapterDirect = chapterDirect;
 	}
 }

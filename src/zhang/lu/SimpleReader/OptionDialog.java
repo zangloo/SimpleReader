@@ -39,7 +39,6 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 	boolean isBright;
 	private Config conf;
 	private Config.GestureDirect[] pds = Config.GestureDirect.values();
-	private Config.GestureDirect[] gds = new Config.GestureDirect[]{Config.GestureDirect.up, Config.GestureDirect.down, Config.GestureDirect.right, Config.GestureDirect.left};
 	private String[] fnl = null;
 
 	public OptionDialog(Context context)
@@ -96,18 +95,6 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 											       pds);
 		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.paging_direct);
-		spinner.setAdapter(aa);
-
-		// bookmark direction
-		aa = new ArrayAdapter<Config.GestureDirect>(getContext(), android.R.layout.simple_spinner_item, gds);
-		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner = (Spinner) findViewById(R.id.bookmark_direct);
-		spinner.setAdapter(aa);
-
-		// chapter direction
-		aa = new ArrayAdapter<Config.GestureDirect>(getContext(), android.R.layout.simple_spinner_item, gds);
-		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner = (Spinner) findViewById(R.id.chapter_direct);
 		spinner.setAdapter(aa);
 
 		// color mode list
@@ -198,20 +185,6 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				break;
 			}
 
-		spinner = (Spinner) findViewById(R.id.bookmark_direct);
-		for (int i = 0; i < gds.length; i++)
-			if (gds[i] == conf.getBookmarkDirect()) {
-				spinner.setSelection(i, true);
-				break;
-			}
-
-		spinner = (Spinner) findViewById(R.id.chapter_direct);
-		for (int i = 0; i < gds.length; i++)
-			if (gds[i] == conf.getChapterDirect()) {
-				spinner.setSelection(i, true);
-				break;
-			}
-
 		CheckBox de = (CheckBox) findViewById(R.id.dict_enabled);
 		de.setChecked(conf.isDictEnabled());
 
@@ -271,10 +244,6 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 		conf.setPagingDirect(
 			(Config.GestureDirect) ((Spinner) findViewById(R.id.paging_direct)).getSelectedItem());
-		conf.setBookmarkDirect(
-			(Config.GestureDirect) ((Spinner) findViewById(R.id.bookmark_direct)).getSelectedItem());
-		conf.setChapterDirect(
-			(Config.GestureDirect) ((Spinner) findViewById(R.id.chapter_direct)).getSelectedItem());
 		conf.setZipEncode(((Spinner) findViewById(R.id.zip_encode)).getSelectedItem().toString());
 		oal.onOptionAccept(conf);
 		dismiss();
