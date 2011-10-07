@@ -34,13 +34,14 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private static final int menuSearch = 0;
 	private static final int menuBookmarkMgr = 1;
-	private static final int menuFile = 2;
-	private static final int menuChapterMgr = 3;
-	private static final int menuSeek = 4;
-	private static final int menuColorBright = 5;
-	private static final int menuViewLock = 6;
-	private static final int menuOption = 7;
-	private static final int menuAbout = 8;
+	private static final int menuExit = 2;
+	private static final int menuFile = 3;
+	private static final int menuChapterMgr = 4;
+	private static final int menuSeek = 5;
+	private static final int menuColorBright = 6;
+	private static final int menuViewLock = 7;
+	private static final int menuOption = 8;
+	private static final int menuAbout = 9;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
@@ -395,6 +396,9 @@ public class Reader extends Activity implements View.OnTouchListener
 			case menuChapterMgr:
 				showChapterList(screenWidth >> 1);
 				break;
+			case menuExit:
+				finish();
+				break;
 			case menuSeek:
 				showSeekPanel();
 				break;
@@ -418,6 +422,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			menu.add(0, menuViewLock, menuViewLock, getString(R.string.menu_lock_view));
 		menu.add(0, menuColorBright, menuColorBright, getResources()
 			.getString(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night));
+		menu.add(0, menuExit, menuExit, getString(R.string.menu_exit));
 		menu.add(0, menuOption, menuOption, getString(R.string.menu_option));
 		menu.add(0, menuAbout, menuAbout, getString(R.string.menu_about));
 		menu.add(0, menuSearch, menuSearch, getString(R.string.menu_search));
@@ -755,12 +760,6 @@ public class Reader extends Activity implements View.OnTouchListener
 						if (ri != null)
 							bookmarkManager.addDialog(
 								BookmarkManager.createBookmark(fingerPosInfo, ri));
-						break;
-					case R.string.menu_menu:
-						openOptionsMenu();
-						break;
-					case R.string.menu_exit:
-						finish();
 						break;
 				}
 				pm.hide();

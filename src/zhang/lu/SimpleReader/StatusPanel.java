@@ -109,7 +109,7 @@ public class StatusPanel extends PopupWindow
 	public void show(String filename, String chapter, int percent, int width)
 	{
 		ftv.setText(filename);
-		ptv.setText(percent + "% (" + chapter + ")");
+		ptv.setText(percent + "% @" + chapter);
 		updateTime();
 
 		Context context = layout.getContext();

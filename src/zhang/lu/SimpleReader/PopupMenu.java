@@ -41,7 +41,7 @@ public class PopupMenu extends PopupWindow
 	}
 
 	// same order with enum menu
-	private static final int[] menuTitleIDS = new int[]{R.string.menu_bookmark, R.string.menu_dict, R.string.menu_menu, R.string.menu_exit};
+	private static final int[] menuTitleIDS = new int[]{R.string.menu_bookmark, R.string.menu_dict};
 	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
 
 	private static HashMap<Integer, String> menuInfo = new HashMap<Integer, String>();
@@ -60,6 +60,7 @@ public class PopupMenu extends PopupWindow
 		setFocusable(true);
 		setHeight(100);
 		setWidth(100);
+
 
 		menuInfo.clear();
 		for (int id : menuTitleIDS)
@@ -95,7 +96,10 @@ public class PopupMenu extends PopupWindow
 	public void show(String title, Typeface typeface, int width, int x, int y, boolean showDict)
 	{
 		TextView tv = (TextView) layout.findViewById(R.id.popup_list_label);
-		tv.setText(title);
+		if (title == null)
+			tv.setText(layout.getContext().getString(R.string.no_text_selected));
+		else
+			tv.setText(title);
 		tv.setTypeface(typeface);
 
 		aa.clear();
@@ -104,8 +108,6 @@ public class PopupMenu extends PopupWindow
 			if (showDict)
 				aa.add(new PopupMenuItem(R.string.menu_dict));
 		}
-		aa.add(new PopupMenuItem(R.string.menu_menu));
-		aa.add(new PopupMenuItem(R.string.menu_exit));
 		aa.notifyDataSetChanged();
 
 		int h = 0;
