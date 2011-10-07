@@ -33,18 +33,21 @@ public class Reader extends Activity implements View.OnTouchListener
 	public static final String fontSuffix = ".ttf";
 
 	private static final int menuSearch = 0;
-	private static final int menuBookmarkMgr = 1;
+	private static final int menuViewLock = 1;
 	private static final int menuExit = 2;
 	private static final int menuFile = 3;
-	private static final int menuChapterMgr = 4;
-	private static final int menuSeek = 5;
-	private static final int menuColorBright = 6;
-	private static final int menuViewLock = 7;
-	private static final int menuOption = 8;
+	private static final int menuOption = 4;
+	private static final int menuBookmarkMgr = 5;
+	private static final int menuChapterMgr = 6;
+	private static final int menuSeek = 7;
+	private static final int menuColorBright = 8;
 	private static final int menuAbout = 9;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
+
+	private static final int flingLen = 20;
+	private static final int boardLen = 40;
 
 	// don't know how to get it , so define it for 4(3 for popupWindow board and 1 for scrollView board)
 	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
@@ -77,7 +80,6 @@ public class Reader extends Activity implements View.OnTouchListener
 	private DictManager dictManager;
 	private Typeface tf = null;
 	private int screenWidth, screenHeight;
-	private int flingLen, boardLen;
 	private HashMap<Config.GestureDirect, GestureCallbackInterface> gdCallback = new HashMap<Config.GestureDirect, GestureCallbackInterface>();
 
 	private GestureCallbackInterface pageDownCallback = new GestureCallbackInterface()
@@ -826,9 +828,6 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
-		flingLen = Math.min(screenHeight, screenWidth) >> 4;
-		boardLen = Math.max(screenHeight, screenWidth) >> 4;
-		//boardLen = Math.min(Math.max(screenHeight, screenWidth) >> 3, 50);
 	}
 
 	private void initNote()
@@ -957,21 +956,21 @@ public class Reader extends Activity implements View.OnTouchListener
 			{
 				switch (draging) {
 					case statusbar:
-						if ((e2.getRawY() - e1.getRawY()) > flingLen) {
+						if ((e2.getRawY() - e1.getRawY()) > boardLen) {
 							showStatusPanel();
 							draging = Draging.done;
 							return true;
 						}
 						break;
 					case menu:
-						if ((e1.getRawY() - e2.getRawY()) > flingLen) {
+						if ((e1.getRawY() - e2.getRawY()) > boardLen) {
 							openOptionsMenu();
 							draging = Draging.done;
 							return true;
 						}
 						break;
 					case bookmark:
-						if ((e1.getRawX() - e2.getRawX()) < flingLen) {
+						if ((e1.getRawX() - e2.getRawX()) < boardLen) {
 							bookmarkManager.hide();
 							break;
 						}
@@ -983,7 +982,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 						break;
 					case chapter:
-						if ((e2.getRawX() - e1.getRawX()) < flingLen) {
+						if ((e2.getRawX() - e1.getRawX()) < boardLen) {
 							chapterManager.hide();
 							break;
 						}
@@ -1062,11 +1061,11 @@ public class Reader extends Activity implements View.OnTouchListener
 
 				Config.GestureDirect gd;
 				if (Math.abs(dx) > Math.abs(dy)) {// fling horizontal
-					if (Math.abs(dx) < (screenWidth >> 3)) // fling not enough, ignore it
+					if (Math.abs(dx) < (flingLen)) // fling not enough, ignore it
 						return false;
 					gd = (dx > 0) ? Config.GestureDirect.right : Config.GestureDirect.left;
 				} else { // fling vertical
-					if (Math.abs(dy) < (screenHeight >> 3)) // fling not enough, ignore it
+					if (Math.abs(dy) < (flingLen)) // fling not enough, ignore it
 						return false;
 					gd = (dy > 0) ? Config.GestureDirect.down : Config.GestureDirect.up;
 				}
