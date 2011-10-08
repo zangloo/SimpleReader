@@ -15,6 +15,13 @@ import android.widget.*;
 import zhang.lu.SimpleReader.Book.BookContent;
 import zhang.lu.SimpleReader.Book.BookLoader;
 import zhang.lu.SimpleReader.Book.VFile;
+import zhang.lu.SimpleReader.Dialog.DictManager;
+import zhang.lu.SimpleReader.Dialog.FileDialog;
+import zhang.lu.SimpleReader.Dialog.OptionDialog;
+import zhang.lu.SimpleReader.Popup.BookmarkManager;
+import zhang.lu.SimpleReader.Popup.ChapterManager;
+import zhang.lu.SimpleReader.Popup.PopupMenu;
+import zhang.lu.SimpleReader.Popup.StatusPanel;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.io.File;
@@ -726,13 +733,13 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void initChapterMgr()
 	{
-		chapterManager = new ChapterManager(this, new ChapterManager.OnChapterSelectListener()
+		chapterManager = new ChapterManager(this, new AdapterView.OnItemClickListener()
 		{
-			public void onChapterSelect(int chapter)
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
 				chapterManager.hide();
 				BookContent book = bv.getContent();
-				book.gotoChapter(chapter);
+				book.gotoChapter(position);
 				switchChapterUpdate(book, 0, 0);
 			}
 		});
@@ -740,11 +747,11 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void initPopupMenu()
 	{
-		pm = new PopupMenu(this, new PopupMenu.OnMenuSelectListener()
+		pm = new PopupMenu(this, new AdapterView.OnItemClickListener()
 		{
-			public void onMenuSelect(int id)
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
-				switch (id) {
+				switch ((int) id) {
 					case R.string.menu_dict:
 						assert fingerPosInfo != null;
 						assert fingerPosInfo.str != null;
@@ -779,13 +786,15 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void initBookmarkMgr()
 	{
-		bookmarkManager = new BookmarkManager(this, config, new BookmarkManager.OnBookmarkSelectListener()
+		bookmarkManager = new BookmarkManager(this, config, new AdapterView.OnItemClickListener()
 		{
-			public void onBookmarkSelect(BookmarkManager.Bookmark bookmark)
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
 				bookmarkManager.hide();
 				if (config.getCurrFile() == null)
 					return;
+
+				BookmarkManager.Bookmark bookmark = bookmarkManager.getBookmark(position);
 				BookContent book = bv.getContent();
 				ppi = bookmark.line;
 				ppo = bookmark.offset;

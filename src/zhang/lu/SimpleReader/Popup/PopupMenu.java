@@ -1,13 +1,15 @@
-package zhang.lu.SimpleReader;
+package zhang.lu.SimpleReader.Popup;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+import zhang.lu.SimpleReader.R;
 
 import java.util.HashMap;
 
@@ -17,13 +19,8 @@ import java.util.HashMap;
  * Date: 11-9-27
  * Time: 下午1:28
  */
-public class PopupMenu extends PopupWindow
+public class PopupMenu extends PopupList
 {
-	public static interface OnMenuSelectListener
-	{
-		void onMenuSelect(int id);
-	}
-
 	private static class PopupMenuItem
 	{
 		private int id;
@@ -42,30 +39,17 @@ public class PopupMenu extends PopupWindow
 
 	// same order with enum menu
 	private static final int[] menuTitleIDS = new int[]{R.string.menu_bookmark, R.string.menu_dict};
-	private static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
-
 	private static HashMap<Integer, String> menuInfo = new HashMap<Integer, String>();
 
-	private View layout;
 	private ArrayAdapter<PopupMenuItem> aa;
-	private ListView ml;
 
-	public PopupMenu(Context context, final OnMenuSelectListener onMenuSelectListener)
+	public PopupMenu(Context context, final AdapterView.OnItemClickListener onItemClickListener)
 	{
 		super(context);
-		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		layout = inflater.inflate(R.layout.popuplist, null, true);
-
-		setContentView(layout);
-		setFocusable(true);
-		setHeight(100);
-		setWidth(100);
-
 
 		menuInfo.clear();
 		for (int id : menuTitleIDS)
 			menuInfo.put(id, context.getString(id));
-		ml = (ListView) layout.findViewById(R.id.popup_list);
 		aa = new ArrayAdapter<PopupMenuItem>(context, android.R.layout.simple_list_item_1)
 		{
 			@Override
@@ -83,24 +67,17 @@ public class PopupMenu extends PopupWindow
 				return v;
 			}
 		};
-		ml.setAdapter(aa);
-		ml.setOnItemClickListener(new AdapterView.OnItemClickListener()
-		{
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-			{
-				onMenuSelectListener.onMenuSelect((int) id);
-			}
-		});
+		setAdapter(aa);
+		setOnItemClickListener(onItemClickListener);
 	}
 
 	public void show(String title, Typeface typeface, int width, int x, int y, boolean showDict)
 	{
-		TextView tv = (TextView) layout.findViewById(R.id.popup_list_label);
 		if (title == null)
-			tv.setText(layout.getContext().getString(R.string.no_text_selected));
+			setTitle(getContentView().getContext().getString(R.string.no_text_selected));
 		else
-			tv.setText(title);
-		tv.setTypeface(typeface);
+			setTitle(title);
+		setTitleTypeface(typeface);
 
 		aa.clear();
 		if (title != null) {
@@ -110,16 +87,9 @@ public class PopupMenu extends PopupWindow
 		}
 		aa.notifyDataSetChanged();
 
-		int h = 0;
-		for (int i = 0; i < aa.getCount(); i++) {
-			View li = aa.getView(i, null, ml);
-			li.measure(0, 0);
-			h += li.getMeasuredHeight() + ml.getDividerHeight();
-		}
-		tv.measure(width + View.MeasureSpec.EXACTLY, View.MeasureSpec.UNSPECIFIED);
-		setHeight(h + tv.getMeasuredHeight() + 2 + POPUP_WINDOW_BOARD_SIZE);
+		setHeight(measureHeight(width));
 		setWidth(width + POPUP_WINDOW_BOARD_SIZE);
-		showAtLocation(layout, Gravity.TOP | Gravity.LEFT, x, y);
+		showAtLocation(getContentView(), Gravity.TOP | Gravity.LEFT, x, y);
 	}
 
 	public void hide()

@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Book.VFile;
+import zhang.lu.SimpleReader.Popup.BookmarkManager;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class Config extends SQLiteOpenHelper
 	public static final int MAX_RECENTLY_FILE_COUNT = 20;
 	public static final String RECENTLY_FILE_PREFIX = "recentfile";
 
-	enum GestureDirect
+	public enum GestureDirect
 	{
 		up(R.string.gesture_up_label), down(R.string.gesture_down_label),
 		right(R.string.gesture_right_label), left(R.string.gesture_left_label),
@@ -45,7 +46,7 @@ public class Config extends SQLiteOpenHelper
 			value = v;
 		}
 
-		int v() { return value; }
+		public int v() { return value; }
 
 		@Override
 		public String toString() { return string; }
@@ -55,10 +56,10 @@ public class Config extends SQLiteOpenHelper
 
 	public static class ReadingInfo
 	{
-		String name;
-		int chapter;
-		int line, offset;
-		int percent;
+		public String name;
+		public int chapter;
+		public int line, offset;
+		public int percent;
 		private long id;
 
 		public long getID() {return id;}

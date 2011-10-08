@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader;
+package zhang.lu.SimpleReader.Popup;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import zhang.lu.SimpleReader.R;
 
 import java.util.Date;
 
