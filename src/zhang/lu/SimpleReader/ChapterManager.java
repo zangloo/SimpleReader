@@ -31,6 +31,7 @@ public class ChapterManager extends PopupWindow
 	private View layout;
 	private ListView cl;
 	private int chapter;
+	private int mw = 800;
 
 	public ChapterManager(Context context, OnChapterSelectListener onChapterSelectListener)
 	{
@@ -90,5 +91,19 @@ public class ChapterManager extends PopupWindow
 	{
 		tf = null;
 		dismiss();
+	}
+
+	public void setMaxWidth(int width)
+	{
+		mw = width;
+	}
+
+	@Override
+	public void update(int width, int height)
+	{
+		int w = Math.min(mw, width);
+		if (w == getWidth())
+			return;
+		super.update(w, height);
 	}
 }

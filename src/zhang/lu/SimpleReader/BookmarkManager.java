@@ -84,6 +84,7 @@ public class BookmarkManager extends PopupWindow
 	private View layout;
 	private Bookmark bm;
 	private OnBookmarkSelectListener bsl = null;
+	private int mw = 800;
 
 	public BookmarkManager(Context context, Config conf, OnBookmarkSelectListener onBookmarkSelectListener)
 	{
@@ -174,6 +175,20 @@ public class BookmarkManager extends PopupWindow
 		tf = null;
 		book = null;
 		dismiss();
+	}
+
+	public void setMaxWidth(int width)
+	{
+		mw = width;
+	}
+
+	@Override
+	public void update(int width, int height)
+	{
+		int w = Math.min(mw, width);
+		if (w == getWidth())
+			return;
+		super.update(w, height);
 	}
 
 	public void addDialog(Bookmark bookmark)

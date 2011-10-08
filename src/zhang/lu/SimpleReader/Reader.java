@@ -117,7 +117,6 @@ public class Reader extends Activity implements View.OnTouchListener
 			Util.errorMsg(this, R.string.error_open_config_file);
 		}
 
-		updateWH();
 		// init panels
 		initStatusPanel();
 		initSearchPanel();
@@ -127,6 +126,8 @@ public class Reader extends Activity implements View.OnTouchListener
 		initPopupMenu();
 		initNote();
 		initGesture();
+
+		updateWH();
 
 		// if external font exist, load it
 		setTypeface(config.getFontFile());
@@ -828,6 +829,8 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
+		bookmarkManager.setMaxWidth(screenWidth * 3 / 4);
+		chapterManager.setMaxWidth(screenWidth * 3 / 4);
 	}
 
 	private void initNote()
