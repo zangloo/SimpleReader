@@ -222,6 +222,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		BookLoader.unloadBook();
 	}
 
+	@Override
 	protected Dialog onCreateDialog(int id)
 	{
 		switch (id) {

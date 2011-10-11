@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Book.VFile;
 import zhang.lu.SimpleReader.Popup.BookmarkManager;
@@ -102,8 +101,6 @@ public class Config extends SQLiteOpenHelper
 	private boolean colorBright = true;
 	private boolean showStatus = true;
 	private GestureDirect pagingDirect = Config.GestureDirect.up;
-	private GestureDirect bookmarkDirect = GestureDirect.left;
-	private GestureDirect chapterDirect = GestureDirect.right;
 	private boolean dictEnabled = false;
 	private String dictFile = null;
 	private String fontFile = null;
@@ -152,74 +149,85 @@ public class Config extends SQLiteOpenHelper
 			config.put(cursor.getString(0), cursor.getString(1));
 		cursor.close();
 
+		currFile = getString(config, configCurrFile, null);
+		fontSize = getInt(config, configFontSize, SimpleTextView.defaultFontSize);
+		color = getInt(config, configColor, SimpleTextView.defaultTextColor);
+		bcolor = getInt(config, configBColor, SimpleTextView.defaultBackgroundColor);
+		ncolor = getInt(config, configNightColor, SimpleTextView.defaultNightTextColor);
+		nbcolor = getInt(config, configNightBColor, SimpleTextView.defaultNightBackgroundColor);
+		colorBright = getBoolean(config, configColorBright, true);
+		hanStyle = getBoolean(config, configHanStyle, true);
+		viewOrient = getInt(config, configViewOrient, Configuration.ORIENTATION_UNDEFINED);
+		zipEncode = getString(config, configZipEncode, VFile.getDefaultEncode());
+		dictEnabled = getBoolean(config, configDictEnabled, false);
+		dictFile = getString(config, configDictFile, null);
+		fontFile = getString(config, configFontFile, null);
+		pagingDirect = GestureDirect.valueOf(getString(config, configPagingDirect, GestureDirect.up.s()));
+
+		StringBuilder sql = new StringBuilder("select ");
+		sql.append(BOOK_INFO_TABLE_COLS[0]);
+		sql.append(',');
+		sql.append(BOOK_INFO_TABLE_COLS[1]);
+		sql.append(',');
+		sql.append(BOOK_INFO_TABLE_COLS[2]);
+		sql.append(',');
+		sql.append(BOOK_INFO_TABLE_COLS[3]);
+		sql.append(',');
+		sql.append(BOOK_INFO_TABLE_COLS[4]);
+		sql.append(", bi.");
+		sql.append(BOOK_INFO_TABLE_COLS[5]);
+		sql.append(" from ");
+		sql.append(BOOK_INFO_TABLE_NAME);
+		sql.append(" bi, ");
+		sql.append(CONFIG_TABLE_NAME);
+		sql.append(" cf where bi.");
+		sql.append(BOOK_INFO_TABLE_COLS[0]);
+		sql.append(" = cf.");
+		sql.append(CONFIG_TABLE_COLS[1]);
+		sql.append(" and cf.");
+		sql.append(CONFIG_TABLE_COLS[0]);
+		sql.append(" like '");
+		sql.append(RECENTLY_FILE_PREFIX);
+		sql.append("%' order by cf.");
+		sql.append(CONFIG_TABLE_COLS[0]);
+
 		rfl.clear();
-		try {
-			currFile = config.get(configCurrFile);
-			fontSize = new Integer(config.get(configFontSize));
-			color = new Integer(config.get(configColor));
-			bcolor = new Integer(config.get(configBColor));
-			ncolor = new Integer(config.get(configNightColor));
-			nbcolor = new Integer(config.get(configNightBColor));
-			colorBright = config.get(configColorBright).equals("true");
-			hanStyle = config.get(configHanStyle).equals("true");
-			viewOrient = new Integer(config.get(configViewOrient));
-			zipEncode = config.get(configZipEncode);
-			dictEnabled = config.get(configDictEnabled).equals("true");
-			dictFile = config.get(configDictFile);
-			fontFile = config.get(configFontFile);
-			pagingDirect = GestureDirect
-				.valueOf(getValue(config, configPagingDirect, GestureDirect.up.s()));
-
-			StringBuilder sql = new StringBuilder("select ");
-			sql.append(BOOK_INFO_TABLE_COLS[0]);
-			sql.append(',');
-			sql.append(BOOK_INFO_TABLE_COLS[1]);
-			sql.append(',');
-			sql.append(BOOK_INFO_TABLE_COLS[2]);
-			sql.append(',');
-			sql.append(BOOK_INFO_TABLE_COLS[3]);
-			sql.append(',');
-			sql.append(BOOK_INFO_TABLE_COLS[4]);
-			sql.append(", bi.");
-			sql.append(BOOK_INFO_TABLE_COLS[5]);
-			sql.append(" from ");
-			sql.append(BOOK_INFO_TABLE_NAME);
-			sql.append(" bi, ");
-			sql.append(CONFIG_TABLE_NAME);
-			sql.append(" cf where bi.");
-			sql.append(BOOK_INFO_TABLE_COLS[0]);
-			sql.append(" = cf.");
-			sql.append(CONFIG_TABLE_COLS[1]);
-			sql.append(" and cf.");
-			sql.append(CONFIG_TABLE_COLS[0]);
-			sql.append(" like '");
-			sql.append(RECENTLY_FILE_PREFIX);
-			sql.append("%' order by cf.");
-			sql.append(CONFIG_TABLE_COLS[0]);
-
-			rfl.clear();
-			cursor = db.rawQuery(sql.toString(), null);
-			while (cursor.moveToNext()) {
-				ReadingInfo ri = new ReadingInfo();
-				ri.name = cursor.getString(0);
-				ri.chapter = cursor.getInt(1);
-				ri.line = cursor.getInt(2);
-				ri.offset = cursor.getInt(3);
-				ri.percent = cursor.getInt(4);
-				ri.id = cursor.getInt(5);
-				rfl.add(ri);
-			}
-			cursor.close();
-		} catch (Exception e) {
-			Log.println(Log.ERROR, "Config", "parse config file error:" + e.getMessage());
+		cursor = db.rawQuery(sql.toString(), null);
+		while (cursor.moveToNext()) {
+			ReadingInfo ri = new ReadingInfo();
+			ri.name = cursor.getString(0);
+			ri.chapter = cursor.getInt(1);
+			ri.line = cursor.getInt(2);
+			ri.offset = cursor.getInt(3);
+			ri.percent = cursor.getInt(4);
+			ri.id = cursor.getInt(5);
+			rfl.add(ri);
 		}
-
+		cursor.close();
 	}
 
-	private String getValue(Map<String, String> config, String name, String defaultValue)
+	private String getString(Map<String, String> config, String name, @Nullable String defaultValue)
 	{
 		String v = config.get(name);
 		return v != null ? v : defaultValue;
+	}
+
+	private int getInt(Map<String, String> config, String name, int defaultValue)
+	{
+		try {
+			return new Integer(config.get(name));
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+
+	private boolean getBoolean(Map<String, String> config, String name, boolean defaultValue)
+	{
+		try {
+			return config.get(name).equals("true");
+		} catch (Exception e) {
+			return defaultValue;
+		}
 	}
 
 	public void saveConfig()
@@ -268,8 +276,6 @@ public class Config extends SQLiteOpenHelper
 		dup.dictFile = dictFile;
 		dup.fontFile = fontFile;
 		dup.zipEncode = zipEncode;
-		dup.bookmarkDirect = bookmarkDirect;
-		dup.chapterDirect = chapterDirect;
 		return dup;
 	}
 
@@ -289,8 +295,6 @@ public class Config extends SQLiteOpenHelper
 		dictFile = dup.dictFile;
 		fontFile = dup.fontFile;
 		zipEncode = dup.zipEncode;
-		bookmarkDirect = dup.bookmarkDirect;
-		chapterDirect = dup.chapterDirect;
 	}
 
 	public String getCurrFile()
