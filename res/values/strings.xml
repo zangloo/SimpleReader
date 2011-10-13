@@ -57,11 +57,13 @@
 	<string name="button_search_text">檢索</string>
 	<string name="view_direct_label">閱讀方嚮：</string>
 	<string name="dict_enabled_label">啓用字典：</string>
+	<string name="online_enabled_label">線上閱讀</string>
 	<string name="dict_list_title">選詞</string>
 	<string name="bookmark_title">標記書籤:</string>
 	<string name="button_bookmark_delete_title">刪除書籤</string>
 	<string name="recently_opened_title">最近閱讀</string>
-	<string name="file_list_title">文件列表</string>
+	<string name="file_list_title">書籍列表</string>
+	<string name="file_online_list_title">線上書籍</string>
 	<string name="font_name_label">選擇字體：</string>
 	<string name="default_font_label">缺省字體</string>
 

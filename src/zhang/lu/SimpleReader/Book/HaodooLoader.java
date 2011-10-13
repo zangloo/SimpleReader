@@ -1,5 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
+import zhang.lu.SimpleReader.VFS.VFile;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -267,9 +269,12 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return recBytes;
 	}
 
-	public String[] getSuffixes()
+	public boolean isBelong(VFile f)
 	{
-		return suffixes;
+		for (String s : suffixes)
+			if (f.getPath().toLowerCase().endsWith("." + s))
+				return true;
+		return false;
 	}
 
 	// this method get from http://gutenpalm.sourceforge.net/PalmIO/

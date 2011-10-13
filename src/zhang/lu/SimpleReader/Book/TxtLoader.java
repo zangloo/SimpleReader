@@ -1,5 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
+import zhang.lu.SimpleReader.VFS.VFile;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,11 +17,11 @@ import java.util.List;
 
 public class TxtLoader implements BookLoader.Loader
 {
-	private static final String[] suffixes = {"txt"};
+	private static final String suffix = "txt";
 
-	public String[] getSuffixes()
+	public boolean isBelong(VFile f)
 	{
-		return suffixes;
+		return f.getPath().toLowerCase().endsWith("." + suffix);
 	}
 
 	private static String formatText(String txt)

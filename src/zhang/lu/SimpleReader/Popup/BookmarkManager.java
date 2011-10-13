@@ -163,8 +163,6 @@ public class BookmarkManager extends PopupList
 	public void addDialog(Bookmark bookmark)
 	{
 		bm = bookmark;
-		assert bm.id == 0;
-
 		if (bm.desc.length() > BOOKMARK_DESC_DEFAULT_LEN)
 			bm.desc = bm.desc.substring(0, BOOKMARK_DESC_DEFAULT_LEN);
 		Context context = getContentView().getContext();
@@ -181,7 +179,6 @@ public class BookmarkManager extends PopupList
 	public void editDialog(Bookmark bookmark)
 	{
 		bm = bookmark;
-		assert bm.id != 0;
 
 		Context context = getContentView().getContext();
 		et = new EditText(context);

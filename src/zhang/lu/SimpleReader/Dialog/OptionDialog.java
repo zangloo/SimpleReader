@@ -188,8 +188,11 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				break;
 			}
 
-		CheckBox de = (CheckBox) findViewById(R.id.dict_enabled);
-		de.setChecked(conf.isDictEnabled());
+		CheckBox cb = (CheckBox) findViewById(R.id.online_enabled);
+		cb.setChecked(conf.isOnlineEnabled());
+
+		cb = (CheckBox) findViewById(R.id.dict_enabled);
+		cb.setChecked(conf.isDictEnabled());
 
 		spinner = (Spinner) findViewById(R.id.dict_file);
 		fl = (new File(Reader.dictPath)).list(new FilenameFilter()
@@ -212,9 +215,9 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 						spinner.setSelection(i, false);
 						break;
 					}
-			de.setOnCheckedChangeListener(this);
+			cb.setOnCheckedChangeListener(this);
 		} else
-			de.setOnCheckedChangeListener(null);
+			cb.setOnCheckedChangeListener(null);
 		spinner.setVisibility(conf.isDictEnabled() ? View.VISIBLE : View.INVISIBLE);
 
 		ScrollView sv = (ScrollView) findViewById(R.id.opt_scroll_view);
@@ -230,11 +233,12 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		conf.setBColor(bcolor);
 		conf.setNColor(ncolor);
 		conf.setNBColor(nbcolor);
-		//conf.setColorBright(isBright);
+		conf.setColorBright(isBright);
 		conf.setHanStyle(
 			((RadioGroup) findViewById(R.id.view_style)).getCheckedRadioButtonId() == R.id.han_style);
 
 		conf.setDictEnabled(((CheckBox) findViewById(R.id.dict_enabled)).isChecked());
+		conf.setOnlineEnabled(((CheckBox) findViewById(R.id.online_enabled)).isChecked());
 
 		Object df = ((Spinner) findViewById(R.id.dict_file)).getSelectedItem();
 		conf.setDictFile((String) df);

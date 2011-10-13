@@ -1,5 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
+import zhang.lu.SimpleReader.VFS.VFile;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,7 @@ public class BookLoader
 {
 	interface Loader
 	{
-		String[] getSuffixes();
+		boolean isBelong(VFile f);
 
 		BookContent load(VFile file) throws Exception;
 
@@ -38,24 +40,23 @@ public class BookLoader
 		loaders.add(new EPubBook());
 	}
 
-	private static Loader findLoader(String filePath)
+	private static Loader findLoader(VFile f)
 	{
 		for (Loader l : loaders)
-			for (String s : l.getSuffixes())
-				if (filePath.toLowerCase().endsWith("." + s))
-					return l;
+			if (l.isBelong(f))
+				return l;
 		return defaultLoader;
 	}
 
 	public static BookContent loadFile(String filePath) throws Exception
 	{
 		unloadBook();
-		VFile f = new VFile(filePath);
+		VFile f = VFile.create(filePath);
 		if (!f.exists())
 			return null;
 		if (defaultLoader == null)
 			init();
-		currLoader = findLoader(filePath);
+		currLoader = findLoader(f);
 		return book = currLoader.load(f);
 	}
 

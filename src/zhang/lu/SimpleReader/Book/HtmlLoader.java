@@ -1,6 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
 import org.jsoup.Jsoup;
+import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,9 +18,12 @@ public class HtmlLoader implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"htm", "html"};
 
-	public String[] getSuffixes()
+	public boolean isBelong(VFile f)
 	{
-		return suffixes;
+		for (String s:suffixes)
+			if (f.getPath().toLowerCase().endsWith("." + s))
+				return true;
+		return false;
 	}
 
 	public BookContent load(VFile f) throws Exception

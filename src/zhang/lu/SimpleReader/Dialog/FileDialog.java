@@ -8,14 +8,14 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.*;
 import org.jetbrains.annotations.Nullable;
-import zhang.lu.SimpleReader.Book.VFile;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.R;
-import zhang.lu.SimpleReader.Reader;
+import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,7 +23,7 @@ import java.util.List;
  * Date: 10-12-4
  * Time: 下午8:58
  */
-public class FileDialog extends Dialog implements AdapterView.OnItemClickListener
+public class FileDialog extends Dialog
 {
 	public static interface OnFilePickedListener
 	{
@@ -37,12 +37,16 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 
 	private List<HashMap<String, Object>> fns;
 	private List<HashMap<String, Object>> rfns;
+	private List<HashMap<String, Object>> ofns;
 	private SimpleAdapter saf;
+	private SimpleAdapter saof;
 	private SimpleAdapter sarf;
-	private ListView[] lv = new ListView[2];
+	private ListView[] lv = new ListView[3];
 	private ViewPager vp;
 	private RadioGroup rg;
 	private String pwd;
+	private String opwd;
+	private boolean showOnline = false;
 
 	private OnFilePickedListener fpl;
 
@@ -75,7 +79,38 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 		saf = new SimpleAdapter(getContext(), fns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
 		lv[0] = new ListView(getContext());
 		lv[0].setAdapter(saf);
-		lv[0].setOnItemClickListener(this);
+		lv[0].setOnItemClickListener(new AdapterView.OnItemClickListener()
+		{
+			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
+			{
+				Map map = (Map) adapterView.getItemAtPosition(i);
+				int id = (Integer) map.get("icon");
+				String name = (String) map.get("name");
+
+				if ((pwd = processPath(pwd, name, id)) != null)
+					updateList(null);
+			}
+
+		});
+
+		// setup online file list
+		ofns = new ArrayList<HashMap<String, Object>>();
+		saof = new SimpleAdapter(getContext(), ofns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
+		lv[2] = new ListView(getContext());
+		lv[2].setAdapter(saof);
+		lv[2].setOnItemClickListener(new AdapterView.OnItemClickListener()
+		{
+			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
+			{
+				Map map = (Map) adapterView.getItemAtPosition(i);
+				int id = (Integer) map.get("icon");
+				String name = (String) map.get("name");
+
+				if ((opwd = processPath(opwd, name, id)) != null)
+					updateOnlineList(null);
+			}
+
+		});
 
 		vp = (ViewPager) findViewById(R.id.file_list_pager);
 		vp.setOnPageChangeListener(new android.support.v4.view.ViewPager.OnPageChangeListener()
@@ -93,7 +128,11 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 					case 1:
 						rg.check(R.id.button_recently_list);
 						break;
+					case 2:
+						rg.check(R.id.button_file_online_list);
+						break;
 				}
+				updateTitle(i);
 			}
 
 			public void onPageScrollStateChanged(int i)
@@ -105,7 +144,7 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 			@Override
 			public int getCount()
 			{
-				return 2;
+				return showOnline ? 3 : 2;
 			}
 
 			@Override
@@ -172,28 +211,47 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 					case R.id.button_recently_list:
 						vp.setCurrentItem(1);
 						break;
+					case R.id.button_file_online_list:
+						vp.setCurrentItem(2);
+						break;
 				}
 			}
 		});
 	}
 
-	public void update(String path, List<Config.ReadingInfo> recentFileList)
+	public void update(String path, List<Config.ReadingInfo> recentFileList, boolean showOnline)
 	{
 		String fn = null;
 		//if path is root, it should be "" not "/"
-		if (path == null)
-			pwd = "";
-		else {
+		pwd = "";
+		opwd = VFile.CLOUD_FILE_PREFIX;
+		if (VFile.isCloudFile(path)) {
+			if (path != null) {
+				int p = path.lastIndexOf('/');
+				if (p > 0)
+					opwd = path.substring(0, p);
+				fn = path.substring(p + 1);
+			}
+		} else if (path != null) {
 			int p = path.lastIndexOf('/');
 			if (p > 0)
 				pwd = path.substring(0, p);
-			else
-				pwd = "";
 			fn = path.substring(p + 1);
 		}
-		lv[0].setSelection(updateList(fn));
+
+		rg.findViewById(R.id.button_file_online_list).setVisibility(showOnline ? View.VISIBLE : View.GONE);
+		this.showOnline = showOnline;
+		if ((showOnline) && (VFile.isCloudFile(path))) {
+			lv[0].setSelection(updateList(null));
+			lv[2].setSelection(updateOnlineList(fn));
+			vp.setCurrentItem(2);
+		} else {
+			lv[0].setSelection(updateList(fn));
+			if (showOnline)
+				lv[2].setSelection(updateOnlineList(null));
+			vp.setCurrentItem(0);
+		}
 		updateRecentList(recentFileList);
-		vp.setCurrentItem(0);
 	}
 
 	private void updateRecentList(List<Config.ReadingInfo> recentFileList)
@@ -212,15 +270,13 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 
 	private int updateList(@Nullable String filename)
 	{
-		String path = Reader.pathPrefix + "/" + pwd;
-
 		fns.clear();
 		HashMap<String, Object> map = new HashMap<String, Object>();
 
-		VFile f = new VFile(path);
+		VFile f = VFile.create(pwd);
 		List<VFile.Property> ps = f.listProperty();
 		if (ps == null) {
-			f = new VFile(Reader.pathPrefix);
+			f = VFile.create("");
 			ps = f.listProperty();
 			pwd = "";
 		}
@@ -252,30 +308,88 @@ public class FileDialog extends Dialog implements AdapterView.OnItemClickListene
 		}
 
 		saf.notifyDataSetChanged();
-		setTitle(getContext().getString(R.string.dialog_file_title) + ((pwd.length() == 0) ? "/" : pwd));
 		return pos;
 	}
 
-	public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
+	private int updateOnlineList(@Nullable String filename)
 	{
-		int id = (Integer) fns.get(i).get("icon");
-		String name = (String) fns.get(i).get("name");
+		ofns.clear();
+		HashMap<String, Object> map = new HashMap<String, Object>();
 
-		if (id == R.drawable.icon_file) {
-			filePicked(pwd + "/" + name);
-			return;
+		VFile f = VFile.create(opwd);
+		List<VFile.Property> ps = f.listProperty();
+
+		if (ps == null) {
+			opwd = VFile.CLOUD_FILE_PREFIX;
+			f = VFile.create(opwd);
+			ps = f.listProperty();
 		}
 
-		if (name.equals(upDir)) {
-			int pos = pwd.lastIndexOf('/');
+		int pos = -1;
+		if (ps != null) {
+			// if not root
+			if (opwd.length() > VFile.CLOUD_FILE_PREFIX.length()) {
+				map.put("icon", R.drawable.icon_folder);
+				map.put("name", upDir);
+				ofns.add(map);
+			}
+
+			for (int i = 0; i < ps.size(); i++) {
+				VFile.Property p = ps.get(i);
+				map = new HashMap<String, Object>();
+				if (p.isFile) {
+					map.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
+					map.put(LIST_HEAD_NAMES[2], "" + p.size / 1024 + " K");
+				} else {
+					map.put(LIST_HEAD_NAMES[0], R.drawable.icon_folder);
+					map.put(LIST_HEAD_NAMES[2], "");
+				}
+				map.put(LIST_HEAD_NAMES[1], p.name);
+				if ((filename != null) && (pos == -1))
+					if (filename.equals(p.name))
+						pos = i;
+				ofns.add(map);
+			}
+		}
+		saof.notifyDataSetChanged();
+		return pos;
+	}
+
+	private void updateTitle(int index)
+	{
+		switch (index) {
+			case 0:
+				setTitle(getContext().getString(R.string.dialog_file_title) +
+						 ((pwd.length() == 0) ? "/" : pwd));
+				break;
+			case 1:
+				setTitle(getContext().getString(R.string.dialog_file_title));
+				break;
+			case 2:
+				setTitle(getContext().getString(R.string.dialog_file_title) +
+						 (opwd.equals(VFile.CLOUD_FILE_PREFIX) ?
+							 VFile.CLOUD_FILE_PREFIX + "/" : opwd));
+				break;
+		}
+	}
+
+	private String processPath(String p, String n, int id)
+	{
+		if (id == R.drawable.icon_file) {
+			filePicked(p + "/" + n);
+			return null;
+		}
+
+		if (n.equals(upDir)) {
+			int pos = p.lastIndexOf('/');
 			//no slash, do nothing
 			if (pos == -1)
-				return;
+				return null;
 
-			pwd = pwd.substring(0, pos);
+			p = p.substring(0, pos);
 		} else
-			pwd = pwd + "/" + name;
-		updateList(null);
+			p = p + "/" + n;
+		return p;
 	}
 
 	private void filePicked(String result)

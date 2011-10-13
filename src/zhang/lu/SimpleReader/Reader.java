@@ -14,7 +14,6 @@ import android.view.*;
 import android.widget.*;
 import zhang.lu.SimpleReader.Book.BookContent;
 import zhang.lu.SimpleReader.Book.BookLoader;
-import zhang.lu.SimpleReader.Book.VFile;
 import zhang.lu.SimpleReader.Dialog.DictManager;
 import zhang.lu.SimpleReader.Dialog.FileDialog;
 import zhang.lu.SimpleReader.Dialog.OptionDialog;
@@ -22,6 +21,7 @@ import zhang.lu.SimpleReader.Popup.BookmarkManager;
 import zhang.lu.SimpleReader.Popup.ChapterManager;
 import zhang.lu.SimpleReader.Popup.PopupMenu;
 import zhang.lu.SimpleReader.Popup.StatusPanel;
+import zhang.lu.SimpleReader.VFS.VFile;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.io.File;
@@ -269,7 +269,8 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		switch (id) {
 			case FILE_DIALOG_ID:
-				((FileDialog) dialog).update(config.getCurrFile(), config.getRecentFilesList());
+				((FileDialog) dialog).update(config.getCurrFile(), config.getRecentFilesList(),
+							     config.isOnlineEnabled());
 				break;
 			case OPTION_DIALOG_ID:
 				((OptionDialog) dialog).update(config.dup());
@@ -493,7 +494,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			pwd = "";
 		fn = path.substring(pos + 1);
 
-		VFile f = new VFile(pathPrefix + pwd);
+		VFile f = VFile.create(pwd);
 		List<VFile.Property> ps = f.listProperty(false);
 		if (ps == null) {
 			loading = false;
@@ -546,7 +547,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			pwd = "";
 		fn = path.substring(pos + 1);
 
-		VFile f = new VFile(pathPrefix + pwd);
+		VFile f = VFile.create(pwd);
 		List<VFile.Property> ps = f.listProperty(false);
 		if (ps == null) {
 			loading = false;
@@ -621,7 +622,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 				saveReadingInfo();
 				try {
-					BookContent bc = BookLoader.loadFile(pathPrefix + fp);
+					BookContent bc = BookLoader.loadFile(fp);
 					config.setReadingFile(fp);
 					bv.setContent(bc);
 					ri = config.getReadingInfo(config.getCurrFile());
@@ -754,20 +755,12 @@ public class Reader extends Activity implements View.OnTouchListener
 			{
 				switch ((int) id) {
 					case R.string.menu_dict:
-						assert fingerPosInfo != null;
-						assert fingerPosInfo.str != null;
-						assert fingerPosInfo.str.length() > 0;
-
 						if (dictManager.getDictMaxWordLen() < fingerPosInfo.str.length())
 							fingerPosInfo.str = fingerPosInfo.str
 								.substring(0, dictManager.getDictMaxWordLen());
 						dictManager.showDict(fingerPosInfo);
 						break;
 					case R.string.menu_bookmark:
-						assert fingerPosInfo != null;
-						assert fingerPosInfo.str != null;
-						assert fingerPosInfo.str.length() > 0;
-
 						if (ri != null)
 							bookmarkManager.addDialog(
 								BookmarkManager.createBookmark(fingerPosInfo, ri));

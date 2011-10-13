@@ -5,8 +5,8 @@ import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import zhang.lu.SimpleReader.VFS.VFile;
 
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,20 +18,20 @@ import java.util.List;
  */
 public class EPubBook extends PlainTextContent implements BookLoader.Loader
 {
-	private static final String[] suffixes = {"epub"};
+	private static final String suffix = "epub";
 
 	private ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
 	private int chapter;
 	private List<TOCReference> tocrs;
 
-	public String[] getSuffixes()
+	public boolean isBelong(VFile f)
 	{
-		return suffixes;
+		return f.getPath().toLowerCase().endsWith("." + suffix);
 	}
 
 	public BookContent load(VFile file) throws Exception
 	{
-		Book book = (new EpubReader()).readEpub(new FileInputStream(file));
+		Book book = (new EpubReader()).readEpub(file.getInputStream());
 		chapters.clear();
 
 		tocrs = book.getTableOfContents().getTocReferences();

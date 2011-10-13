@@ -111,7 +111,7 @@ public class StatusPanel extends PopupWindow
 	{
 		ftv.setText(filename);
 		if (chapter != null)
-			ptv.setText(percent + "% @" + chapter);
+			ptv.setText(percent + "%\n" + chapter);
 		else
 			ptv.setText(percent + "%");
 		updateTime();

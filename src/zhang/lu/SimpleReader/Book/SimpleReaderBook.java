@@ -2,6 +2,8 @@ package zhang.lu.SimpleReader.Book;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import zhang.lu.SimpleReader.VFS.CloudFile;
+import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import java.util.HashMap;
  */
 public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 {
-	public static final String[] suffixes = {"srb"};
+	public static final String suffix = "srb";
 	public static final String[] INFO_TABLE_COLS = new String[]{"key", "value"};
 	public static final String INFO_TABLE_NAME = "info";
 
@@ -83,14 +85,14 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
 	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
 
-	public String[] getSuffixes()
+	public boolean isBelong(VFile f)
 	{
-		return suffixes;
+		return (!CloudFile.class.isInstance(f)) && (f.getPath().toLowerCase().endsWith("." + suffix));
 	}
 
 	public BookContent load(VFile f) throws Exception
 	{
-		db = SQLiteDatabase.openDatabase(f.getPath(), null,
+		db = SQLiteDatabase.openDatabase(f.getRealPath(), null,
 						 SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
 
 		HashMap<String, String> map = new HashMap<String, String>();

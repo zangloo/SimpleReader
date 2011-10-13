@@ -7,8 +7,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import org.jetbrains.annotations.Nullable;
-import zhang.lu.SimpleReader.Book.VFile;
 import zhang.lu.SimpleReader.Popup.BookmarkManager;
+import zhang.lu.SimpleReader.VFS.VFile;
 import zhang.lu.SimpleReader.View.SimpleTextView;
 
 import java.util.ArrayList;
@@ -88,6 +88,7 @@ public class Config extends SQLiteOpenHelper
 	private static final String configDictEnabled = "dictenable";
 	private static final String configDictFile = "dictfile";
 	private static final String configFontFile = "fontfile";
+	private static final String configOnlineEnabled = "onlineenable";
 
 	private int fontSize = SimpleTextView.defaultFontSize;
 	private int color = SimpleTextView.defaultTextColor;
@@ -102,6 +103,7 @@ public class Config extends SQLiteOpenHelper
 	private boolean showStatus = true;
 	private GestureDirect pagingDirect = Config.GestureDirect.up;
 	private boolean dictEnabled = false;
+	private boolean onlineEnabled = false;
 	private String dictFile = null;
 	private String fontFile = null;
 	private ArrayList<ReadingInfo> rfl = new ArrayList<ReadingInfo>(MAX_RECENTLY_FILE_COUNT);
@@ -160,6 +162,7 @@ public class Config extends SQLiteOpenHelper
 		viewOrient = getInt(config, configViewOrient, Configuration.ORIENTATION_UNDEFINED);
 		zipEncode = getString(config, configZipEncode, VFile.getDefaultEncode());
 		dictEnabled = getBoolean(config, configDictEnabled, false);
+		onlineEnabled = getBoolean(config, configOnlineEnabled, false);
 		dictFile = getString(config, configDictFile, null);
 		fontFile = getString(config, configFontFile, null);
 		pagingDirect = GestureDirect.valueOf(getString(config, configPagingDirect, GestureDirect.up.s()));
@@ -246,6 +249,7 @@ public class Config extends SQLiteOpenHelper
 		config.put(configColorBright, "" + colorBright);
 		config.put(configPagingDirect, pagingDirect.s());
 		config.put(configDictEnabled, "" + dictEnabled);
+		config.put(configOnlineEnabled, "" + onlineEnabled);
 		config.put(configDictFile, "" + dictFile);
 		config.put(configFontFile, "" + fontFile);
 
@@ -276,6 +280,7 @@ public class Config extends SQLiteOpenHelper
 		dup.dictFile = dictFile;
 		dup.fontFile = fontFile;
 		dup.zipEncode = zipEncode;
+		dup.onlineEnabled = onlineEnabled;
 		return dup;
 	}
 
@@ -295,6 +300,7 @@ public class Config extends SQLiteOpenHelper
 		dictFile = dup.dictFile;
 		fontFile = dup.fontFile;
 		zipEncode = dup.zipEncode;
+		onlineEnabled = dup.onlineEnabled;
 	}
 
 	public String getCurrFile()
@@ -549,8 +555,6 @@ public class Config extends SQLiteOpenHelper
 
 	public void addBookmark(BookmarkManager.Bookmark bm)
 	{
-		assert bm.bookid != 0;
-
 		SQLiteDatabase db = getWritableDatabase();
 		ContentValues cv = new ContentValues(5);
 		cv.put(BOOKMARKS_TABLE_COLS[0], bm.bookid);
@@ -564,9 +568,6 @@ public class Config extends SQLiteOpenHelper
 
 	public void updateBookmark(BookmarkManager.Bookmark bm)
 	{
-		assert bm.bookid != 0;
-		assert bm.getID() != 0;
-
 		SQLiteDatabase db = getWritableDatabase();
 		ContentValues cv = new ContentValues(5);
 		cv.put(BOOKMARKS_TABLE_COLS[0], bm.bookid);
@@ -580,9 +581,6 @@ public class Config extends SQLiteOpenHelper
 
 	public void deleteBookmark(BookmarkManager.Bookmark bm)
 	{
-		assert bm.bookid != 0;
-		assert bm.getID() != 0;
-
 		SQLiteDatabase db = getWritableDatabase();
 		db.delete(BOOKMARKS_TABLE_NAME, "rowid = " + bm.getID(), null);
 	}
@@ -595,5 +593,15 @@ public class Config extends SQLiteOpenHelper
 	public int getCurrentBColor()
 	{
 		return (colorBright) ? bcolor : nbcolor;
+	}
+
+	public boolean isOnlineEnabled()
+	{
+		return onlineEnabled;
+	}
+
+	public void setOnlineEnabled(boolean onlineEnabled)
+	{
+		this.onlineEnabled = onlineEnabled;
 	}
 }

@@ -18,6 +18,10 @@
 				     android:layout_width="wrap_content"
 				     android:layout_height="wrap_content"
 				     android:text="@string/recently_opened_title"/>
+			<RadioButton android:id="@+id/button_file_online_list"
+				     android:layout_width="wrap_content"
+				     android:layout_height="wrap_content"
+				     android:text="@string/file_online_list_title"/>
 		</RadioGroup>
 		<Button android:id="@+id/button_cancel" android:text="@string/button_cancel_text"
 			android:layout_width="0dip" android:layout_height="wrap_content"
