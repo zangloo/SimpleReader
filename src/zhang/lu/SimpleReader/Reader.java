@@ -27,6 +27,7 @@ import zhang.lu.SimpleReader.View.SimpleTextView;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 public class Reader extends Activity implements View.OnTouchListener
 {
@@ -47,8 +48,9 @@ public class Reader extends Activity implements View.OnTouchListener
 	private static final int menuBookmarkMgr = 5;
 	private static final int menuChapterMgr = 6;
 	private static final int menuSeek = 7;
-	private static final int menuColorBright = 8;
-	private static final int menuAbout = 9;
+	private static final int menuStatusPanel = 8;
+	private static final int menuColorBright = 9;
+	private static final int menuAbout = 10;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
@@ -77,7 +79,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private PopupMenu pm = null;
 	private TextView nt = null;
 	private FrameLayout nsv = null;
-	private int ppi, ppo;
+	private Stack<Config.ReadingInfo> ris = new Stack<Config.ReadingInfo>();
 	private boolean loading = false;
 	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
 	private Config.ReadingInfo ri = null;
@@ -182,11 +184,38 @@ public class Reader extends Activity implements View.OnTouchListener
 		super.onConfigurationChanged(newConfig);
 	}
 
+	private void pushReadingInfo()
+	{
+		Config.ReadingInfo rri = new Config.ReadingInfo();
+		rri.line = bv.getPosIndex();
+		rri.offset = bv.getPosOffset();
+		rri.chapter = bv.getContent().getCurrChapter();
+		rri.name = ri.name;
+		rri.ctitle = bv.getContent().getChapterTitle();
+		rri.percent = bv.getPos();
+		ris.push(rri);
+	}
+
+	private void updateBookView(Config.ReadingInfo rri)
+	{
+		if (rri.chapter != bv.getContent().getCurrChapter())
+			bv.getContent().gotoChapter(rri.chapter);
+		bv.setPos(rri.line, rri.offset);
+	}
+
+	private boolean popReadingInfo()
+	{
+		if (ris.size() == 0)
+			return false;
+		updateBookView(ris.pop());
+		return true;
+	}
+
 	@Override
 	public void onBackPressed()
 	{
 		if (hidePanels()) {
-			bv.setPos(ppi, ppo);
+			popReadingInfo();
 			return;
 		}
 		super.onBackPressed();
@@ -328,8 +357,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void showSearchPanel()
 	{
-		ppi = bv.getPosIndex();
-		ppo = bv.getPosOffset();
+		pushReadingInfo();
 		sp.setVisibility(View.VISIBLE);
 		sp.setEnabled(true);
 		et.requestFocus();
@@ -343,11 +371,14 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void showSeekPanel()
 	{
-		ppi = bv.getPosIndex();
-		ppo = bv.getPosOffset();
+		pushReadingInfo();
 		skp.setVisibility(View.VISIBLE);
 		skp.setEnabled(true);
-		sb.setProgress(bv.getPos());
+		int pos = bv.getPos();
+		sb.setProgress(pos);
+		TextView tv = (TextView) findViewById(R.id.seek_percent_text);
+		tv.setText(pos + "%");
+
 	}
 
 	private void setColorAndFont()
@@ -408,6 +439,9 @@ public class Reader extends Activity implements View.OnTouchListener
 			case menuChapterMgr:
 				showChapterList(screenWidth >> 1);
 				break;
+			case menuStatusPanel:
+				showStatusPanel();
+				break;
 			case menuExit:
 				finish();
 				break;
@@ -441,6 +475,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		menu.add(0, menuBookmarkMgr, menuBookmarkMgr, getString(R.string.menu_bookmark_mgr));
 		menu.add(0, menuSeek, menuSeek, getString(R.string.menu_seek));
 		menu.add(0, menuChapterMgr, menuChapterMgr, getString(R.string.menu_chapter));
+		menu.add(0, menuStatusPanel, menuStatusPanel, getString(R.string.menu_status_panel));
 
 		return true;
 	}
@@ -466,8 +501,10 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void pageDown()
 	{
-		if (bv.pageDown())
+		if (bv.pageDown()) {
+			updateSeekBarPanel();
 			return;
+		}
 
 		if (loading)
 			return;
@@ -518,8 +555,10 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void pageUp()
 	{
-		if (bv.pageUp())
+		if (bv.pageUp()) {
+			updateSeekBarPanel();
 			return;
+		}
 
 		if (loading)
 			return;
@@ -574,6 +613,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		if (ri == null)
 			return;
 		ri.chapter = bv.getContent().getCurrChapter();
+		ri.ctitle = bv.getContent().getChapterTitle();
 		ri.line = bv.getPosIndex();
 		ri.offset = bv.getPosOffset();
 		ri.percent = bv.getPos();
@@ -593,13 +633,10 @@ public class Reader extends Activity implements View.OnTouchListener
 
 				Util.errorMsg(Reader.this, getString(R.string.error_open_file) + errmsg);
 			} else {
-
-				ppi = ri.line;
-				ppo = ri.offset;
+				ris.clear();
 				if (bv.getContent().getChapterCount() > 1)
 					bv.getContent().gotoChapter(ri.chapter);
-				bv.setPos(ppi, ppo);
-
+				bv.setPos(ri.line, ri.offset);
 				hidePanels();
 				bv.invalidate();
 			}
@@ -682,7 +719,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		{
 			public void onClick(View v)
 			{
-				bv.setPos(ppi, ppo);
+				popReadingInfo();
 				hideSearchPanel();
 			}
 		});
@@ -699,7 +736,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			{
 				if ((!b) || (config.getCurrFile() == null))
 					return;
-
+				updateSeekBarPanelText(i);
 				bv.setPos(i);
 				bv.invalidate();
 			}
@@ -727,10 +764,25 @@ public class Reader extends Activity implements View.OnTouchListener
 		{
 			public void onClick(View v)
 			{
-				bv.setPos(ppi, ppo);
+				popReadingInfo();
 				hideSeekPanel();
 			}
 		});
+	}
+
+	private void updateSeekBarPanelText(int pos)
+	{
+		TextView tv = (TextView) findViewById(R.id.seek_percent_text);
+		tv.setText(pos + "%");
+	}
+
+	private void updateSeekBarPanel()
+	{
+		if (!isSeekPanelOn())
+			return;
+		int pos = bv.getPos();
+		sb.setProgress(pos);
+		updateSeekBarPanelText(pos);
 	}
 
 	private void initChapterMgr()
@@ -739,6 +791,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
+				pushReadingInfo();
 				chapterManager.hide();
 				BookContent book = bv.getContent();
 				book.gotoChapter(position);
@@ -787,16 +840,15 @@ public class Reader extends Activity implements View.OnTouchListener
 				bookmarkManager.hide();
 				if (config.getCurrFile() == null)
 					return;
+				pushReadingInfo();
 
-				BookmarkManager.Bookmark bookmark = bookmarkManager.getBookmark(position);
+				BookmarkManager.Bookmark bm = bookmarkManager.getBookmark(position);
 				BookContent book = bv.getContent();
-				ppi = bookmark.line;
-				ppo = bookmark.offset;
-				if (book.getCurrChapter() != bookmark.chapter) {
-					book.gotoChapter(bookmark.chapter);
-					switchChapterUpdate(book, ppi, ppo);
+				if (book.getCurrChapter() != bm.chapter) {
+					book.gotoChapter(bm.chapter);
+					switchChapterUpdate(book, bm.line, bm.offset);
 				} else {
-					bv.setPos(ppi, ppo);
+					bv.setPos(bm.line, bm.offset);
 					bv.invalidate();
 				}
 			}
@@ -856,11 +908,10 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void switchChapterUpdate(BookContent book, int line, int offset)
 	{
-		ppi = line;
-		ppo = offset;
-		bv.setPos(ppi, ppo);
+		bv.setPos(line, offset);
 		ri.chapter = book.getCurrChapter();
 
+		updateSeekBarPanel();
 		bv.invalidate();
 	}
 
@@ -879,7 +930,13 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void showStatusPanel()
 	{
-		statusPanel.show(config.getCurrFile(), bv.getContent().getChapterTitle(), bv.getPos(), screenWidth);
+		BookContent bc = bv.getContent();
+		ri.chapter = bc.getCurrChapter();
+		ri.ctitle = bc.getChapterTitle();
+		ri.percent = bv.getPos();
+		ri.line = bv.getPosIndex();
+		ri.offset = bv.getPosOffset();
+		statusPanel.show(ris, ri, screenWidth);
 	}
 
 	private void initStatusPanel()
@@ -892,10 +949,16 @@ public class Reader extends Activity implements View.OnTouchListener
 				statusPanel.hide();
 			}
 
-			public void onPercentClick()
+			public void onPosClick()
 			{
 				showSeekPanel();
 				statusPanel.hide();
+			}
+
+			public void onPosChanged(Config.ReadingInfo rri)
+			{
+				updateBookView(rri);
+				bv.invalidate();
 			}
 
 			public void onBatteryLevelClick()

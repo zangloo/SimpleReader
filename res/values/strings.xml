@@ -21,8 +21,9 @@
 	<string name="menu_bookmark">標記書籤</string>
 	<string name="menu_bookmark_mgr">書籤</string>
 	<string name="menu_about">關於</string>
-	<string name="menu_seek">定位</string>
 	<string name="menu_chapter">卷章</string>
+	<string name="menu_status_panel">狀態欄</string>
+	<string name="menu_seek">定位</string>
 
 	<string name="dialog_option_title">配置選項</string>
 	<string name="dialog_file_title">選擇書籍:</string>
@@ -71,6 +72,8 @@
 	<string name="time_label">時間：</string>
 	<string name="pos_label">位置：</string>
 	<string name="button_switch_bright_label">切換顔色</string>
+	<string name="button_prev_pos_label">←</string>
+	<string name="button_next_pos_label">→</string>
 
 	<string name="loading">加載中...</string>
 	<string name="about_title">關於</string>

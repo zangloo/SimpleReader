@@ -7,11 +7,17 @@
 	<ImageView android:id="@+id/file_icon"
 		   android:layout_width="wrap_content" android:layout_height="wrap_content"
 		   android:src="@drawable/icon_folder" android:layout_gravity="center_vertical"/>
-	<TextView android:id="@+id/file_name" android:layout_weight="1"
-		  android:layout_height="wrap_content" android:layout_width="wrap_content"
-		  android:text="file name" android:minHeight="?android:attr/listPreferredItemHeight"
-		  android:textAppearance="?android:attr/textAppearanceLarge"
-		  android:gravity="center_vertical"/>
+	<LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_weight="1"
+		      android:layout_height="wrap_content" android:minHeight="?android:attr/listPreferredItemHeight"
+		      android:gravity="center_vertical">
+		<TextView android:id="@+id/file_name"
+			  android:layout_height="wrap_content" android:layout_width="wrap_content"
+			  android:textAppearance="?android:attr/textAppearanceLarge"
+			  android:gravity="center_vertical"/>
+		<TextView android:id="@+id/title_name"
+			  android:layout_height="wrap_content" android:layout_width="wrap_content"
+			  android:gravity="center_vertical" android:visibility="gone"/>
+	</LinearLayout>
 	<TextView android:id="@+id/file_info"
 		  android:layout_height="wrap_content" android:layout_width="wrap_content"
 		  android:text="file info" android:minHeight="?android:attr/listPreferredItemHeight"

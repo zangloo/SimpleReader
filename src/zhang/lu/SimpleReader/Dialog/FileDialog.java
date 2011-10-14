@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Config;
@@ -32,8 +33,8 @@ public class FileDialog extends Dialog
 
 	private static final String upDir = "..";
 
-	private static final String[] LIST_HEAD_NAMES = new String[]{"icon", "name", "info"};
-	private static final int[] LIST_HEAD_ID = new int[]{R.id.file_icon, R.id.file_name, R.id.file_info};
+	private static final String[] LIST_HEAD_NAMES = new String[]{"icon", "name", "title", "info"};
+	private static final int[] LIST_HEAD_ID = new int[]{R.id.file_icon, R.id.file_name, R.id.title_name, R.id.file_info};
 
 	private List<HashMap<String, Object>> fns;
 	private List<HashMap<String, Object>> rfns;
@@ -64,7 +65,16 @@ public class FileDialog extends Dialog
 		// setup recently files list
 		lv[1] = new ListView(getContext());
 		rfns = new ArrayList<HashMap<String, Object>>();
-		sarf = new SimpleAdapter(getContext(), rfns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
+		sarf = new SimpleAdapter(getContext(), rfns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID)
+		{
+			@Override
+			public View getView(int position, View view, ViewGroup parent)
+			{
+				View v = super.getView(position, view, parent);
+				v.findViewById(R.id.title_name).setVisibility(View.VISIBLE);
+				return v;
+			}
+		};
 		lv[1].setAdapter(sarf);
 		lv[1].setOnItemClickListener(new AdapterView.OnItemClickListener()
 		{
@@ -261,7 +271,8 @@ public class FileDialog extends Dialog
 			HashMap<String, Object> m = new HashMap<String, Object>();
 			m.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
 			m.put(LIST_HEAD_NAMES[1], ri.name);
-			m.put(LIST_HEAD_NAMES[2], ri.percent + "%");
+			m.put(LIST_HEAD_NAMES[2], ri.ctitle);
+			m.put(LIST_HEAD_NAMES[3], ri.percent + "%");
 			rfns.add(m);
 		}
 		sarf.notifyDataSetChanged();
@@ -295,12 +306,13 @@ public class FileDialog extends Dialog
 			map = new HashMap<String, Object>();
 			if (p.isFile) {
 				map.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
-				map.put(LIST_HEAD_NAMES[2], "" + p.size / 1024 + " K");
+				map.put(LIST_HEAD_NAMES[3], "" + p.size / 1024 + " K");
 			} else {
 				map.put(LIST_HEAD_NAMES[0], R.drawable.icon_folder);
-				map.put(LIST_HEAD_NAMES[2], "");
+				map.put(LIST_HEAD_NAMES[3], "");
 			}
 			map.put(LIST_HEAD_NAMES[1], p.name);
+			map.put(LIST_HEAD_NAMES[2], "");
 			if ((filename != null) && (pos == -1))
 				if (filename.equals(p.name))
 					pos = i;
@@ -339,12 +351,13 @@ public class FileDialog extends Dialog
 				map = new HashMap<String, Object>();
 				if (p.isFile) {
 					map.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
-					map.put(LIST_HEAD_NAMES[2], "" + p.size / 1024 + " K");
+					map.put(LIST_HEAD_NAMES[3], "" + p.size / 1024 + " K");
 				} else {
 					map.put(LIST_HEAD_NAMES[0], R.drawable.icon_folder);
-					map.put(LIST_HEAD_NAMES[2], "");
+					map.put(LIST_HEAD_NAMES[3], "");
 				}
 				map.put(LIST_HEAD_NAMES[1], p.name);
+				map.put(LIST_HEAD_NAMES[2], "");
 				if ((filename != null) && (pos == -1))
 					if (filename.equals(p.name))
 						pos = i;

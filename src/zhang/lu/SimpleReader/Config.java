@@ -57,6 +57,7 @@ public class Config extends SQLiteOpenHelper
 	{
 		public String name;
 		public int chapter;
+		public String ctitle;
 		public int line, offset;
 		public int percent;
 		private long id;
@@ -64,13 +65,13 @@ public class Config extends SQLiteOpenHelper
 		public long getID() {return id;}
 	}
 
-	private static final int DB_VERSION = 1;
+	private static final int DB_VERSION = 2;
 
 	private static final String CONFIG_TABLE_NAME = "config";
 	private static final String[] CONFIG_TABLE_COLS = {"key", "value"};
 	private static final String BOOK_INFO_TABLE_NAME = "bookinfo";
 	//last reading status, percent is reserved, rowid for link with bookmark
-	private static final String[] BOOK_INFO_TABLE_COLS = {"name", "chapter", "line", "offset", "percent", "rowid"};
+	private static final String[] BOOK_INFO_TABLE_COLS = {"name", "chapter", "ctitle", "line", "offset", "percent", "rowid"};
 	private static final String BOOKMARKS_TABLE_NAME = "bookmark";
 	private static final String[] BOOKMARKS_TABLE_COLS = {"bookrowid", "desc", "chapter", "line", "offset", "rowid"};
 
@@ -124,8 +125,9 @@ public class Config extends SQLiteOpenHelper
 				   CONFIG_TABLE_COLS[1] + " text)");
 		db.execSQL(
 			"create table " + BOOK_INFO_TABLE_NAME + "(" + BOOK_INFO_TABLE_COLS[0] + " text primary key, " +
-				BOOK_INFO_TABLE_COLS[1] + " integer, " + BOOK_INFO_TABLE_COLS[2] + " integer, " +
-				BOOK_INFO_TABLE_COLS[3] + " integer, " + BOOK_INFO_TABLE_COLS[4] + " integer)");
+				BOOK_INFO_TABLE_COLS[1] + " integer, " + BOOK_INFO_TABLE_COLS[2] + " text, " +
+				BOOK_INFO_TABLE_COLS[3] + " integer, " + BOOK_INFO_TABLE_COLS[4] + " integer, " +
+				BOOK_INFO_TABLE_COLS[5] + " integer)");
 		db.execSQL("create table " + BOOKMARKS_TABLE_NAME + "(" + BOOKMARKS_TABLE_COLS[0] + " integer, " +
 				   BOOKMARKS_TABLE_COLS[1] + "  text, " + BOOKMARKS_TABLE_COLS[2] + " integer, " +
 				   BOOKMARKS_TABLE_COLS[3] + " integer, " + BOOKMARKS_TABLE_COLS[4] + " integer)");
@@ -138,14 +140,24 @@ public class Config extends SQLiteOpenHelper
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
 	{
-		//no upgrade need, now
+		/*
+			db change log
+			version 1: INIT
+			version 2: table "bookinfo" add column ctitle
+		 */
+		switch (oldVersion) {
+			case 1:
+				db.execSQL("alter table " + BOOK_INFO_TABLE_NAME + " add " + BOOK_INFO_TABLE_COLS[2] +
+						   " text");
+				break;
+		}
 	}
 
 	public void readConfig()
 	{
 		Map<String, String> config = new HashMap<String, String>();
 
-		SQLiteDatabase db = getReadableDatabase();
+		SQLiteDatabase db = getWritableDatabase();
 		Cursor cursor = db.query(CONFIG_TABLE_NAME, CONFIG_TABLE_COLS, null, null, null, null, null);
 		while (cursor.moveToNext())
 			config.put(cursor.getString(0), cursor.getString(1));
@@ -177,8 +189,10 @@ public class Config extends SQLiteOpenHelper
 		sql.append(BOOK_INFO_TABLE_COLS[3]);
 		sql.append(',');
 		sql.append(BOOK_INFO_TABLE_COLS[4]);
-		sql.append(", bi.");
+		sql.append(',');
 		sql.append(BOOK_INFO_TABLE_COLS[5]);
+		sql.append(", bi.");
+		sql.append(BOOK_INFO_TABLE_COLS[6]);
 		sql.append(" from ");
 		sql.append(BOOK_INFO_TABLE_NAME);
 		sql.append(" bi, ");
@@ -196,17 +210,22 @@ public class Config extends SQLiteOpenHelper
 
 		rfl.clear();
 		cursor = db.rawQuery(sql.toString(), null);
-		while (cursor.moveToNext()) {
-			ReadingInfo ri = new ReadingInfo();
-			ri.name = cursor.getString(0);
-			ri.chapter = cursor.getInt(1);
-			ri.line = cursor.getInt(2);
-			ri.offset = cursor.getInt(3);
-			ri.percent = cursor.getInt(4);
-			ri.id = cursor.getInt(5);
-			rfl.add(ri);
-		}
+		while (cursor.moveToNext())
+			rfl.add(retrieveReadingInfo(cursor, new ReadingInfo()));
 		cursor.close();
+	}
+
+	private ReadingInfo retrieveReadingInfo(Cursor cursor, ReadingInfo ri)
+	{
+		ri.name = cursor.getString(0);
+		ri.chapter = cursor.getInt(1);
+		ri.ctitle = cursor.getString(2);
+		ri.line = cursor.getInt(3);
+		ri.offset = cursor.getInt(4);
+		ri.percent = cursor.getInt(5);
+		ri.id = cursor.getInt(6);
+
+		return ri;
 	}
 
 	private String getString(Map<String, String> config, String name, @Nullable String defaultValue)
@@ -344,13 +363,8 @@ public class Config extends SQLiteOpenHelper
 		Cursor cursor = db
 			.query(BOOK_INFO_TABLE_NAME, BOOK_INFO_TABLE_COLS, "name = ?", new String[]{filename}, null,
 			       null, null);
-		if (cursor.moveToFirst()) {
-			ri.chapter = cursor.getInt(1);
-			ri.line = cursor.getInt(2);
-			ri.offset = cursor.getInt(3);
-			ri.percent = cursor.getInt(4);
-			ri.id = cursor.getInt(5);
-		}
+		if (cursor.moveToFirst())
+			retrieveReadingInfo(cursor, ri);
 		cursor.close();
 
 		// we must insert new record and get back book id
@@ -382,9 +396,10 @@ public class Config extends SQLiteOpenHelper
 		ContentValues cv = new ContentValues(5);
 		cv.put(BOOK_INFO_TABLE_COLS[0], ri.name);
 		cv.put(BOOK_INFO_TABLE_COLS[1], ri.chapter);
-		cv.put(BOOK_INFO_TABLE_COLS[2], ri.line);
-		cv.put(BOOK_INFO_TABLE_COLS[3], ri.offset);
-		cv.put(BOOK_INFO_TABLE_COLS[4], ri.percent);
+		cv.put(BOOK_INFO_TABLE_COLS[2], ri.ctitle);
+		cv.put(BOOK_INFO_TABLE_COLS[3], ri.line);
+		cv.put(BOOK_INFO_TABLE_COLS[4], ri.offset);
+		cv.put(BOOK_INFO_TABLE_COLS[5], ri.percent);
 		if (insert)
 			ri.id = db.insert(BOOK_INFO_TABLE_NAME, null, cv);
 		else
