@@ -11,8 +11,7 @@
 				  android:layout_width="fill_parent"
 				  android:textAppearance="?android:attr/textAppearanceLarge"/>
 			<TextView android:id="@+id/reading_chapter_text" android:layout_height="wrap_content"
-				  android:layout_width="fill_parent"
-				  android:textAppearance="?android:attr/textAppearance"/>
+				  android:layout_width="fill_parent"/>
 		</LinearLayout>
 		<Button android:id="@+id/button_file" android:text="@string/menu_file"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"

@@ -42,7 +42,7 @@ public class ChapterManager extends PopupList
 				if (position == chapter)
 					tv.setTextColor(Color.RED);
 				else
-					tv.setTextColor(Color.BLACK);
+					tv.setTextColor(Color.WHITE);
 				return v;
 			}
 		};

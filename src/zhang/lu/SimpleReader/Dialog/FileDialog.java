@@ -71,7 +71,11 @@ public class FileDialog extends Dialog
 			public View getView(int position, View view, ViewGroup parent)
 			{
 				View v = super.getView(position, view, parent);
-				v.findViewById(R.id.title_name).setVisibility(View.VISIBLE);
+				TextView tv = (TextView) v.findViewById(R.id.title_name);
+				if (tv.getText().length() > 0)
+					tv.setVisibility(View.VISIBLE);
+				else
+					tv.setVisibility(View.GONE);
 				return v;
 			}
 		};
