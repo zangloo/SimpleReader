@@ -39,7 +39,10 @@ public class RealFile extends VFile
 		Property p;
 		List<Property> ps = new ArrayList<Property>();
 
-		list = rf.list();
+		if (!rf.exists())
+			return null;
+		if ((list = rf.list()) == null)
+			return ps;
 		for (String n : list) {
 			if (n.equals(Config.configDB))
 				continue;

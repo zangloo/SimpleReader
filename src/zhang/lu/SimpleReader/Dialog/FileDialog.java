@@ -259,11 +259,13 @@ public class FileDialog extends Dialog
 			lv[0].setSelection(updateList(null));
 			lv[2].setSelection(updateOnlineList(fn));
 			vp.setCurrentItem(2);
+			updateTitle(2);
 		} else {
 			lv[0].setSelection(updateList(fn));
 			if (showOnline)
 				lv[2].setSelection(updateOnlineList(null));
 			vp.setCurrentItem(0);
+			updateTitle(0);
 		}
 		updateRecentList(recentFileList);
 	}

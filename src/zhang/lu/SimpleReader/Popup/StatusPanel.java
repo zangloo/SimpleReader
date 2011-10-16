@@ -190,6 +190,8 @@ public class StatusPanel extends PopupWindow
 
 	private void updateReadingInfo(Config.ReadingInfo ri)
 	{
+		if (ri == null)
+			return;
 		ftv.setText(ri.name);
 		if (ri.ctitle != null) {
 			ctv.setText(ri.ctitle);

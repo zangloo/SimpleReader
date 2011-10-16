@@ -2,6 +2,7 @@ package zhang.lu.SimpleReader.Book;
 
 import zhang.lu.SimpleReader.VFS.VFile;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class BookLoader
 		unloadBook();
 		VFile f = VFile.create(filePath);
 		if (!f.exists())
-			return null;
+			throw new FileNotFoundException();
 		if (defaultLoader == null)
 			init();
 		currLoader = findLoader(f);

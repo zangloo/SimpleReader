@@ -931,11 +931,13 @@ public class Reader extends Activity implements View.OnTouchListener
 	private void showStatusPanel()
 	{
 		BookContent bc = bv.getContent();
-		ri.chapter = bc.getCurrChapter();
-		ri.ctitle = bc.getChapterTitle();
-		ri.percent = bv.getPos();
-		ri.line = bv.getPosIndex();
-		ri.offset = bv.getPosOffset();
+		if ((ri != null) && (bc != null)) {
+			ri.chapter = bc.getCurrChapter();
+			ri.ctitle = bc.getChapterTitle();
+			ri.percent = bv.getPos();
+			ri.line = bv.getPosIndex();
+			ri.offset = bv.getPosOffset();
+		}
 		statusPanel.show(ris, ri, screenWidth);
 	}
 
