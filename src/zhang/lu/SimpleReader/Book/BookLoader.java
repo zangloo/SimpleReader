@@ -1,5 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
+import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.io.FileNotFoundException;
@@ -18,7 +19,7 @@ public class BookLoader
 	{
 		boolean isBelong(VFile f);
 
-		BookContent load(VFile file) throws Exception;
+		BookContent load(VFile file, Config.ReadingInfo ri) throws Exception;
 
 		void unload(BookContent aBook);
 	}
@@ -38,6 +39,7 @@ public class BookLoader
 		loaders.add(new HtmlLoader());
 		loaders.add(new HaodooLoader());
 		loaders.add(new SimpleReaderBook());
+		loaders.add(new SRBOnline());
 		loaders.add(new EPubBook());
 	}
 
@@ -49,7 +51,7 @@ public class BookLoader
 		return defaultLoader;
 	}
 
-	public static BookContent loadFile(String filePath) throws Exception
+	public static BookContent loadFile(String filePath, Config.ReadingInfo ri) throws Exception
 	{
 		unloadBook();
 		VFile f = VFile.create(filePath);
@@ -58,7 +60,7 @@ public class BookLoader
 		if (defaultLoader == null)
 			init();
 		currLoader = findLoader(f);
-		return book = currLoader.load(f);
+		return book = currLoader.load(f, ri);
 	}
 
 	public static void unloadBook()

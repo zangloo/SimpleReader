@@ -44,10 +44,13 @@ public class FileDialog extends Dialog
 	private SimpleAdapter sarf;
 	private ListView[] lv = new ListView[3];
 	private ViewPager vp;
+	private PagerAdapter pa;
 	private RadioGroup rg;
 	private String pwd;
 	private String opwd;
 	private boolean showOnline = false;
+	// ViewPager can't set currPage when not inited, do it late
+	private int currPage = -1;
 
 	private OnFilePickedListener fpl;
 
@@ -153,7 +156,7 @@ public class FileDialog extends Dialog
 			{
 			}
 		});
-		vp.setAdapter(new PagerAdapter()
+		pa = new PagerAdapter()
 		{
 			@Override
 			public int getCount()
@@ -183,6 +186,10 @@ public class FileDialog extends Dialog
 			@Override
 			public void finishUpdate(View view)
 			{
+				if (currPage == -1)
+					return;
+				vp.setCurrentItem(currPage);
+				currPage = -1;
 			}
 
 			@Override
@@ -201,7 +208,8 @@ public class FileDialog extends Dialog
 			public void restoreState(Parcelable parcelable, ClassLoader classLoader)
 			{
 			}
-		});
+		};
+		vp.setAdapter(pa);
 
 		Button btn = (Button) findViewById(R.id.button_cancel);
 		btn.setOnClickListener(new View.OnClickListener()
@@ -255,16 +263,17 @@ public class FileDialog extends Dialog
 
 		rg.findViewById(R.id.button_file_online_list).setVisibility(showOnline ? View.VISIBLE : View.GONE);
 		this.showOnline = showOnline;
+		pa.notifyDataSetChanged();
 		if ((showOnline) && (VFile.isCloudFile(path))) {
 			lv[0].setSelection(updateList(null));
 			lv[2].setSelection(updateOnlineList(fn));
-			vp.setCurrentItem(2);
+			currPage = 2;
 			updateTitle(2);
 		} else {
 			lv[0].setSelection(updateList(fn));
 			if (showOnline)
 				lv[2].setSelection(updateOnlineList(null));
-			vp.setCurrentItem(0);
+			currPage = 0;
 			updateTitle(0);
 		}
 		updateRecentList(recentFileList);

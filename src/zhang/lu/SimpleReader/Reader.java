@@ -659,10 +659,11 @@ public class Reader extends Activity implements View.OnTouchListener
 
 				saveReadingInfo();
 				try {
-					BookContent bc = BookLoader.loadFile(fp);
+					Config.ReadingInfo nri = config.getReadingInfo(fp);
+					BookContent bc = BookLoader.loadFile(fp, nri);
 					config.setReadingFile(fp);
 					bv.setContent(bc);
-					ri = config.getReadingInfo(config.getCurrFile());
+					ri = nri;
 					msg.arg1 = 1;
 				} catch (Exception e) {
 					Bundle b = new Bundle();

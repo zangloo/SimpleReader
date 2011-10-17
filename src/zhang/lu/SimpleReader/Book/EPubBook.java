@@ -5,6 +5,7 @@ import nl.siegmann.epublib.domain.TOCReference;
 import nl.siegmann.epublib.epub.EpubReader;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 		return f.getPath().toLowerCase().endsWith("." + suffix);
 	}
 
-	public BookContent load(VFile file) throws Exception
+	public BookContent load(VFile file, Config.ReadingInfo ri) throws Exception
 	{
 		Book book = (new EpubReader()).readEpub(file.getInputStream());
 		chapters.clear();
@@ -38,8 +39,8 @@ public class EPubBook extends PlainTextContent implements BookLoader.Loader
 		for (TOCReference tocr : tocrs)
 			chapters.add(new ChapterInfo(tocr.getTitle()));
 
-		chapter = 0;
-		loadChapter(0);
+		loadChapter(ri.chapter);
+		chapter = ri.chapter;
 		return this;
 	}
 
