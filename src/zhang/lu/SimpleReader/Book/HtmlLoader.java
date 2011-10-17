@@ -1,6 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
 import org.jsoup.Jsoup;
+import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.io.InputStream;
@@ -26,7 +27,7 @@ public class HtmlLoader implements BookLoader.Loader
 		return false;
 	}
 
-	public BookContent load(VFile f) throws Exception
+	public BookContent load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
 		List<String> lines = new ArrayList<String>();
 		String cs;

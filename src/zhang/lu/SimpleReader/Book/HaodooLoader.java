@@ -1,5 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
+import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.io.ByteArrayInputStream;
@@ -357,7 +358,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return ret;
 	}
 
-	public BookContent load(VFile file) throws Exception
+	public BookContent load(VFile file, Config.ReadingInfo ri) throws Exception
 	{
 		encrypted = false;
 		chapters.clear();
@@ -392,8 +393,8 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 
 		if ((bookType == BookType.palmDoc) && (recPos > 0))
 			formatPalmDocDB(recBuf, recPos, (HaodooChapterInfo) chapters.get(0));
-		currChapter = 0;
-		setContent(((HaodooChapterInfo) chapters.get(0)).lines);
+		currChapter = ri.chapter;
+		setContent(((HaodooChapterInfo) chapters.get(currChapter)).lines);
 		return this;
 	}
 

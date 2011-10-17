@@ -1,5 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
+import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.io.BufferedReader;
@@ -29,7 +30,7 @@ public class TxtLoader implements BookLoader.Loader
 		return txt.replace("\r", "");
 	}
 
-	public BookContent load(VFile f) throws Exception
+	public BookContent load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
 		List<String> lines = new ArrayList<String>();
 		String cs;

@@ -12,11 +12,15 @@ import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
+import zhang.lu.SimpleReader.Book.BookContent;
+import zhang.lu.SimpleReader.Book.SRBOnline;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -27,13 +31,24 @@ import java.util.List;
  */
 public class CloudFile extends VFile
 {
-	private static final String GET_LIST_PHP = "/bookfeed/getlist.php";
-	private static final String GET_PROPERTY_PHP = "/bookfeed/getproperty.php";
+	public static class OnlineProperty extends Property
+	{
+		public boolean hasNotes;
+		public char mark;
+		public int indexBase;
+	}
 
+	private static final String GET_LIST_PHP = "/bookfeed/getlist.php";
+	private static final String GET_PROPERTY_PHP = "/bookfeed/getprop.php";
+	private static final String GET_CHAPTERS_PHP = "/bookfeed/getchapters.php";
+	private static final String GET_LINES_PHP = "/bookfeed/getlines.php";
+	private static final String GET_NOTES_PHP = "/bookfeed/getnotes.php";
+	private static final String CloudServerAddr = "88.88.88.111";
 	private static final String PARAM_PATH = "path";
+	private static final String PARAM_CIDX = "cidx";
 
 	private boolean init = false;
-	private Property property = null;
+	private OnlineProperty property = null;
 
 	protected CloudFile(String aPath)
 	{
@@ -45,7 +60,7 @@ public class CloudFile extends VFile
 	public boolean exists()
 	{
 		if (!init)
-			property = retrieveProperty(path);
+			property = retrieveProperty();
 
 		return property != null;
 	}
@@ -69,7 +84,7 @@ public class CloudFile extends VFile
 	public boolean isDirectory()
 	{
 		if (!init)
-			property = retrieveProperty(path);
+			property = retrieveProperty();
 
 		return (property != null) && (!property.isFile);
 	}
@@ -84,7 +99,7 @@ public class CloudFile extends VFile
 	public long length()
 	{
 		if (!init)
-			property = retrieveProperty(path);
+			property = retrieveProperty();
 
 		return property == null ? 0 : property.size;
 	}
@@ -92,7 +107,7 @@ public class CloudFile extends VFile
 	@Override
 	public InputStream getInputStream() throws IOException
 	{
-		return null;
+		throw new IOException("Not supported");
 	}
 
 	@Override
@@ -107,7 +122,7 @@ public class CloudFile extends VFile
 		return CLOUD_FILE_PREFIX;
 	}
 
-	public static InputStream getResponse(String file, ArrayList<NameValuePair> params) throws Exception
+	public static InputStream getResponse(String file, ArrayList<NameValuePair> params) throws IOException, URISyntaxException
 	{
 		URI uri = URIUtils
 			.createURI("http", CloudServerAddr, -1, file, URLEncodedUtils.format(params, "UTF-8"), null);
@@ -121,30 +136,29 @@ public class CloudFile extends VFile
 			return null;
 	}
 
+	private static void checkNextToken(JsonParser jp, JsonToken value) throws IOException
+	{
+		if (jp.nextToken() != value)
+			throw new IOException("invalid data");
+	}
+
 	public static List<Property> parserList(InputStream in, boolean needDir) throws IOException
 	{
 		JsonFactory f = new JsonFactory();
 		JsonParser jp = f.createJsonParser(in);
 
-		if (jp.nextToken() != JsonToken.START_ARRAY)
-			throw new IOException("invalid data");
+		checkNextToken(jp, JsonToken.START_ARRAY);
 		ArrayList<Property> ps = new ArrayList<Property>();
 		while (jp.nextToken() == JsonToken.START_OBJECT) {
 			Property p = new Property();
 			while (jp.nextToken() == JsonToken.FIELD_NAME) {
 				String fn = jp.getCurrentName();
-				JsonToken jt = jp.nextToken();
-				if ("name".equals(fn)) {
-					if (jt != JsonToken.VALUE_STRING)
-						throw new IOException("invalid data");
-					p.name = jp.getText();
-				} else if ("isfile".equals(fn))
-					p.isFile = (jt == JsonToken.VALUE_TRUE);
-				else if ("size".equals(fn)) {
-					if (jt != JsonToken.VALUE_NUMBER_INT)
-						throw new IOException("invalid data");
-					p.size = new Integer(jp.getText());
-				}
+				if ("name".equals(fn))
+					p.name = jp.nextTextValue();
+				else if ("isfile".equals(fn))
+					p.isFile = jp.nextBooleanValue();
+				else if ("size".equals(fn))
+					p.size = jp.nextIntValue(10);
 			}
 			if (p.isFile || needDir)
 				ps.add(p);
@@ -153,34 +167,7 @@ public class CloudFile extends VFile
 		return ps;
 	}
 
-	public static Property parserProperty(InputStream in) throws IOException
-	{
-		JsonFactory f = new JsonFactory();
-		JsonParser jp = f.createJsonParser(in);
-
-		if (jp.nextToken() != JsonToken.START_OBJECT)
-			throw new IOException("invalid data");
-		Property p = new Property();
-		while (jp.nextToken() == JsonToken.FIELD_NAME) {
-			String fn = jp.getCurrentName();
-			JsonToken jt = jp.nextToken();
-			if ("name".equals(fn)) {
-				if (jt != JsonToken.VALUE_STRING)
-					throw new IOException("invalid data");
-				p.name = jp.getText();
-			} else if ("isfile".equals(fn))
-				p.isFile = (jt == JsonToken.VALUE_TRUE);
-			else if ("size".equals(fn)) {
-				if (jt != JsonToken.VALUE_NUMBER_INT)
-					throw new IOException("invalid data");
-				p.size = new Integer(jp.getText());
-			}
-		}
-		jp.close();
-		return p;
-	}
-
-	public static Property retrieveProperty(String path)
+	private OnlineProperty retrieveProperty()
 	{
 		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
@@ -188,9 +175,117 @@ public class CloudFile extends VFile
 		InputStream in;
 		try {
 			in = getResponse(GET_PROPERTY_PHP, p);
-			return parserProperty(in);
+			JsonFactory f = new JsonFactory();
+			JsonParser jp = f.createJsonParser(in);
+
+			checkNextToken(jp, JsonToken.START_OBJECT);
+			OnlineProperty prop = new OnlineProperty();
+			while (jp.nextToken() == JsonToken.FIELD_NAME) {
+				String fn = jp.getCurrentName();
+				if ("name".equals(fn))
+					prop.name = jp.nextTextValue();
+				else if ("isfile".equals(fn))
+					prop.isFile = jp.nextBooleanValue();
+				else if ("size".equals(fn))
+					prop.size = jp.nextIntValue(10);
+				else if ("noteMark".equals(fn))
+					prop.mark = jp.nextTextValue().charAt(0);
+				else if ("hasNotes".equals(fn))
+					prop.hasNotes = jp.nextBooleanValue();
+				else if ("indexBase".equals(fn))
+					prop.indexBase = jp.nextIntValue(10);
+			}
+			jp.close();
+			return prop;
+		} catch (IOException e1) {
+			return null;
+		} catch (URISyntaxException e1) {
+			return null;
+		}
+	}
+
+	public ArrayList<BookContent.ChapterInfo> getChapters()
+	{
+		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
+		p.add(new BasicNameValuePair(PARAM_PATH, path));
+
+		InputStream in;
+		try {
+			in = getResponse(GET_CHAPTERS_PHP, p);
+			JsonFactory f = new JsonFactory();
+			JsonParser jp = f.createJsonParser(in);
+
+			checkNextToken(jp, JsonToken.START_ARRAY);
+			ArrayList<BookContent.ChapterInfo> cs = new ArrayList<BookContent.ChapterInfo>();
+			while (jp.nextToken() == JsonToken.VALUE_STRING)
+				cs.add(new SRBOnline.OnlineChapterInfo(jp.getText()));
+			jp.close();
+			return cs;
 		} catch (Exception e) {
 			return null;
 		}
+	}
+
+	public ArrayList<String> getLines(int cidx)
+	{
+		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
+		p.add(new BasicNameValuePair(PARAM_PATH, path));
+		p.add(new BasicNameValuePair(PARAM_CIDX, String.valueOf(cidx)));
+
+		InputStream in;
+		try {
+			in = getResponse(GET_LINES_PHP, p);
+			JsonFactory f = new JsonFactory();
+			JsonParser jp = f.createJsonParser(in);
+
+			checkNextToken(jp, JsonToken.START_ARRAY);
+			ArrayList<String> ss = new ArrayList<String>();
+			while (jp.nextToken() == JsonToken.VALUE_STRING)
+				ss.add(jp.getText());
+			jp.close();
+			return ss;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public HashMap<Long, String> getNotes(int index)
+	{
+		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
+		p.add(new BasicNameValuePair(PARAM_PATH, path));
+		p.add(new BasicNameValuePair(PARAM_CIDX, String.valueOf(index)));
+
+		try {
+			InputStream in = getResponse(GET_NOTES_PHP, p);
+			JsonFactory f = new JsonFactory();
+			JsonParser jp = f.createJsonParser(in);
+
+			checkNextToken(jp, JsonToken.START_OBJECT);
+			HashMap<Long, String> notes = new HashMap<Long, String>();
+			while (jp.nextToken() == JsonToken.FIELD_NAME) {
+				int line = Integer.parseInt(jp.getText());
+				checkNextToken(jp, JsonToken.START_OBJECT);
+				while (jp.nextToken() == JsonToken.FIELD_NAME) {
+					int offset = Integer.parseInt(jp.getText());
+					checkNextToken(jp, JsonToken.VALUE_STRING);
+					String note = jp.getText();
+
+					SRBOnline.OnlineChapterInfo.addNote(notes, line, offset, note);
+				}
+			}
+			jp.close();
+			return notes;
+		} catch (IOException e1) {
+			return null;
+		} catch (URISyntaxException e1) {
+			return null;
+		}
+	}
+
+	public OnlineProperty getProperty()
+	{
+		if (property == null)
+			property = retrieveProperty();
+		return property;
 	}
 }

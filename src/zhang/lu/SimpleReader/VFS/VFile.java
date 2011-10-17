@@ -27,8 +27,6 @@ public abstract class VFile
 
 	private static String defaultEncode = "GBK";
 
-	protected static String CloudServerAddr = "simplereader.sourceforge.net";
-
 	protected String path;
 
 	public static VFile create(String path)

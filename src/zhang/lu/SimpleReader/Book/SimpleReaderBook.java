@@ -2,6 +2,7 @@ package zhang.lu.SimpleReader.Book;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.CloudFile;
 import zhang.lu.SimpleReader.VFS.VFile;
 
@@ -90,7 +91,7 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return (!CloudFile.class.isInstance(f)) && (f.getPath().toLowerCase().endsWith("." + suffix));
 	}
 
-	public BookContent load(VFile f) throws Exception
+	public BookContent load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
 		db = SQLiteDatabase.openDatabase(f.getRealPath(), null,
 						 SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
@@ -125,7 +126,7 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		if (chapterCount == 0)
 			throw new Exception("Format incorrect");
 
-		chapter = indexBase;
+		chapter = ri.chapter + indexBase;
 		lineCount = selectLineCount();
 		if (lineCount == 0)
 			throw new Exception("Format incorrect");
