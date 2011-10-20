@@ -204,82 +204,68 @@ public class CloudFile extends VFile
 		}
 	}
 
-	public ArrayList<BookContent.ChapterInfo> getChapters()
+	public ArrayList<BookContent.ChapterInfo> getChapters() throws IOException, URISyntaxException
 	{
 		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
 
 		InputStream in;
-		try {
-			in = getResponse(GET_CHAPTERS_PHP, p);
-			JsonFactory f = new JsonFactory();
-			JsonParser jp = f.createJsonParser(in);
+		in = getResponse(GET_CHAPTERS_PHP, p);
+		JsonFactory f = new JsonFactory();
+		JsonParser jp = f.createJsonParser(in);
 
-			checkNextToken(jp, JsonToken.START_ARRAY);
-			ArrayList<BookContent.ChapterInfo> cs = new ArrayList<BookContent.ChapterInfo>();
-			while (jp.nextToken() == JsonToken.VALUE_STRING)
-				cs.add(new SRBOnline.OnlineChapterInfo(jp.getText()));
-			jp.close();
-			return cs;
-		} catch (Exception e) {
-			return null;
-		}
+		checkNextToken(jp, JsonToken.START_ARRAY);
+		ArrayList<BookContent.ChapterInfo> cs = new ArrayList<BookContent.ChapterInfo>();
+		while (jp.nextToken() == JsonToken.VALUE_STRING)
+			cs.add(new SRBOnline.OnlineChapterInfo(jp.getText()));
+		jp.close();
+		return cs;
 	}
 
-	public ArrayList<String> getLines(int cidx)
+	public ArrayList<String> getLines(int cidx) throws IOException, URISyntaxException
 	{
 		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
 		p.add(new BasicNameValuePair(PARAM_CIDX, String.valueOf(cidx)));
 
 		InputStream in;
-		try {
-			in = getResponse(GET_LINES_PHP, p);
-			JsonFactory f = new JsonFactory();
-			JsonParser jp = f.createJsonParser(in);
+		in = getResponse(GET_LINES_PHP, p);
+		JsonFactory f = new JsonFactory();
+		JsonParser jp = f.createJsonParser(in);
 
-			checkNextToken(jp, JsonToken.START_ARRAY);
-			ArrayList<String> ss = new ArrayList<String>();
-			while (jp.nextToken() == JsonToken.VALUE_STRING)
-				ss.add(jp.getText());
-			jp.close();
-			return ss;
-		} catch (Exception e) {
-			return null;
-		}
+		checkNextToken(jp, JsonToken.START_ARRAY);
+		ArrayList<String> ss = new ArrayList<String>();
+		while (jp.nextToken() == JsonToken.VALUE_STRING)
+			ss.add(jp.getText());
+		jp.close();
+		return ss;
 	}
 
-	public HashMap<Long, String> getNotes(int index)
+	public HashMap<Long, String> getNotes(int index) throws IOException, URISyntaxException
 	{
 		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
 		p.add(new BasicNameValuePair(PARAM_CIDX, String.valueOf(index)));
 
-		try {
-			InputStream in = getResponse(GET_NOTES_PHP, p);
-			JsonFactory f = new JsonFactory();
-			JsonParser jp = f.createJsonParser(in);
+		InputStream in = getResponse(GET_NOTES_PHP, p);
+		JsonFactory f = new JsonFactory();
+		JsonParser jp = f.createJsonParser(in);
 
+		checkNextToken(jp, JsonToken.START_OBJECT);
+		HashMap<Long, String> notes = new HashMap<Long, String>();
+		while (jp.nextToken() == JsonToken.FIELD_NAME) {
+			int line = Integer.parseInt(jp.getText());
 			checkNextToken(jp, JsonToken.START_OBJECT);
-			HashMap<Long, String> notes = new HashMap<Long, String>();
 			while (jp.nextToken() == JsonToken.FIELD_NAME) {
-				int line = Integer.parseInt(jp.getText());
-				checkNextToken(jp, JsonToken.START_OBJECT);
-				while (jp.nextToken() == JsonToken.FIELD_NAME) {
-					int offset = Integer.parseInt(jp.getText());
-					checkNextToken(jp, JsonToken.VALUE_STRING);
-					String note = jp.getText();
+				int offset = Integer.parseInt(jp.getText());
+				checkNextToken(jp, JsonToken.VALUE_STRING);
+				String note = jp.getText();
 
-					SRBOnline.OnlineChapterInfo.addNote(notes, line, offset, note);
-				}
+				SRBOnline.OnlineChapterInfo.addNote(notes, line, offset, note);
 			}
-			jp.close();
-			return notes;
-		} catch (IOException e1) {
-			return null;
-		} catch (URISyntaxException e1) {
-			return null;
 		}
+		jp.close();
+		return notes;
 	}
 
 	public OnlineProperty getProperty()

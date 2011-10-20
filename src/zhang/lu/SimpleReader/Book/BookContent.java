@@ -67,6 +67,12 @@ public abstract class BookContent
 		return false;
 	}
 
+	// has notes?
+	public boolean hasNotes()
+	{
+		return false;
+	}
+
 	// return null when no note at line:offset
 	public String getNote(int line, int offset)
 	{

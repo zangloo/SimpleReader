@@ -285,6 +285,8 @@ public abstract class SimpleTextView extends View
 
 	public String getFingerPosNote(float x, float y)
 	{
+		if (!content.hasNotes())
+			return null;
 		FingerPosInfo pi = calcFingerPos(x, y);
 		if (pi == null)
 			return null;

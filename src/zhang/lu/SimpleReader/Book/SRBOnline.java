@@ -61,6 +61,8 @@ public class SRBOnline extends PlainTextContent implements BookLoader.Loader
 		cf = (CloudFile) file;
 		chapters = cf.getChapters();
 		op = cf.getProperty();
+		if (op == null)
+			throw new IOException("Can't open file");
 		chapter = ri.chapter;
 		loadChapter(chapter);
 		return this;
@@ -115,6 +117,12 @@ public class SRBOnline extends PlainTextContent implements BookLoader.Loader
 			setContent(list);
 		}
 		return true;
+	}
+
+	@Override
+	public boolean hasNotes()
+	{
+		return op.hasNotes;
 	}
 
 	@Override

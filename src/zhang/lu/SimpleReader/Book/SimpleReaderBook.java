@@ -139,6 +139,7 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return this;
 	}
 
+	@Override
 	public String line(int index)
 	{
 		if (lineCache.containsKey(index))
@@ -159,11 +160,13 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return lineCache.get(index);
 	}
 
+	@Override
 	public int getLineCount()
 	{
 		return lineCount;
 	}
 
+	@Override
 	public int size(int end)
 	{
 		if (end == 0)
@@ -174,11 +177,19 @@ public class SimpleReaderBook extends BookContent implements BookLoader.Loader
 		return selectSize(end);
 	}
 
+	@Override
 	public int size()
 	{
 		return booksize;
 	}
 
+	@Override
+	public boolean hasNotes()
+	{
+		return hasNotes;
+	}
+
+	@Override
 	public String getNote(int index, int offset)
 	{
 		if (!hasNotes)
