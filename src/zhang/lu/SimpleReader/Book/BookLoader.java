@@ -53,14 +53,17 @@ public class BookLoader
 
 	public static BookContent loadFile(String filePath, Config.ReadingInfo ri) throws Exception
 	{
-		unloadBook();
 		VFile f = VFile.create(filePath);
 		if (!f.exists())
 			throw new FileNotFoundException();
 		if (defaultLoader == null)
 			init();
-		currLoader = findLoader(f);
-		return book = currLoader.load(f, ri);
+		Loader nl = findLoader(f);
+		BookContent nb = nl.load(f, ri);
+		// if no exception throw out, so update data
+		unloadBook();
+		currLoader = nl;
+		return book = nb;
 	}
 
 	public static void unloadBook()

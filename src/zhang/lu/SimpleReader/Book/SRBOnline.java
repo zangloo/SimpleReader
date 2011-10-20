@@ -5,6 +5,7 @@ import zhang.lu.SimpleReader.VFS.CloudFile;
 import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,9 +15,9 @@ import java.util.HashMap;
  * Date: 11-10-16
  * Time: 下午3:14
  */
-public class SRBOnline extends PlainTextContent implements BookLoader.Loader
+public class SRBOnline implements BookLoader.Loader
 {
-	public static class OnlineChapterInfo extends ChapterInfo
+	public static class OnlineChapterInfo extends BookContent.ChapterInfo
 	{
 		private ArrayList<String> lines = null;
 		private HashMap<Long, String> notes = null;
@@ -42,10 +43,90 @@ public class SRBOnline extends PlainTextContent implements BookLoader.Loader
 		}
 	}
 
-	private int chapter;
-	private ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
-	private CloudFile cf = null;
-	private CloudFile.OnlineProperty op = null;
+	private static class SRBOnlineContent extends PlainTextContent
+	{
+		private int chapter;
+		private ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
+		private CloudFile cf = null;
+		private CloudFile.OnlineProperty op = null;
+
+		private SRBOnlineContent(VFile file, Config.ReadingInfo ri) throws IOException, URISyntaxException
+		{
+			cf = (CloudFile) file;
+			chapters = cf.getChapters();
+			op = cf.getProperty();
+			if (op == null)
+				throw new IOException("Can't open file");
+			chapter = ri.chapter;
+			loadChapter(chapter);
+		}
+
+		@Override
+		public int getChapterCount()
+		{
+			return chapters.size();
+		}
+
+		@Override
+		public String getChapterTitle(int index)
+		{
+			return chapters.get(index).title;
+		}
+
+		@Override
+		public ArrayList<ChapterInfo> getChapterInfoList()
+		{
+			return chapters;
+		}
+
+		@Override
+		public int getCurrChapter()
+		{
+			return chapter - op.indexBase;
+		}
+
+		@Override
+		protected boolean loadChapter(int index)
+		{
+			try {
+				chapter = index + op.indexBase;
+				OnlineChapterInfo oci = (OnlineChapterInfo) chapters.get(index);
+				if (oci.lines == null) {
+					oci.lines = cf.getLines(chapter);
+					if (op.hasNotes)
+						oci.notes = cf.getNotes(chapter);
+				}
+				setContent(oci.lines);
+			} catch (Exception e) {
+				ArrayList<String> list = new ArrayList<String>();
+				list.add(e.getMessage());
+				setContent(list);
+			}
+			return true;
+		}
+
+		@Override
+		public boolean hasNotes()
+		{
+			return op.hasNotes;
+		}
+
+		@Override
+		public String getNote(int line, int offset)
+		{
+			OnlineChapterInfo oci = (OnlineChapterInfo) chapters.get(getCurrChapter());
+			if (!op.hasNotes)
+				return null;
+			if (line >= oci.lines.size())
+				return null;
+			String l = oci.lines.get(line);
+			if (offset >= l.length())
+				return null;
+			if (l.charAt(offset) != op.mark)
+				return null;
+			return oci.getNote(line + op.indexBase, offset);
+		}
+	}
 
 	public boolean isBelong(VFile f)
 	{
@@ -58,86 +139,14 @@ public class SRBOnline extends PlainTextContent implements BookLoader.Loader
 		if (!isBelong(file))
 			throw new IOException("Not supported");
 
-		cf = (CloudFile) file;
-		chapters = cf.getChapters();
-		op = cf.getProperty();
-		if (op == null)
-			throw new IOException("Can't open file");
-		chapter = ri.chapter;
-		loadChapter(chapter);
-		return this;
+		return new SRBOnlineContent(file, ri);
 	}
 
 	public void unload(BookContent aBook)
 	{
-		cf = null;
-		op = null;
-		chapters.clear();
-	}
-
-	@Override
-	public int getChapterCount()
-	{
-		return chapters.size();
-	}
-
-	@Override
-	public String getChapterTitle(int index)
-	{
-		return chapters.get(index).title;
-	}
-
-	@Override
-	public ArrayList<ChapterInfo> getChapterInfoList()
-	{
-		return chapters;
-	}
-
-	@Override
-	public int getCurrChapter()
-	{
-		return chapter - op.indexBase;
-	}
-
-	@Override
-	protected boolean loadChapter(int index)
-	{
-		try {
-			chapter = index + op.indexBase;
-			OnlineChapterInfo oci = (OnlineChapterInfo) chapters.get(index);
-			if (oci.lines == null) {
-				oci.lines = cf.getLines(chapter);
-				if (op.hasNotes)
-					oci.notes = cf.getNotes(chapter);
-			}
-			setContent(oci.lines);
-		} catch (Exception e) {
-			ArrayList<String> list = new ArrayList<String>();
-			list.add(e.getMessage());
-			setContent(list);
-		}
-		return true;
-	}
-
-	@Override
-	public boolean hasNotes()
-	{
-		return op.hasNotes;
-	}
-
-	@Override
-	public String getNote(int line, int offset)
-	{
-		OnlineChapterInfo oci = (OnlineChapterInfo) chapters.get(getCurrChapter());
-		if (!op.hasNotes)
-			return null;
-		if (line >= oci.lines.size())
-			return null;
-		String l = oci.lines.get(line);
-		if (offset >= l.length())
-			return null;
-		if (l.charAt(offset) != op.mark)
-			return null;
-		return oci.getNote(line + op.indexBase, offset);
+		SRBOnlineContent b = (SRBOnlineContent) aBook;
+		b.cf = null;
+		b.op = null;
+		b.chapters.clear();
 	}
 }
