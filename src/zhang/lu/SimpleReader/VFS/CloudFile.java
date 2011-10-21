@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.zip.InflaterInputStream;
 
 /**
  * Created by IntelliJ IDEA.
@@ -43,7 +44,7 @@ public class CloudFile extends VFile
 	private static final String GET_CHAPTERS_PHP = "/bookfeed/getchapters.php";
 	private static final String GET_LINES_PHP = "/bookfeed/getlines.php";
 	private static final String GET_NOTES_PHP = "/bookfeed/getnotes.php";
-	private static final String CloudServerAddr = "simplereader.sourceforge.net";
+	private static final String CloudServerAddr = "88.88.88.111";
 	private static final String PARAM_PATH = "path";
 	private static final String PARAM_CIDX = "cidx";
 
@@ -209,8 +210,7 @@ public class CloudFile extends VFile
 		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
 
-		InputStream in;
-		in = getResponse(GET_CHAPTERS_PHP, p);
+		InputStream in = getResponse(GET_CHAPTERS_PHP, p);
 		JsonFactory f = new JsonFactory();
 		JsonParser jp = f.createJsonParser(in);
 
@@ -228,8 +228,8 @@ public class CloudFile extends VFile
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
 		p.add(new BasicNameValuePair(PARAM_CIDX, String.valueOf(cidx)));
 
-		InputStream in;
-		in = getResponse(GET_LINES_PHP, p);
+		// server will compress data
+		InputStream in = new InflaterInputStream(getResponse(GET_LINES_PHP, p));
 		JsonFactory f = new JsonFactory();
 		JsonParser jp = f.createJsonParser(in);
 
@@ -247,7 +247,8 @@ public class CloudFile extends VFile
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
 		p.add(new BasicNameValuePair(PARAM_CIDX, String.valueOf(index)));
 
-		InputStream in = getResponse(GET_NOTES_PHP, p);
+		// server will compress data
+		InputStream in = new InflaterInputStream(getResponse(GET_NOTES_PHP, p));
 		JsonFactory f = new JsonFactory();
 		JsonParser jp = f.createJsonParser(in);
 
