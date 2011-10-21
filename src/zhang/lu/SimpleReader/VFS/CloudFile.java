@@ -44,7 +44,7 @@ public class CloudFile extends VFile
 	private static final String GET_CHAPTERS_PHP = "/bookfeed/getchapters.php";
 	private static final String GET_LINES_PHP = "/bookfeed/getlines.php";
 	private static final String GET_NOTES_PHP = "/bookfeed/getnotes.php";
-	private static final String CloudServerAddr = "88.88.88.111";
+	private static final String CloudServerAddr = "simplereader.sourceforge.net";
 	private static final String PARAM_PATH = "path";
 	private static final String PARAM_CIDX = "cidx";
 
