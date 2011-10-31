@@ -335,6 +335,7 @@ public class FileDialog extends Dialog
 		}
 
 		saf.notifyDataSetChanged();
+		updateTitle(0);
 		return pos;
 	}
 
@@ -380,6 +381,7 @@ public class FileDialog extends Dialog
 			}
 		}
 		saof.notifyDataSetChanged();
+		updateTitle(2);
 		return pos;
 	}
 
