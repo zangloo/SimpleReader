@@ -8,7 +8,6 @@ import org.jsoup.nodes.Document;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,12 +27,14 @@ public class EPubBook implements BookLoader.Loader
 		private int chapter;
 		private List<TOCReference> tocrs;
 
-		public EPubBookContent(VFile file, Config.ReadingInfo ri) throws IOException
+		public EPubBookContent(VFile file, Config.ReadingInfo ri) throws Exception
 		{
 			Book book = (new EpubReader()).readEpub(file.getInputStream());
 			chapters.clear();
 
 			tocrs = book.getTableOfContents().getTocReferences();
+			if (tocrs.size() == 0)
+				throw new Exception("error parser epub.");
 			for (TOCReference tocr : tocrs)
 				chapters.add(new ChapterInfo(tocr.getTitle()));
 
