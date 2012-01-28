@@ -1,6 +1,4 @@
-package zhang.lu.SimpleReader.Book;
-
-import android.graphics.Bitmap;
+package zhang.lu.SimpleReader.book;
 
 /**
  * Created by IntelliJ IDEA.
@@ -8,7 +6,7 @@ import android.graphics.Bitmap;
  * Date: 12-1-28
  * Time: 下午2:00
  */
-public abstract class ImageContent extends BookContent
+public abstract class ImageContent extends Content
 {
 	@Override
 	public String line(int index)
@@ -39,10 +37,4 @@ public abstract class ImageContent extends BookContent
 	{
 		return Type.image;
 	}
-
-	@Override
-	public abstract int imageCount();
-
-	@Override
-	public abstract Bitmap image(int index);
 }

@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

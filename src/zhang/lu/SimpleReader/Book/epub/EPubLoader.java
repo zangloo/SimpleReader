@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book.epub;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.w3c.dom.NodeList;
@@ -10,6 +10,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.RealFile;
 import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.book.BookLoader;
+import zhang.lu.SimpleReader.book.TOCRecord;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,7 +27,7 @@ import java.util.Stack;
  * Date: 11-9-27
  * Time: 上午9:07
  */
-public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loader
+public class EPubLoader extends XMLReaderAdapter implements BookLoader.Loader
 {
 	private static final String suffix = "epub";
 	private static final String meta_file = "META-INF/container.xml";
@@ -66,7 +68,7 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 	private ArrayList<TOCRecord> nps;
 	private final Stack<NavPoint> ps = new Stack<NavPoint>();
 
-	public EPubBookLoader() throws SAXException
+	public EPubLoader() throws SAXException
 	{
 		super(XMLReaderFactory.createXMLReader());
 	}
@@ -165,7 +167,7 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 		return f.getPath().toLowerCase().endsWith("." + suffix);
 	}
 
-	public Book load(VFile file, Config.ReadingInfo ri) throws Exception
+	public zhang.lu.SimpleReader.book.Book load(VFile file, Config.ReadingInfo ri) throws Exception
 	{
 		if (!RealFile.class.isInstance(file))
 			throw new Exception("Cloud and zip based files are not supported, yet");

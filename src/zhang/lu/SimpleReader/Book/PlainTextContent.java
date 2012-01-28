@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book;
 
 import zhang.lu.SimpleReader.Reader;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * Date: 11-9-6
  * Time: 下午8:32
  */
-public class PlainTextContent extends BookContent
+public class PlainTextContent extends TextContent
 {
 	private List<String> lines;
 	private int booksize = 0;
@@ -30,7 +30,7 @@ public class PlainTextContent extends BookContent
 		booksize = calcSize();
 	}
 
-	protected void setContent(List<String> content)
+	public void setContent(List<String> content)
 	{
 		lines = content;
 		booksize = calcSize();

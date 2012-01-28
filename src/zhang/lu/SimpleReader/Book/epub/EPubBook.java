@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book.epub;
 
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -6,6 +6,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jsoup.Jsoup;
 import zhang.lu.SimpleReader.Config;
+import zhang.lu.SimpleReader.book.*;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.HashMap;
  */
 class EPubBook extends ChaptersBook
 {
-	private BookContent content;
+	private Content content;
 	private PlainTextContent ptc = new PlainTextContent();
 	private EPubImageContent ic;
 	private final ZipFile zf;
@@ -64,7 +65,7 @@ class EPubBook extends ChaptersBook
 	{
 		try {
 			chapter = index;
-			final EPubBookLoader.NavPoint np = (EPubBookLoader.NavPoint) TOC.get(index);
+			final EPubLoader.NavPoint np = (EPubLoader.NavPoint) TOC.get(index);
 
 			final ZipArchiveEntry zae = zf.getEntry(ops_path + np.href);
 			ArrayList<String> lines = new ArrayList<String>();
@@ -95,7 +96,7 @@ class EPubBook extends ChaptersBook
 	}
 
 	@Override
-	public BookContent getContent(int index) { return content; }
+	public Content getContent(int index) { return content; }
 
 	@Override
 	public void close() {}

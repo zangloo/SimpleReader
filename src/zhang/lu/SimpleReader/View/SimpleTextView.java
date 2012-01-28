@@ -5,8 +5,8 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.view.View;
 import org.jetbrains.annotations.Nullable;
-import zhang.lu.SimpleReader.Book.BookContent;
-import zhang.lu.SimpleReader.Book.PlainTextContent;
+import zhang.lu.SimpleReader.book.Content;
+import zhang.lu.SimpleReader.book.PlainTextContent;
 
 /**
  * Created by IntelliJ IDEA.
@@ -41,8 +41,8 @@ public abstract class SimpleTextView extends View
 	public static final int defaultNightBackgroundColor = Color.BLACK;
 	public static final int defaultFontSize = 26;
 
-	private static final BookContent defaultContent = new PlainTextContent();
-	protected static BookContent content = defaultContent;
+	private static final Content defaultContent = new PlainTextContent();
+	protected static Content content = defaultContent;
 	protected static int pi = 0, po = 0;
 	protected static int pos = 0;
 	protected static int boardGAP = 3;
@@ -91,7 +91,7 @@ public abstract class SimpleTextView extends View
 		}
 
 		canvas.drawColor(bcolor);
-		if (content.type() == BookContent.Type.image) {
+		if (content.type() == Content.Type.image) {
 			drawImage(canvas);
 			return;
 		}
@@ -176,7 +176,7 @@ public abstract class SimpleTextView extends View
 		//invalidate();
 	}
 
-	public void setContent(@Nullable BookContent newContent)
+	public void setContent(@Nullable Content newContent)
 	{
 		if (newContent == null)
 			content = defaultContent;
@@ -197,7 +197,7 @@ public abstract class SimpleTextView extends View
 	public boolean pageDown()
 	{
 		boolean ret;
-		if (content.type() == BookContent.Type.image) {
+		if (content.type() == Content.Type.image) {
 			if (pi >= (content.imageCount() - 1))
 				return false;
 			pi++;
@@ -214,7 +214,7 @@ public abstract class SimpleTextView extends View
 	public boolean pageUp()
 	{
 		boolean ret;
-		if (content.type() == BookContent.Type.image) {
+		if (content.type() == Content.Type.image) {
 			if (pi == 0)
 				return false;
 			pi--;
@@ -248,7 +248,7 @@ public abstract class SimpleTextView extends View
 
 	public int getPos()
 	{
-		if (content.type() == BookContent.Type.image)
+		if (content.type() == Content.Type.image)
 			return pi * 100/ content.imageCount();
 		calcPos();
 		return pos;
@@ -256,7 +256,7 @@ public abstract class SimpleTextView extends View
 
 	public void setPos(int np)
 	{
-		if (content.type() == BookContent.Type.image) {
+		if (content.type() == Content.Type.image) {
 			int i = content.imageCount() * np / 100;
 			if (i == content.imageCount())
 				i--;
@@ -270,14 +270,14 @@ public abstract class SimpleTextView extends View
 		pos = np;
 	}
 
-	public void setPos(BookContent.ContentPosInfo cpi)
+	public void setPos(Content.ContentPosInfo cpi)
 	{
 		setPos(cpi.line, cpi.offset);
 	}
 
 	public void setPos(int posIndex, int posOffset)
 	{
-		if (content.type() == BookContent.Type.image){
+		if (content.type() == Content.Type.image){
 			if (posIndex >= content.imageCount())
 				pi = 0;
 			else
@@ -319,7 +319,7 @@ public abstract class SimpleTextView extends View
 
 	public FingerPosInfo getFingerPosInfo(float x, float y)
 	{
-		if (content.type() == BookContent.Type.image)
+		if (content.type() == Content.Type.image)
 			return null;
 
 		FingerPosInfo pi = calcFingerPos(x, y);
@@ -334,7 +334,7 @@ public abstract class SimpleTextView extends View
 
 	public String getFingerPosNote(float x, float y)
 	{
-		if (content.type() == BookContent.Type.image)
+		if (content.type() == Content.Type.image)
 			return null;
 
 		if (!content.hasNotes())
@@ -346,16 +346,16 @@ public abstract class SimpleTextView extends View
 		return content.getNote(pi.line, pi.offset);
 	}
 
-	public BookContent.ContentPosInfo searchText(String t)
+	public Content.ContentPosInfo searchText(String t)
 	{
-		if (content.type() == BookContent.Type.image)
+		if (content.type() == Content.Type.image)
 			return null;
 		if (t == null)
 			return null;
 		if (t.length() == 0)
 			return null;
 
-		BookContent.ContentPosInfo sr = new BookContent.ContentPosInfo();
+		Content.ContentPosInfo sr = new Content.ContentPosInfo();
 		sr.offset = calcNextLineOffset();
 		sr.line = getPosIndex();
 		if (sr.offset == -1) {
@@ -382,7 +382,7 @@ public abstract class SimpleTextView extends View
 
 	public void gotoEnd()
 	{
-		if (content.type() == BookContent.Type.image) {
+		if (content.type() == Content.Type.image) {
 			pi = po = 0;
 			return;
 		}

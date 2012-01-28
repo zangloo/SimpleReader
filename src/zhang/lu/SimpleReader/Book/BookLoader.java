@@ -1,9 +1,15 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book;
 
 import android.util.Log;
 import org.xml.sax.SAXException;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.book.Haodoo.HaodooLoader;
+import zhang.lu.SimpleReader.book.SRBOnline.SRBOnlineLoader;
+import zhang.lu.SimpleReader.book.SimpleReader.SimpleReaderLoader;
+import zhang.lu.SimpleReader.book.epub.EPubLoader;
+import zhang.lu.SimpleReader.book.html.HtmlLoader;
+import zhang.lu.SimpleReader.book.txt.TxtLoader;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -17,7 +23,7 @@ import java.util.List;
  */
 public class BookLoader
 {
-	interface Loader
+	public interface Loader
 	{
 		boolean isBelong(VFile f);
 
@@ -35,11 +41,11 @@ public class BookLoader
 
 		loaders.add(new HtmlLoader());
 		loaders.add(new HaodooLoader());
-		loaders.add(new SimpleReaderBookLoader());
-		loaders.add(new SRBOnline());
+		loaders.add(new SimpleReaderLoader());
+		loaders.add(new SRBOnlineLoader());
 		try {
 			System.setProperty("org.xml.sax.driver","org.xmlpull.v1.sax2.Driver");
-			loaders.add(new EPubBookLoader());
+			loaders.add(new EPubLoader());
 		} catch (SAXException e) {
 			Log.e("BookLoader.init", e.getMessage());
 		}

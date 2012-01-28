@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import zhang.lu.SimpleReader.Book.TOCRecord;
+import zhang.lu.SimpleReader.book.TOCRecord;
 import zhang.lu.SimpleReader.R;
 
 import java.util.ArrayList;

@@ -1,8 +1,9 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book.SimpleReader;
 
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.CloudFile;
 import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.book.BookLoader;
 
 /**
  * Created by IntelliJ IDEA.
@@ -10,7 +11,7 @@ import zhang.lu.SimpleReader.VFS.VFile;
  * Date: 12-1-22
  * Time: 下午7:34
  */
-public class SimpleReaderBookLoader implements BookLoader.Loader
+public class SimpleReaderLoader implements BookLoader.Loader
 {
 	public static final String suffix = "srb";
 
@@ -19,7 +20,7 @@ public class SimpleReaderBookLoader implements BookLoader.Loader
 		return (!CloudFile.class.isInstance(f)) && (f.getPath().toLowerCase().endsWith("." + suffix));
 	}
 
-	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
+	public zhang.lu.SimpleReader.book.Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
 		return new SimpleReaderBook(f, ri);
 	}

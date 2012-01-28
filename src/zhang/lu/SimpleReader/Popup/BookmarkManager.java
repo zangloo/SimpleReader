@@ -12,7 +12,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import zhang.lu.SimpleReader.Book.Book;
+import zhang.lu.SimpleReader.book.Book;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.R;
 import zhang.lu.SimpleReader.View.SimpleTextView;

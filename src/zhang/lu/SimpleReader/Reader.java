@@ -12,9 +12,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.*;
 import android.widget.*;
-import zhang.lu.SimpleReader.Book.Book;
-import zhang.lu.SimpleReader.Book.BookContent;
-import zhang.lu.SimpleReader.Book.BookLoader;
+import zhang.lu.SimpleReader.book.Book;
+import zhang.lu.SimpleReader.book.Content;
+import zhang.lu.SimpleReader.book.BookLoader;
 import zhang.lu.SimpleReader.Dialog.DictManager;
 import zhang.lu.SimpleReader.Dialog.FileDialog;
 import zhang.lu.SimpleReader.Dialog.OptionDialog;
@@ -706,7 +706,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			public void onClick(View v)
 			{
 				String s = et.getText().toString();
-				BookContent.ContentPosInfo sr = bv.searchText(s);
+				Content.ContentPosInfo sr = bv.searchText(s);
 				if (sr != null) {
 					bv.setPos(sr.line, sr.offset);
 					bv.setHighlightInfo(new SimpleTextView.HighlightInfo(sr.line, sr.offset,

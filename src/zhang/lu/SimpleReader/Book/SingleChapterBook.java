@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book;
 
 import java.util.ArrayList;
 
@@ -10,9 +10,9 @@ import java.util.ArrayList;
  */
 public class SingleChapterBook extends Book
 {
-	BookContent content = null;
+	Content content = null;
 
-	SingleChapterBook(BookContent c)
+	public SingleChapterBook(Content c)
 	{
 		content = c;
 	}
@@ -48,7 +48,7 @@ public class SingleChapterBook extends Book
 	}
 
 	@Override
-	public BookContent getContent(int index)
+	public Content getContent(int index)
 	{
 		return content;
 	}

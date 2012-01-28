@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book;
 
 /**
  * Created by IntelliJ IDEA.
@@ -8,7 +8,7 @@ package zhang.lu.SimpleReader.Book;
  */
 public class TOCRecord
 {
-	protected String title;
+	public String title;
 
 	public TOCRecord(String t) {title = t;}
 

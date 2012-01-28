@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book;
 
 import java.util.ArrayList;
 
@@ -32,13 +32,13 @@ public abstract class Book
 	protected abstract boolean loadChapter(int index);
 
 	// get current chapter content
-	public BookContent getContent()
+	public Content getContent()
 	{
 		return getContent(getCurrChapter());
 	}
 
 	// get chapter content
-	public abstract BookContent getContent(int index);
+	public abstract Content getContent(int index);
 
 	// switch to chapter index
 	public boolean gotoChapter(int index)

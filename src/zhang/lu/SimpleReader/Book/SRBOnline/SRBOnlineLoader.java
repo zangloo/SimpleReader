@@ -1,9 +1,11 @@
-package zhang.lu.SimpleReader.Book;
+package zhang.lu.SimpleReader.book.SRBOnline;
 
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.CloudFile;
 import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.book.*;
+import zhang.lu.SimpleReader.book.SimpleReader.SimpleReaderLoader;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -16,7 +18,7 @@ import java.util.HashMap;
  * Date: 11-10-16
  * Time: 下午3:14
  */
-public class SRBOnline implements BookLoader.Loader
+public class SRBOnlineLoader implements BookLoader.Loader
 {
 	public static class OnlineTOC extends TOCRecord
 	{
@@ -44,12 +46,12 @@ public class SRBOnline implements BookLoader.Loader
 		}
 	}
 
-	private static class SRBOnlineBookContent extends PlainTextContent
+	private static class SRBOnlineContent extends PlainTextContent
 	{
 		CloudFile.OnlineProperty op;
 		OnlineTOC oci = null;
 
-		SRBOnlineBookContent(CloudFile.OnlineProperty property)
+		SRBOnlineContent(CloudFile.OnlineProperty property)
 		{
 			super();
 			op = property;
@@ -88,7 +90,7 @@ public class SRBOnline implements BookLoader.Loader
 	{
 		private CloudFile cf = null;
 		private CloudFile.OnlineProperty op = null;
-		private SRBOnlineBookContent content;
+		private SRBOnlineContent content;
 
 		private SRBOnlineBook(VFile file, Config.ReadingInfo ri) throws IOException, URISyntaxException
 		{
@@ -102,7 +104,7 @@ public class SRBOnline implements BookLoader.Loader
 			if (ri.chapter >= TOC.size())
 				throw new IOException(String.format("Error open chapter %d @ \"%s\"", ri.chapter, file.getPath()));
 
-			content = new SRBOnlineBookContent(op);
+			content = new SRBOnlineContent(op);
 			loadChapter(chapter);
 		}
 
@@ -135,7 +137,7 @@ public class SRBOnline implements BookLoader.Loader
 		}
 
 		@Override
-		public BookContent getContent(int index)
+		public Content getContent(int index)
 		{
 			return content;
 		}
@@ -152,7 +154,7 @@ public class SRBOnline implements BookLoader.Loader
 	public boolean isBelong(VFile f)
 	{
 		return (CloudFile.class.isInstance(f)) &&
-			(f.getPath().toLowerCase().endsWith("." + SimpleReaderBookLoader.suffix));
+			(f.getPath().toLowerCase().endsWith("." + SimpleReaderLoader.suffix));
 	}
 
 	public Book load(VFile file, Config.ReadingInfo ri) throws Exception

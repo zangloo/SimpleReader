@@ -12,8 +12,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-import zhang.lu.SimpleReader.Book.SRBOnline;
-import zhang.lu.SimpleReader.Book.TOCRecord;
+import zhang.lu.SimpleReader.book.SRBOnline.SRBOnlineLoader;
+import zhang.lu.SimpleReader.book.TOCRecord;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -217,7 +217,7 @@ public class CloudFile extends VFile
 		checkNextToken(jp, JsonToken.START_ARRAY);
 		ArrayList<TOCRecord> cs = new ArrayList<TOCRecord>();
 		while (jp.nextToken() == JsonToken.VALUE_STRING)
-			cs.add(new SRBOnline.OnlineTOC(jp.getText()));
+			cs.add(new SRBOnlineLoader.OnlineTOC(jp.getText()));
 		jp.close();
 		return cs;
 	}
@@ -262,7 +262,7 @@ public class CloudFile extends VFile
 				checkNextToken(jp, JsonToken.VALUE_STRING);
 				String note = jp.getText();
 
-				SRBOnline.OnlineTOC.addNote(notes, line, offset, note);
+				SRBOnlineLoader.OnlineTOC.addNote(notes, line, offset, note);
 			}
 		}
 		jp.close();
