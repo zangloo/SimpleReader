@@ -1,5 +1,10 @@
 package zhang.lu.SimpleReader.Book;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -23,19 +28,35 @@ public class BookUtil
 	public static final int detectFileReadBlockSize = 2048;
 	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
 
-	static public void HTML2Text(Element node, List<String> lines)
+	// put all text into lines
+	// always return null
+	public static String HTML2Text(Element node, List<String> lines)
+	{
+		return HTML2Text(node, lines, false);
+	}
+
+	// if image supported, this function will return with the first image href.
+	// lines will return if no image found.
+	public static String HTML2Text(Element node, List<String> lines, boolean imageSupported)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
 				String t = ((TextNode) child).text();
 				if (t.trim().length() > 0)
 					lines.add(t);
-			} else if (child instanceof Element)
-				HTML2Text((Element) child, lines);
+			} else if (child instanceof Element) {
+				final Element e = (Element) child;
+				if (imageSupported && (e.tagName().equalsIgnoreCase("img")))
+					return e.attr("src");
+				String img = HTML2Text(e, lines, imageSupported);
+				if (img != null)
+					return img;
+			}
 		}
+		return null;
 	}
 
-	static String detect(InputStream is)
+	public static String detect(InputStream is)
 	{
 		UniversalDetector detector = new UniversalDetector(null);
 
@@ -60,5 +81,38 @@ public class BookUtil
 			encoding = defaultCNEncode;
 
 		return encoding;
+	}
+
+	static public Bitmap loadPicFromZip(ZipFile zip, String picName)
+	{
+
+		Bitmap bm = null;
+		try {
+			ZipArchiveEntry zae;
+			if (picName == null)
+				zae = (ZipArchiveEntry) zip.getEntries().nextElement();
+			else
+				zae = zip.getEntry(picName);
+			if (zae == null)
+				zae = (ZipArchiveEntry) zip.getEntries().nextElement();
+			InputStream is = zip.getInputStream(zae);
+			int size = (int) zae.getSize();
+			if (size <= 0)
+				return null;
+			byte[] bs = new byte[size];
+			int cnt = 0;
+			while (cnt < size) {
+				int s = is.read(bs, cnt, size - cnt);
+				if (s == -1)
+					break;
+				cnt += s;
+			}
+			if (cnt != size)
+				return null;
+			bm = BitmapFactory.decodeByteArray(bs, 0, bs.length);
+		} catch (IOException e) {
+			Log.e("BookUtil.loadPicFromZip", e.getMessage());
+		}
+		return bm;
 	}
 }

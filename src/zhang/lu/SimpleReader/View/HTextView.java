@@ -155,7 +155,7 @@ public class HTextView extends SimpleTextView
 	}
 
 	@Override
-	public int calcNextLineOffset()
+	protected int calcNextLineOffset()
 	{
 		int npo = po + mc;
 		return (npo < content.line(pi).length()) ? npo : -1;

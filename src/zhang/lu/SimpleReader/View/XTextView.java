@@ -53,7 +53,7 @@ public class XTextView extends SimpleTextView
 	}
 
 	@Override
-	public int calcNextLineOffset()
+	protected int calcNextLineOffset()
 	{
 		if (reset)
 			return -1;

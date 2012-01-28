@@ -16,6 +16,7 @@ import zhang.lu.SimpleReader.VFS.VFile;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +36,9 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 
 	private static class EPubBook extends ChaptersBook
 	{
-		private PlainTextContent content = new PlainTextContent();
+		private BookContent content;
+		private PlainTextContent ptc = new PlainTextContent();
+		private ImageContent ic = new ImageContent();
 		private final ZipFile zf;
 		private final String ops_path;
 
@@ -63,12 +66,22 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 				is.close();
 
 				is = zf.getInputStream(zae);
-				BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines);
-				content.setContent(lines);
+				String img = BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, true);
+
+				if (img == null) {
+					ptc.setContent(lines);
+					content = ptc;
+				} else {
+					ic.img = BookUtil.loadPicFromZip(zf, ops_path + img);
+					if (ic.img == null)
+						throw new IOException("Can not load image:" + ops_path + img);
+					content = ic;
+				}
 			} catch (Exception e) {
 				ArrayList<String> list = new ArrayList<String>();
 				list.add(e.getMessage());
-				content.setContent(list);
+				ptc.setContent(list);
+				content = ptc;
 			}
 			return true;
 		}
@@ -81,12 +94,12 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 	}
 
 	// reading state enum
-	private enum RS
+	private static enum RS
 	{
 		none, map, point, label, text
 	}
 
-	static private class NavPoint extends TOCRecord
+	private static class NavPoint extends TOCRecord
 	{
 		final int order;
 		final int level;
@@ -266,7 +279,8 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 		if (nps.isEmpty())
 			throw new Exception("Error parser the ncx file:\"" + file.getPath() + "\"");
 		if (ri.chapter >= nps.size())
-			throw new Exception(String.format("Error open chapter %d @ \"%s\"", ri.chapter, file.getPath()));
+			throw new Exception(
+				String.format("Error open chapter %d @ \"%s\"", ri.chapter, file.getPath()));
 
 		dumpTOC();
 		return new EPubBook(zf, ri, nps, ops_path);

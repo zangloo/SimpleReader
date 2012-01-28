@@ -1,5 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by IntelliJ IDEA.
  * User: zhanglu
@@ -11,6 +13,17 @@ public abstract class BookContent
 	public static class ContentPosInfo
 	{
 		public int line, offset;
+	}
+
+	public static enum Type
+	{
+		text, image
+	}
+
+	// content type
+	public Type type()
+	{
+		return Type.text;
 	}
 
 	// has notes?
@@ -67,6 +80,12 @@ public abstract class BookContent
 		return cpi;
 	}
 
+	// return image if type == image, only one image can display, so no parameters
+	public Bitmap image()
+	{
+		return null;
+	}
+
 	// return line at index
 	public abstract String line(int index);
 
@@ -78,4 +97,5 @@ public abstract class BookContent
 
 	// return book total size
 	public abstract int size();
+
 }

@@ -1,10 +1,7 @@
 package zhang.lu.SimpleReader.View;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
+import android.graphics.*;
 import android.util.AttributeSet;
 import android.view.View;
 import org.jetbrains.annotations.Nullable;
@@ -94,64 +91,73 @@ public abstract class SimpleTextView extends View
 		}
 
 		canvas.drawColor(bcolor);
+		if (content.type() == BookContent.Type.image) {
+			drawImage(canvas);
+			return;
+		}
 		if (pi >= content.getLineCount())
 			return;
 		drawText(canvas);
 		//testDraw(canvas);
 	}
 
+	private void drawImage(Canvas canvas)
+	{
+		canvas.drawBitmap(content.image(), null, new Rect(0, 0, w, h), null);
+	}
+
 	/*
-	 private void testDraw(Canvas canvas)
-	 {
-		 Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		 textPaint.setTextSize(40);
-		 textPaint.setColor(Color.BLACK);
+		 private void testDraw(Canvas canvas)
+		 {
+			 Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			 textPaint.setTextSize(40);
+			 textPaint.setColor(Color.BLACK);
 
-		 // FontMetrics对象
-		 Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+			 // FontMetrics对象
+			 Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
 
-		 String text = "abcdefghijklmnopqrstu计算每一个坐标";
+			 String text = "abcdefghijklmnopqrstu计算每一个坐标";
 
-		 // 计算每一个坐标
-		 float baseX = 0;
-		 float baseY = 100;
-		 float topY = baseY + fontMetrics.top;
-		 float ascentY = baseY + fontMetrics.ascent;
-		 float descentY = baseY + fontMetrics.descent;
-		 float bottomY = baseY + fontMetrics.bottom;
+			 // 计算每一个坐标
+			 float baseX = 0;
+			 float baseY = 100;
+			 float topY = baseY + fontMetrics.top;
+			 float ascentY = baseY + fontMetrics.ascent;
+			 float descentY = baseY + fontMetrics.descent;
+			 float bottomY = baseY + fontMetrics.bottom;
 
-		 // 绘制文本
-		 canvas.drawText(text, baseX, baseY, textPaint);
+			 // 绘制文本
+			 canvas.drawText(text, baseX, baseY, textPaint);
 
-		 // BaseLine描画
-		 Paint baseLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		 baseLinePaint.setColor(Color.RED);
-		 canvas.drawLine(0, baseY, getWidth(), baseY, baseLinePaint);
+			 // BaseLine描画
+			 Paint baseLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			 baseLinePaint.setColor(Color.RED);
+			 canvas.drawLine(0, baseY, getWidth(), baseY, baseLinePaint);
 
-		 // Base描画
-		 canvas.drawCircle(baseX, baseY, 5, baseLinePaint);
+			 // Base描画
+			 canvas.drawCircle(baseX, baseY, 5, baseLinePaint);
 
-		 // TopLine描画
-		 Paint topLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		 topLinePaint.setColor(Color.LTGRAY);
-		 canvas.drawLine(0, topY, getWidth(), topY, topLinePaint);
-		 // AscentLine描画
-		 Paint ascentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		 ascentLinePaint.setColor(Color.GREEN);
-		 canvas.drawLine(0, ascentY, getWidth(), ascentY, ascentLinePaint);
+			 // TopLine描画
+			 Paint topLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			 topLinePaint.setColor(Color.LTGRAY);
+			 canvas.drawLine(0, topY, getWidth(), topY, topLinePaint);
+			 // AscentLine描画
+			 Paint ascentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			 ascentLinePaint.setColor(Color.GREEN);
+			 canvas.drawLine(0, ascentY, getWidth(), ascentY, ascentLinePaint);
 
-		 // DescentLine描画
-		 Paint descentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		 descentLinePaint.setColor(Color.YELLOW);
-		 canvas.drawLine(0, descentY, getWidth(), descentY, descentLinePaint);
+			 // DescentLine描画
+			 Paint descentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			 descentLinePaint.setColor(Color.YELLOW);
+			 canvas.drawLine(0, descentY, getWidth(), descentY, descentLinePaint);
 
-		 // ButtomLine描画
-		 Paint bottomLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		 bottomLinePaint.setColor(Color.MAGENTA);
-		 canvas.drawLine(0, bottomY, getWidth(), bottomY, bottomLinePaint);
+			 // ButtomLine描画
+			 Paint bottomLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			 bottomLinePaint.setColor(Color.MAGENTA);
+			 canvas.drawLine(0, bottomY, getWidth(), bottomY, bottomLinePaint);
 
-	 }
- */
+		 }
+	 */
 	public void setColorAndFont(int aColor, int aBcolor, int fontSize, Typeface typeface)
 	{
 		boardGAP = fontSize / 3;
@@ -185,6 +191,8 @@ public abstract class SimpleTextView extends View
 
 	public boolean pageDown()
 	{
+		if (content.type() == BookContent.Type.image)
+			return false;
 		boolean ret;
 		if (ret = calcNextPos())
 			invalidate();
@@ -194,6 +202,8 @@ public abstract class SimpleTextView extends View
 
 	public boolean pageUp()
 	{
+		if (content.type() == BookContent.Type.image)
+			return false;
 		boolean ret;
 		if (ret = calcPrevPos())
 			invalidate();
@@ -221,12 +231,16 @@ public abstract class SimpleTextView extends View
 
 	public int getPos()
 	{
+		if (content.type() == BookContent.Type.image)
+			return 0;
 		calcPos();
 		return pos;
 	}
 
 	public void setPos(int np)
 	{
+		if (content.type() == BookContent.Type.image)
+			return;
 		if (content.size() == 0)
 			return;
 
@@ -236,11 +250,16 @@ public abstract class SimpleTextView extends View
 
 	public void setPos(BookContent.ContentPosInfo cpi)
 	{
+		if (content.type() == BookContent.Type.image)
+			return;
 		setPos(cpi.line, cpi.offset);
 	}
 
 	public void setPos(int posIndex, int posOffset)
 	{
+		if (content.type() == BookContent.Type.image)
+			return;
+
 		if (content.size() == 0)
 			return;
 
@@ -275,6 +294,9 @@ public abstract class SimpleTextView extends View
 
 	public FingerPosInfo getFingerPosInfo(float x, float y)
 	{
+		if (content.type() == BookContent.Type.image)
+			return null;
+
 		FingerPosInfo pi = calcFingerPos(x, y);
 		if (pi == null)
 			return null;
@@ -287,6 +309,9 @@ public abstract class SimpleTextView extends View
 
 	public String getFingerPosNote(float x, float y)
 	{
+		if (content.type() == BookContent.Type.image)
+			return null;
+
 		if (!content.hasNotes())
 			return null;
 		FingerPosInfo pi = calcFingerPos(x, y);
@@ -298,6 +323,8 @@ public abstract class SimpleTextView extends View
 
 	public BookContent.ContentPosInfo searchText(String t)
 	{
+		if (content.type() == BookContent.Type.image)
+			return null;
 		if (t == null)
 			return null;
 		if (t.length() == 0)
@@ -328,19 +355,18 @@ public abstract class SimpleTextView extends View
 		hli = hightlightInfo;
 	}
 
-	public BookContent getContent()
-	{
-		return content;
-	}
-
 	public void gotoEnd()
 	{
+		if (content.type() == BookContent.Type.image) {
+			pi = po = 0;
+			return;
+		}
 		pi = content.getLineCount();
 		po = 0;
 		calcPrevPos();
 	}
 
-	public abstract int calcNextLineOffset();
+	protected abstract int calcNextLineOffset();
 
 	protected abstract int calcPosOffset(int npo);
 
