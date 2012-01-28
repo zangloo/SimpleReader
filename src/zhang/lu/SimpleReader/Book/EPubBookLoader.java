@@ -231,20 +231,6 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 		});
 	}
 
-	public void dumpTOC()
-	{
-		Log.d("EPubBookLoader.dumpTOC", "+++++++++++++++++++++++");
-
-		for (TOCRecord r : nps) {
-			NavPoint np = (NavPoint) r;
-			Log.d("EPubBookLoader.dumpTOC",
-			      String.format("order = %d, level = %d, title = %s, href = %s", np.order, np.level,
-					    np.title, np.href));
-		}
-
-		Log.d("EPubBookLoader.dumpTOC", "------------------------");
-	}
-
 	public boolean isBelong(VFile f)
 	{
 		return f.getPath().toLowerCase().endsWith("." + suffix);
@@ -290,7 +276,6 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 			throw new Exception(
 				String.format("Error open chapter %d @ \"%s\"", ri.chapter, file.getPath()));
 
-		dumpTOC();
 		return new EPubBook(zf, ri, nps, ops_path);
 	}
 }
