@@ -105,7 +105,10 @@ public abstract class SimpleTextView extends View
 	{
 		if (pi >= content.imageCount())
 			return;
-		canvas.drawBitmap(content.image(pi), null, new Rect(0, 0, w, h), null);
+		Bitmap bm =content.image(pi);
+		if (bm == null)
+			return;
+		canvas.drawBitmap(bm, null, new Rect(0, 0, w, h), null);
 	}
 
 	/*

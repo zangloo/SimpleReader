@@ -2,18 +2,14 @@ package zhang.lu.SimpleReader.Book;
 
 import android.graphics.Bitmap;
 
-import java.util.ArrayList;
-
 /**
  * Created by IntelliJ IDEA.
  * User: zhanglu
  * Date: 12-1-28
  * Time: 下午2:00
  */
-public class ImageContent extends BookContent
+public abstract class ImageContent extends BookContent
 {
-	ArrayList<Bitmap> images = new ArrayList<Bitmap>();
-
 	@Override
 	public String line(int index)
 	{
@@ -45,16 +41,8 @@ public class ImageContent extends BookContent
 	}
 
 	@Override
-	public int imageCount()
-	{
-		return images.size();
-	}
+	public abstract int imageCount();
 
 	@Override
-	public Bitmap image(int index)
-	{
-		return images.get(index);
-	}
-
-
+	public abstract Bitmap image(int index);
 }

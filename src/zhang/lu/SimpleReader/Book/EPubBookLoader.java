@@ -1,10 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
-import android.graphics.Bitmap;
-import android.util.Log;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.jsoup.Jsoup;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -34,80 +30,13 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 	private static final String suffix = "epub";
 	private static final String meta_file = "META-INF/container.xml";
 
-	private static class EPubBook extends ChaptersBook
-	{
-		private BookContent content;
-		private PlainTextContent ptc = new PlainTextContent();
-		private ImageContent ic = new ImageContent();
-		private final ZipFile zf;
-		private final String ops_path;
-
-		private EPubBook(ZipFile file, Config.ReadingInfo ri, ArrayList<TOCRecord> nps, String ops) throws Exception
-		{
-			ops_path = ops;
-			zf = file;
-			TOC = nps;
-			loadChapter(ri.chapter);
-		}
-
-		@Override
-		protected boolean loadChapter(int index)
-		{
-			try {
-				chapter = index;
-				final NavPoint np = (NavPoint) TOC.get(index);
-
-				final ZipArchiveEntry zae = zf.getEntry(ops_path + np.href);
-				ArrayList<String> lines = new ArrayList<String>();
-				ArrayList<String> imagerefs = new ArrayList<String>();
-
-				InputStream is = zf.getInputStream(zae);
-				String cs;
-				cs = BookUtil.detect(is);
-				is.close();
-
-				is = zf.getInputStream(zae);
-				BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, imagerefs);
-
-				if (imagerefs.size() == 0) {
-					ptc.setContent(lines);
-					content = ptc;
-				} else {
-					ic.images.clear();
-					for (String i : imagerefs) {
-						Bitmap img = BookUtil.loadPicFromZip(zf, ops_path + i);
-						if (img == null)
-							Log.e("EPubBook.loadChapter", "Can not load image:" + ops_path + img);
-						else
-							ic.images.add(img);
-					}
-					if (ic.images.size() == 0)
-						throw new Exception("Error load images:" + ops_path + np.href);
-					content = ic;
-				}
-			} catch (Exception e) {
-				ArrayList<String> list = new ArrayList<String>();
-				list.add(e.getMessage());
-				ptc.setContent(list);
-				content = ptc;
-			}
-			return true;
-		}
-
-		@Override
-		public BookContent getContent(int index) { return content; }
-
-		@Override
-		public void close() {}
-	}
-
 	// reading state enum
 	private static enum RS
 	{
 		none, map, point, label, text
 	}
 
-	private static class NavPoint extends TOCRecord
+	static class NavPoint extends TOCRecord
 	{
 		final int order;
 		final int level;
