@@ -80,8 +80,14 @@ public abstract class BookContent
 		return cpi;
 	}
 
-	// return image if type == image, only one image can display, so no parameters
-	public Bitmap image()
+	// return image count
+	public int imageCount()
+	{
+		return 0;
+	}
+
+	// return image for ImageContente
+	public Bitmap image(int index)
 	{
 		return null;
 	}

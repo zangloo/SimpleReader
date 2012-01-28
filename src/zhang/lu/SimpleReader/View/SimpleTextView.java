@@ -103,7 +103,9 @@ public abstract class SimpleTextView extends View
 
 	private void drawImage(Canvas canvas)
 	{
-		canvas.drawBitmap(content.image(), null, new Rect(0, 0, w, h), null);
+		if (pi >= content.imageCount())
+			return;
+		canvas.drawBitmap(content.image(pi), null, new Rect(0, 0, w, h), null);
 	}
 
 	/*
@@ -191,10 +193,16 @@ public abstract class SimpleTextView extends View
 
 	public boolean pageDown()
 	{
-		if (content.type() == BookContent.Type.image)
-			return false;
 		boolean ret;
-		if (ret = calcNextPos())
+		if (content.type() == BookContent.Type.image) {
+			if (pi >= (content.imageCount() - 1))
+				return false;
+			pi++;
+			ret = true;
+		} else
+			ret = calcNextPos();
+
+		if (ret)
 			invalidate();
 
 		return ret;
@@ -202,10 +210,16 @@ public abstract class SimpleTextView extends View
 
 	public boolean pageUp()
 	{
-		if (content.type() == BookContent.Type.image)
-			return false;
 		boolean ret;
-		if (ret = calcPrevPos())
+		if (content.type() == BookContent.Type.image) {
+			if (pi == 0)
+				return false;
+			pi--;
+			ret = true;
+		} else
+			ret = calcPrevPos();
+
+		if (ret)
 			invalidate();
 
 		return ret;
@@ -232,15 +246,20 @@ public abstract class SimpleTextView extends View
 	public int getPos()
 	{
 		if (content.type() == BookContent.Type.image)
-			return 0;
+			return pi / content.imageCount();
 		calcPos();
 		return pos;
 	}
 
 	public void setPos(int np)
 	{
-		if (content.type() == BookContent.Type.image)
+		if (content.type() == BookContent.Type.image) {
+			int i = content.imageCount() * np / 100;
+			if (i == content.imageCount())
+				i--;
+			setPos(i, 0);
 			return;
+		}
 		if (content.size() == 0)
 			return;
 
@@ -250,16 +269,19 @@ public abstract class SimpleTextView extends View
 
 	public void setPos(BookContent.ContentPosInfo cpi)
 	{
-		if (content.type() == BookContent.Type.image)
-			return;
 		setPos(cpi.line, cpi.offset);
 	}
 
 	public void setPos(int posIndex, int posOffset)
 	{
-		if (content.type() == BookContent.Type.image)
+		if (content.type() == BookContent.Type.image){
+			if (posIndex >= content.imageCount())
+				pi = 0;
+			else
+				pi = posIndex;
+			po = 0;
 			return;
-
+		}
 		if (content.size() == 0)
 			return;
 

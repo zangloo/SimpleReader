@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -12,6 +13,7 @@ import org.mozilla.universalchardet.UniversalDetector;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,15 +31,13 @@ public class BookUtil
 	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
 
 	// put all text into lines
-	// always return null
-	public static String HTML2Text(Element node, List<String> lines)
+	public static void HTML2Text(Element node, List<String> lines)
 	{
-		return HTML2Text(node, lines, false);
+		HTML2Text(node, lines, null);
 	}
 
-	// if image supported, this function will return with the first image href.
-	// lines will return if no image found.
-	public static String HTML2Text(Element node, List<String> lines, boolean imageSupported)
+	// if images != null, this function will return with all images href.
+	public static void HTML2Text(Element node, List<String> lines, @Nullable ArrayList<String> images)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
@@ -46,14 +46,12 @@ public class BookUtil
 					lines.add(t);
 			} else if (child instanceof Element) {
 				final Element e = (Element) child;
-				if (imageSupported && (e.tagName().equalsIgnoreCase("img")))
-					return e.attr("src");
-				String img = HTML2Text(e, lines, imageSupported);
-				if (img != null)
-					return img;
+				if ((images != null) && (e.tagName().equalsIgnoreCase("img")))
+					images.add(e.attr("src"));
+				else
+					HTML2Text(e, lines, images);
 			}
 		}
-		return null;
 	}
 
 	public static String detect(InputStream is)

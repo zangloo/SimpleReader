@@ -1,5 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -16,7 +17,6 @@ import zhang.lu.SimpleReader.VFS.VFile;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +59,7 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 
 				final ZipArchiveEntry zae = zf.getEntry(ops_path + np.href);
 				ArrayList<String> lines = new ArrayList<String>();
+				ArrayList<String> imagerefs = new ArrayList<String>();
 
 				InputStream is = zf.getInputStream(zae);
 				String cs;
@@ -66,15 +67,22 @@ public class EPubBookLoader extends XMLReaderAdapter implements BookLoader.Loade
 				is.close();
 
 				is = zf.getInputStream(zae);
-				String img = BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, true);
+				BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, imagerefs);
 
-				if (img == null) {
+				if (imagerefs.size() == 0) {
 					ptc.setContent(lines);
 					content = ptc;
 				} else {
-					ic.img = BookUtil.loadPicFromZip(zf, ops_path + img);
-					if (ic.img == null)
-						throw new IOException("Can not load image:" + ops_path + img);
+					ic.images.clear();
+					for (String i : imagerefs) {
+						Bitmap img = BookUtil.loadPicFromZip(zf, ops_path + i);
+						if (img == null)
+							Log.e("EPubBook.loadChapter", "Can not load image:" + ops_path + img);
+						else
+							ic.images.add(img);
+					}
+					if (ic.images.size() == 0)
+						throw new Exception("Error load images:" + ops_path + np.href);
 					content = ic;
 				}
 			} catch (Exception e) {
