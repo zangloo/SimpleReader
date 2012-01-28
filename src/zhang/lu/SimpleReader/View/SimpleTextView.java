@@ -246,7 +246,7 @@ public abstract class SimpleTextView extends View
 	public int getPos()
 	{
 		if (content.type() == BookContent.Type.image)
-			return pi / content.imageCount();
+			return pi * 100/ content.imageCount();
 		calcPos();
 		return pos;
 	}
