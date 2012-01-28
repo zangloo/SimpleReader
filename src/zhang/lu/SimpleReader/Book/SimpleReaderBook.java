@@ -3,7 +3,6 @@ package zhang.lu.SimpleReader.Book;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.VFS.CloudFile;
 import zhang.lu.SimpleReader.VFS.VFile;
 
 import java.io.IOException;
@@ -16,9 +15,8 @@ import java.util.HashMap;
  * Date: 11-9-6
  * Time: 下午8:21
  */
-public class SimpleReaderBook implements BookLoader.Loader
+public class SimpleReaderBook extends Book
 {
-	public static final String suffix = "srb";
 	public static final String[] INFO_TABLE_COLS = new String[]{"key", "value"};
 	public static final String INFO_TABLE_NAME = "info";
 
@@ -63,79 +61,33 @@ public class SimpleReaderBook implements BookLoader.Loader
 	// return count
 	private static final String configChapterCountSQL = "selectChapterCountSQL";
 
-	private static class SimpleReaderBookContent extends BookContent
+	private SQLiteDatabase db;
+	//private int version;
+	private int indexBase;
+	private boolean hasNotes;
+	private char markChar;
+	private String lineSQL;
+	private String noteSQL;
+	private String sizeSQL;
+	private String posSQL;
+	private String searchSQL;
+	private String chapterSQL;
+	private String chapterListSQL;
+	private String countSQL;
+	private int chapterCount;
+	private int booksize;
+	private int lineCount;
+	private int chapter;
+	private SimpleReaderBookContent content;
+
+	// cache size
+	private static final int LINE_CACHE_SIZE = 90;
+	// fetch lines from (<index> - LINE_CACHE_PREFETCH_SIZE) to (<index> + LINE_CACHE_SIZE - 1)
+	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
+	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
+
+	private class SimpleReaderBookContent extends BookContent
 	{
-		private SQLiteDatabase db;
-		//private int version;
-		private int indexBase;
-		private boolean hasNotes;
-		private char markChar;
-		private String lineSQL;
-		private String noteSQL;
-		private String sizeSQL;
-		private String posSQL;
-		private String searchSQL;
-		private String chapterSQL;
-		private String chapterListSQL;
-		private String countSQL;
-		private int chapterCount;
-		private int booksize;
-		private int lineCount;
-		private int chapter;
-
-		// cache size
-		private static final int LINE_CACHE_SIZE = 90;
-		// fetch lines from (<index> - LINE_CACHE_PREFETCH_SIZE) to (<index> + LINE_CACHE_SIZE - 1)
-		private static final int LINE_CACHE_PREFETCH_SIZE = 10;
-		private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
-
-		private SimpleReaderBookContent(VFile f, Config.ReadingInfo ri) throws IOException
-		{
-			db = SQLiteDatabase.openDatabase(f.getRealPath(), null, SQLiteDatabase.OPEN_READONLY |
-				SQLiteDatabase.NO_LOCALIZED_COLLATORS);
-
-			HashMap<String, String> map = new HashMap<String, String>();
-			Cursor cursor = db.query(INFO_TABLE_NAME, INFO_TABLE_COLS, null, null, null, null, null);
-			while (cursor.moveToNext())
-				map.put(cursor.getString(0), cursor.getString(1));
-			cursor.close();
-
-			//version = new Integer(map.get(configVersion));
-			indexBase = new Integer(map.get(configIndexBase));
-			hasNotes = map.get(configHasNotes).equals("true");
-			markChar = map.get(configNoteMarkChar).charAt(0);
-			lineSQL = map.get(configLineSQL);
-			noteSQL = map.get(configNoteSQL);
-			sizeSQL = map.get(configSizeSQL);
-			posSQL = map.get(configPosSQL);
-			searchSQL = map.get(configSearchSQL);
-			chapterSQL = map.get(configChapterSQL);
-			String chapterCountSQL = map.get(configChapterCountSQL);
-			countSQL = map.get(configCountSQL);
-			chapterListSQL = map.get(configChapterListSQL);
-
-			cursor = db.rawQuery(chapterCountSQL, null);
-			if (!cursor.moveToFirst()) {
-				cursor.close();
-				throw new IOException("Format incorrect");
-			}
-			chapterCount = cursor.getInt(0);
-			cursor.close();
-			if (chapterCount == 0)
-				throw new IOException("Format incorrect");
-
-			chapter = ri.chapter + indexBase;
-			lineCount = selectLineCount();
-			if (lineCount == 0)
-				throw new IOException("Format incorrect");
-
-			booksize = selectSize(lineCount);
-			if (booksize == 0)
-				throw new IOException("Format incorrect");
-
-			lineCache.clear();
-		}
-
 		@Override
 		public String line(int index)
 		{
@@ -256,107 +208,150 @@ public class SimpleReaderBook implements BookLoader.Loader
 			cpi.offset = p - (size(idx + 1) - l.length());
 			return cpi;
 		}
+	}
 
-		@Override
-		public int getChapterCount()
-		{
-			return chapterCount;
-		}
+	SimpleReaderBook(VFile f, Config.ReadingInfo ri) throws IOException
+	{
+		db = SQLiteDatabase.openDatabase(f.getRealPath(), null,
+						 SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
 
-		@Override
-		public String getChapterTitle()
-		{
-			return getChapterTitle(getCurrChapter());
-		}
+		HashMap<String, String> map = new HashMap<String, String>();
+		Cursor cursor = db.query(INFO_TABLE_NAME, INFO_TABLE_COLS, null, null, null, null, null);
+		while (cursor.moveToNext())
+			map.put(cursor.getString(0), cursor.getString(1));
+		cursor.close();
 
-		@Override
-		public String getChapterTitle(int index)
-		{
-			Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(index + indexBase)});
-			if (!c.moveToFirst()) {
-				c.close();
-				return "";
-			}
-			String s = c.getString(0);
-			c.close();
+		//version = new Integer(map.get(configVersion));
+		indexBase = new Integer(map.get(configIndexBase));
+		hasNotes = map.get(configHasNotes).equals("true");
+		markChar = map.get(configNoteMarkChar).charAt(0);
+		lineSQL = map.get(configLineSQL);
+		noteSQL = map.get(configNoteSQL);
+		sizeSQL = map.get(configSizeSQL);
+		posSQL = map.get(configPosSQL);
+		searchSQL = map.get(configSearchSQL);
+		chapterSQL = map.get(configChapterSQL);
+		String chapterCountSQL = map.get(configChapterCountSQL);
+		countSQL = map.get(configCountSQL);
+		chapterListSQL = map.get(configChapterListSQL);
 
-			return s;
-		}
-
-		@Override
-		public ArrayList<ChapterInfo> getChapterInfoList()
-		{
-			ArrayList<ChapterInfo> l = new ArrayList<ChapterInfo>(getChapterCount());
-			Cursor c = db.rawQuery(chapterListSQL, null);
-			while (c.moveToNext())
-				l.add(new ChapterInfo(c.getString(0)));
-			c.close();
-			return l;
-		}
-
-		@Override
-		public int getCurrChapter()
-		{
-			return chapter - indexBase;
-		}
-
-		@Override
-		public boolean loadChapter(int index)
-		{
-			chapter = index + indexBase;
-			updateValues();
-			return true;
-		}
-
-		private void updateValues()
-		{
-			lineCache.clear();
-			lineCount = selectLineCount();
-			booksize = selectSize(lineCount);
-		}
-
-		private int selectLineCount()
-		{
-			Cursor cursor = db.rawQuery(countSQL, new String[]{String.valueOf(chapter)});
-
-			if (!cursor.moveToNext()) {
-				cursor.close();
-				return 0;
-			}
-			int cnt = cursor.getInt(0);
+		cursor = db.rawQuery(chapterCountSQL, null);
+		if (!cursor.moveToFirst()) {
 			cursor.close();
-			return cnt;
+			throw new IOException("Format incorrect");
 		}
+		chapterCount = cursor.getInt(0);
+		cursor.close();
+		if (chapterCount == 0)
+			throw new IOException("Format incorrect");
 
-		private int selectSize(int end)
-		{
-			Cursor c = db.rawQuery(sizeSQL, new String[]{String.valueOf(chapter), String
-				.valueOf(end + indexBase - 1)});
-			if (!c.moveToFirst()) {
-				c.close();
-				return 0;
-			}
-			int s = c.getInt(0);
+		chapter = ri.chapter + indexBase;
+		lineCount = selectLineCount();
+		if (lineCount == 0)
+			throw new IOException("Format incorrect");
+
+		booksize = selectSize(lineCount);
+		if (booksize == 0)
+			throw new IOException("Format incorrect");
+
+		lineCache.clear();
+		content = new SimpleReaderBookContent();
+	}
+
+	@Override
+	public int getChapterCount()
+	{
+		return chapterCount;
+	}
+
+	@Override
+	public String getChapterTitle()
+	{
+		return getChapterTitle(getCurrChapter());
+	}
+
+	@Override
+	public String getChapterTitle(int index)
+	{
+		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(index + indexBase)});
+		if (!c.moveToFirst()) {
 			c.close();
-
-			return s;
+			return "";
 		}
+		String s = c.getString(0);
+		c.close();
+
+		return s;
 	}
 
-	public boolean isBelong(VFile f)
+	@Override
+	public ArrayList<TOCRecord> getTOC()
 	{
-		return (!CloudFile.class.isInstance(f)) && (f.getPath().toLowerCase().endsWith("." + suffix));
+		ArrayList<TOCRecord> l = new ArrayList<TOCRecord>(getChapterCount());
+		Cursor c = db.rawQuery(chapterListSQL, null);
+		while (c.moveToNext())
+			l.add(new TOCRecord(c.getString(0)));
+		c.close();
+		return l;
 	}
 
-	public BookContent load(VFile f, Config.ReadingInfo ri) throws Exception
+	@Override
+	public int getCurrChapter()
 	{
-		return new SimpleReaderBookContent(f, ri);
+		return chapter - indexBase;
 	}
 
-	public void unload(BookContent book)
+	@Override
+	public boolean loadChapter(int index)
 	{
-		SimpleReaderBookContent b = (SimpleReaderBookContent) book;
-		b.db.close();
-		b.lineCache.clear();
+		chapter = index + indexBase;
+		updateValues();
+		return true;
+	}
+
+	@Override
+	public BookContent getContent(int index)
+	{
+		return content;
+	}
+
+	private void updateValues()
+	{
+		lineCache.clear();
+		lineCount = selectLineCount();
+		booksize = selectSize(lineCount);
+	}
+
+	private int selectLineCount()
+	{
+		Cursor cursor = db.rawQuery(countSQL, new String[]{String.valueOf(chapter)});
+
+		if (!cursor.moveToNext()) {
+			cursor.close();
+			return 0;
+		}
+		int cnt = cursor.getInt(0);
+		cursor.close();
+		return cnt;
+	}
+
+	private int selectSize(int end)
+	{
+		Cursor c = db
+			.rawQuery(sizeSQL, new String[]{String.valueOf(chapter), String.valueOf(end + indexBase - 1)});
+		if (!c.moveToFirst()) {
+			c.close();
+			return 0;
+		}
+		int s = c.getInt(0);
+		c.close();
+
+		return s;
+	}
+
+	public void close()
+	{
+		db.close();
+		lineCache.clear();
 	}
 }

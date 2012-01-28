@@ -94,6 +94,8 @@ public abstract class SimpleTextView extends View
 		}
 
 		canvas.drawColor(bcolor);
+		if (pi >= content.getLineCount())
+			return;
 		drawText(canvas);
 		//testDraw(canvas);
 	}

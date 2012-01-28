@@ -12,7 +12,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import zhang.lu.SimpleReader.Book.BookContent;
+import zhang.lu.SimpleReader.Book.Book;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.R;
 import zhang.lu.SimpleReader.View.SimpleTextView;
@@ -76,7 +76,7 @@ public class BookmarkManager extends PopupList
 
 	private Config config = null;
 	private Config.ReadingInfo readingInfo = null;
-	private BookContent book = null;
+	private Book book = null;
 
 	private EditText et;
 	private Bookmark bm;
@@ -141,11 +141,11 @@ public class BookmarkManager extends PopupList
 		sa.notifyDataSetChanged();
 	}
 
-	public void show(Config.ReadingInfo ri, BookContent bookContent, Typeface typeface, int top, int width, int height)
+	public void show(Config.ReadingInfo ri, Book b, Typeface typeface, int top, int width, int height)
 	{
 		readingInfo = ri;
 		tf = typeface;
-		book = bookContent;
+		book = b;
 		setWidth(width);
 		setHeight(height);
 		updateBookmarkList();

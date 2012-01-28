@@ -21,13 +21,13 @@ public class HtmlLoader implements BookLoader.Loader
 
 	public boolean isBelong(VFile f)
 	{
-		for (String s:suffixes)
+		for (String s : suffixes)
 			if (f.getPath().toLowerCase().endsWith("." + s))
 				return true;
 		return false;
 	}
 
-	public BookContent load(VFile f, Config.ReadingInfo ri) throws Exception
+	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
 		List<String> lines = new ArrayList<String>();
 		String cs;
@@ -37,10 +37,6 @@ public class HtmlLoader implements BookLoader.Loader
 		fs.close();
 
 		BookUtil.HTML2Text(Jsoup.parse(f.getInputStream(), cs, "").body(), lines);
-		return new PlainTextContent(lines);
-	}
-
-	public void unload(BookContent aBook)
-	{
+		return new SingleChapterBook(new PlainTextContent(lines));
 	}
 }

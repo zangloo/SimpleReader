@@ -1,7 +1,5 @@
 package zhang.lu.SimpleReader.Book;
 
-import java.util.ArrayList;
-
 /**
  * Created by IntelliJ IDEA.
  * User: zhanglu
@@ -15,58 +13,6 @@ public abstract class BookContent
 		public int line, offset;
 	}
 
-	public static class ChapterInfo
-	{
-		protected String title;
-
-		public ChapterInfo(String t) {title = t;}
-
-		public String title() {return title;}
-	}
-
-	// return chapter count
-	public int getChapterCount()
-	{
-		return 1;
-	}
-
-	// return current chapter title
-	public String getChapterTitle()
-	{
-		return getChapterTitle(getCurrChapter());
-	}
-
-	// return chapter title at index
-	public String getChapterTitle(int index)
-	{
-		return null;
-	}
-
-	// return all chapter title
-	public ArrayList<ChapterInfo> getChapterInfoList()
-	{
-		return null;
-	}
-
-	// get current chapter index
-	public int getCurrChapter()
-	{
-		return 0;
-	}
-
-	// switch to chapter index
-	public boolean gotoChapter(int index)
-	{
-		return !((index < 0) || (index >= getChapterCount()) || (index == getCurrChapter())) &&
-			loadChapter(index);
-	}
-
-	// load chapter info
-	protected boolean loadChapter(int index)
-	{
-		return false;
-	}
-
 	// has notes?
 	public boolean hasNotes()
 	{
@@ -77,6 +23,11 @@ public abstract class BookContent
 	public String getNote(int line, int offset)
 	{
 		return null;
+	}
+
+	// clear datas
+	public void clear()
+	{
 	}
 
 	// search txt from cpi

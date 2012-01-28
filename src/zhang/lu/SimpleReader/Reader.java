@@ -12,13 +12,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.*;
 import android.widget.*;
+import zhang.lu.SimpleReader.Book.Book;
 import zhang.lu.SimpleReader.Book.BookContent;
 import zhang.lu.SimpleReader.Book.BookLoader;
 import zhang.lu.SimpleReader.Dialog.DictManager;
 import zhang.lu.SimpleReader.Dialog.FileDialog;
 import zhang.lu.SimpleReader.Dialog.OptionDialog;
 import zhang.lu.SimpleReader.Popup.BookmarkManager;
-import zhang.lu.SimpleReader.Popup.ChapterManager;
+import zhang.lu.SimpleReader.Popup.TOCList;
 import zhang.lu.SimpleReader.Popup.PopupMenu;
 import zhang.lu.SimpleReader.Popup.StatusPanel;
 import zhang.lu.SimpleReader.VFS.VFile;
@@ -68,6 +69,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private SimpleTextView hbv, xbv;
 	private SimpleTextView bv;
+	private Book book;
 	private Config config;
 	private GestureDetector gs;
 	private int currOrient = Configuration.ORIENTATION_UNDEFINED;
@@ -84,7 +86,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
 	private Config.ReadingInfo ri = null;
 	private BookmarkManager bookmarkManager = null;
-	private ChapterManager chapterManager = null;
+	private TOCList TOCList = null;
 	private StatusPanel statusPanel = null;
 	private DictManager dictManager;
 	private Typeface tf = null;
@@ -179,8 +181,8 @@ public class Reader extends Activity implements View.OnTouchListener
 			bookmarkManager.update(bookmarkManager.getWidth(), screenHeight - bv.getTop());
 		if (statusPanel.isShowing())
 			statusPanel.update(screenWidth, statusPanel.getHeight());
-		if (chapterManager.isShowing())
-			chapterManager.update(chapterManager.getWidth(), screenHeight - bv.getTop());
+		if (TOCList.isShowing())
+			TOCList.update(TOCList.getWidth(), screenHeight - bv.getTop());
 		super.onConfigurationChanged(newConfig);
 	}
 
@@ -189,17 +191,19 @@ public class Reader extends Activity implements View.OnTouchListener
 		Config.ReadingInfo rri = new Config.ReadingInfo();
 		rri.line = bv.getPosIndex();
 		rri.offset = bv.getPosOffset();
-		rri.chapter = bv.getContent().getCurrChapter();
+		rri.chapter = book.getCurrChapter();
 		rri.name = ri.name;
-		rri.ctitle = bv.getContent().getChapterTitle();
+		rri.ctitle = book.getChapterTitle();
 		rri.percent = bv.getPos();
 		ris.push(rri);
 	}
 
 	private void updateBookView(Config.ReadingInfo rri)
 	{
-		if (rri.chapter != bv.getContent().getCurrChapter())
-			bv.getContent().gotoChapter(rri.chapter);
+		if (rri.chapter != book.getCurrChapter()) {
+			book.gotoChapter(rri.chapter);
+			bv.setContent(book.getContent());
+		}
 		bv.setPos(rri.line, rri.offset);
 	}
 
@@ -246,9 +250,10 @@ public class Reader extends Activity implements View.OnTouchListener
 		super.onDestroy();
 		bv.setContent(null);
 		bv.setPos(0, 0);
+		book.close();
+		book = null;
 		config.close();
 		dictManager.unloadDict();
-		BookLoader.unloadBook();
 	}
 
 	@Override
@@ -487,7 +492,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			menu.findItem(menuViewLock).setTitle(R.string.menu_unlock_view);
 		else
 			menu.findItem(menuViewLock).setTitle(R.string.menu_lock_view);
-		menu.findItem(menuChapterMgr).setVisible(bv.getContent().getChapterCount() > 1);
+		menu.findItem(menuChapterMgr).setVisible(book.getChapterCount() > 1);
 		menu.findItem(menuColorBright)
 		    .setTitle(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night);
 		return true;
@@ -516,10 +521,9 @@ public class Reader extends Activity implements View.OnTouchListener
 			return;
 		}
 
-		BookContent book = bv.getContent();
 		if (book.getChapterCount() > 1)
 			if (book.gotoChapter(book.getCurrChapter() + 1)) {
-				switchChapterUpdate(book, 0, 0);
+				switchChapterUpdate(0, 0);
 				loading = false;
 				return;
 			}
@@ -570,11 +574,9 @@ public class Reader extends Activity implements View.OnTouchListener
 			return;
 		}
 
-		BookContent book = bv.getContent();
 		if (book.getChapterCount() > 1)
 			if (book.gotoChapter(book.getCurrChapter() - 1)) {
-				bv.gotoEnd();
-				switchChapterUpdate(book, bv.getPosIndex(), bv.getPosOffset());
+				switchChapterUpdate(-1, -1);
 				loading = false;
 				return;
 			}
@@ -612,8 +614,8 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		if (ri == null)
 			return;
-		ri.chapter = bv.getContent().getCurrChapter();
-		ri.ctitle = bv.getContent().getChapterTitle();
+		ri.chapter = book.getCurrChapter();
+		ri.ctitle = book.getChapterTitle();
 		ri.line = bv.getPosIndex();
 		ri.offset = bv.getPosOffset();
 		ri.percent = bv.getPos();
@@ -634,8 +636,10 @@ public class Reader extends Activity implements View.OnTouchListener
 				Util.errorMsg(Reader.this, getString(R.string.error_open_file) + errmsg);
 			} else {
 				ris.clear();
-				if (bv.getContent().getChapterCount() > 1)
-					bv.getContent().gotoChapter(ri.chapter);
+				if (book.getChapterCount() > 1) {
+					book.gotoChapter(ri.chapter);
+					bv.setContent(book.getContent());
+				}
 				bv.setPos(ri.line, ri.offset);
 				hidePanels();
 				bv.invalidate();
@@ -660,9 +664,13 @@ public class Reader extends Activity implements View.OnTouchListener
 				saveReadingInfo();
 				try {
 					Config.ReadingInfo nri = config.getReadingInfo(fp);
-					BookContent bc = BookLoader.loadFile(fp, nri);
+					Book nb = BookLoader.loadFile(fp, nri);
+					// close book on success open new one
+					if (book != null)
+						book.close();
+					book = nb;
 					config.setReadingFile(fp);
-					bv.setContent(bc);
+					bv.setContent(book.getContent());
 					ri = nri;
 					msg.arg1 = 1;
 				} catch (Exception e) {
@@ -788,15 +796,14 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void initChapterMgr()
 	{
-		chapterManager = new ChapterManager(this, new AdapterView.OnItemClickListener()
+		TOCList = new TOCList(this, new AdapterView.OnItemClickListener()
 		{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
 				pushReadingInfo();
-				chapterManager.hide();
-				BookContent book = bv.getContent();
+				TOCList.hide();
 				book.gotoChapter(position);
-				switchChapterUpdate(book, 0, 0);
+				switchChapterUpdate(0, 0);
 			}
 		});
 	}
@@ -844,10 +851,9 @@ public class Reader extends Activity implements View.OnTouchListener
 				pushReadingInfo();
 
 				BookmarkManager.Bookmark bm = bookmarkManager.getBookmark(position);
-				BookContent book = bv.getContent();
 				if (book.getCurrChapter() != bm.chapter) {
 					book.gotoChapter(bm.chapter);
-					switchChapterUpdate(book, bm.line, bm.offset);
+					switchChapterUpdate(bm.line, bm.offset);
 				} else {
 					bv.setPos(bm.line, bm.offset);
 					bv.invalidate();
@@ -886,7 +892,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
 		bookmarkManager.setMaxWidth(screenWidth * 3 / 4);
-		chapterManager.setMaxWidth(screenWidth * 3 / 4);
+		TOCList.setMaxWidth(screenWidth * 3 / 4);
 	}
 
 	private void initNote()
@@ -907,9 +913,14 @@ public class Reader extends Activity implements View.OnTouchListener
 		nsv = (FrameLayout) v.findViewById(R.id.note_scroll);
 	}
 
-	private void switchChapterUpdate(BookContent book, int line, int offset)
+	// line == -1, mean set to end of content
+	private void switchChapterUpdate(int line, int offset)
 	{
-		bv.setPos(line, offset);
+		bv.setContent(book.getContent());
+		if (line >= 0)
+			bv.setPos(line, offset);
+		else
+			bv.gotoEnd();
 		ri.chapter = book.getCurrChapter();
 
 		updateSeekBarPanel();
@@ -919,22 +930,21 @@ public class Reader extends Activity implements View.OnTouchListener
 	private void showBookmarkMgr(int x)
 	{
 		if (config.getCurrFile() != null)
-			bookmarkManager.show(ri, bv.getContent(), tf, bv.getTop(), x, screenHeight - bv.getTop());
+			bookmarkManager.show(ri, book, tf, bv.getTop(), x, screenHeight - bv.getTop());
 	}
 
 	private void showChapterList(int x)
 	{
-		if ((config.getCurrFile() != null) && (bv.getContent().getChapterCount() > 1))
-			chapterManager.show(bv.getContent().getChapterInfoList(), bv.getContent().getCurrChapter(), tf,
-					    bv.getTop(), x, screenHeight - bv.getTop());
+		if ((config.getCurrFile() != null) && (book.getChapterCount() > 1))
+			TOCList.show(book.getTOC(), book.getCurrChapter(), tf, bv.getTop(), x,
+					    screenHeight - bv.getTop());
 	}
 
 	private void showStatusPanel()
 	{
-		BookContent bc = bv.getContent();
-		if ((ri != null) && (bc != null)) {
-			ri.chapter = bc.getCurrChapter();
-			ri.ctitle = bc.getChapterTitle();
+		if ((ri != null) && (book != null)) {
+			ri.chapter = book.getCurrChapter();
+			ri.ctitle = book.getChapterTitle();
 			ri.percent = bv.getPos();
 			ri.line = bv.getPosIndex();
 			ri.offset = bv.getPosOffset();
@@ -1055,11 +1065,11 @@ public class Reader extends Activity implements View.OnTouchListener
 						break;
 					case chapter:
 						if ((e2.getRawX() - e1.getRawX()) < boardLen) {
-							chapterManager.hide();
+							TOCList.hide();
 							break;
 						}
-						if (chapterManager.isShowing())
-							chapterManager.update((int) e2.getRawX(), screenHeight);
+						if (TOCList.isShowing())
+							TOCList.update((int) e2.getRawX(), screenHeight);
 						else
 							showChapterList((int) e2.getRawX());
 

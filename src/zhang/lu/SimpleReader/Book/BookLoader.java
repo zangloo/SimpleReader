@@ -1,5 +1,7 @@
 package zhang.lu.SimpleReader.Book;
 
+import android.util.Log;
+import org.xml.sax.SAXException;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.VFile;
 
@@ -19,16 +21,11 @@ public class BookLoader
 	{
 		boolean isBelong(VFile f);
 
-		BookContent load(VFile file, Config.ReadingInfo ri) throws Exception;
-
-		void unload(BookContent aBook);
+		Book load(VFile file, Config.ReadingInfo ri) throws Exception;
 	}
 
 	private static List<Loader> loaders = new ArrayList<Loader>();
 	private static Loader defaultLoader = null;
-
-	private static BookContent book = null;
-	private static Loader currLoader = null;
 
 	private static void init()
 	{
@@ -38,9 +35,14 @@ public class BookLoader
 
 		loaders.add(new HtmlLoader());
 		loaders.add(new HaodooLoader());
-		loaders.add(new SimpleReaderBook());
+		loaders.add(new SimpleReaderBookLoader());
 		loaders.add(new SRBOnline());
-		loaders.add(new EPubBook());
+		try {
+			System.setProperty("org.xml.sax.driver","org.xmlpull.v1.sax2.Driver");
+			loaders.add(new EPubBookLoader());
+		} catch (SAXException e) {
+			Log.e("BookLoader.init", e.getMessage());
+		}
 	}
 
 	private static Loader findLoader(VFile f)
@@ -51,7 +53,7 @@ public class BookLoader
 		return defaultLoader;
 	}
 
-	public static BookContent loadFile(String filePath, Config.ReadingInfo ri) throws Exception
+	public static Book loadFile(String filePath, Config.ReadingInfo ri) throws Exception
 	{
 		VFile f = VFile.create(filePath);
 		if (!f.exists())
@@ -59,19 +61,6 @@ public class BookLoader
 		if (defaultLoader == null)
 			init();
 		Loader nl = findLoader(f);
-		BookContent nb = nl.load(f, ri);
-		// if no exception throw out, so update data
-		unloadBook();
-		currLoader = nl;
-		return book = nb;
-	}
-
-	public static void unloadBook()
-	{
-		if ((currLoader != null) && (book != null)) {
-			currLoader.unload(book);
-			currLoader = null;
-			book = null;
-		}
+		return nl.load(f, ri);
 	}
 }

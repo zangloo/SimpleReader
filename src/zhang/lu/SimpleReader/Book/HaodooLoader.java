@@ -55,7 +55,7 @@ import java.util.Vector;
     第N+2筆資料是書籤，預設是-1。可以不理。
 
  */
-public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
+public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 {
 	private static final String[] suffixes = {"pdb", "updb"};
 
@@ -81,11 +81,11 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		palmDoc, pdb, updb
 	}
 
-	private static class HaodooChapterInfo extends ChapterInfo
+	private static class HaodooTOCR extends TOCRecord
 	{
 		ArrayList<String> lines;
 
-		HaodooChapterInfo(String t)
+		HaodooTOCR(String t)
 		{
 			super(t);
 			lines = new ArrayList<String>();
@@ -97,12 +97,12 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 	private static String encode;
 	private static boolean encrypted = false;
 	private static BookType bookType;
-	private static ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
-	private static int currChapter;
 	private static boolean compression;
 	private static int txtCount;
 	private static byte[] recBuf = new byte[MAX_REC_SIZE * 2];
 	private static int recPos = 0;
+
+	private PlainTextContent content = new PlainTextContent();
 
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
@@ -130,7 +130,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return -1;
 	}
 
-	private static void formatTitle(byte[] rec) throws UnsupportedEncodingException
+	private void formatTitle(byte[] rec) throws UnsupportedEncodingException
 	{
 		byte[] escape = (bookType == BookType.pdb) ? PDB_SEPARATOR : UPDB_ESCAPE_SEPARATOR;
 		int np = findSeparator(rec, escape, 8);
@@ -140,17 +140,17 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		while ((np = findSeparator(rec, separator, p)) >= 0) {
 			//text.add(s.substring(p, np));
 			String s = new String(rec, p, np - p, encode);
-			chapters.add(new HaodooChapterInfo(s));
+			TOC.add(new HaodooTOCR(s));
 			p = np + separator.length;
 		}
 
 		if (p < rec.length)
-			chapters.add(new HaodooChapterInfo(new String(rec, p, rec.length - p, encode)));
+			TOC.add(new HaodooTOCR(new String(rec, p, rec.length - p, encode)));
 
 		txtCount = recordCount - 2;
 	}
 
-	private static void format(byte[] rec, HaodooChapterInfo ci)
+	private static void format(byte[] rec, HaodooTOCR ci)
 	{
 		String s;
 		int offset = 0;
@@ -323,11 +323,11 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return j;
 	}
 
-	private static void initPalmDocDB(byte[] rec)
+	private void initPalmDocDB(byte[] rec)
 	{
 		compression = (rec[1] == 2);
 		txtCount = fromUInt16(rec, TEXT_COUNT_OFFSET);
-		chapters.add(new HaodooChapterInfo(null));
+		TOC.add(new HaodooTOCR(null));
 		recPos = 0;
 	}
 
@@ -340,7 +340,7 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return -1;
 	}
 
-	private static int formatPalmDocDB(byte[] buf, int size, HaodooChapterInfo ci) throws Exception
+	private static int formatPalmDocDB(byte[] buf, int size, HaodooTOCR ci) throws Exception
 	{
 		if (encode == null)
 			encode = BookUtil.detect(new ByteArrayInputStream(buf, 0, size));
@@ -358,10 +358,10 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 		return ret;
 	}
 
-	public BookContent load(VFile file, Config.ReadingInfo ri) throws Exception
+	public Book load(VFile file, Config.ReadingInfo ri) throws Exception
 	{
 		encrypted = false;
-		chapters.clear();
+		TOC.clear();
 
 		InputStream is = file.getInputStream();
 		readHeader(is);
@@ -380,57 +380,39 @@ public class HaodooLoader extends PlainTextContent implements BookLoader.Loader
 				}
 				if (compression) {
 					int cc = decompress(rec, recBuf, recPos);
-					recPos = formatPalmDocDB(recBuf, cc, (HaodooChapterInfo) chapters.get(0));
+					recPos = formatPalmDocDB(recBuf, cc, (HaodooTOCR) TOC.get(0));
 				} else {
 					System.arraycopy(rec, 0, recBuf, recPos, rec.length);
-					recPos = formatPalmDocDB(recBuf, recPos + rec.length,
-								 (HaodooChapterInfo) chapters.get(0));
+					recPos = formatPalmDocDB(recBuf, recPos + rec.length, (HaodooTOCR) TOC.get(0));
 				}
 			} else
-				format(rec, (HaodooChapterInfo) chapters.get(i - 1));
+				format(rec, (HaodooTOCR) TOC.get(i - 1));
 		}
 		is.close();
 
 		if ((bookType == BookType.palmDoc) && (recPos > 0))
-			formatPalmDocDB(recBuf, recPos, (HaodooChapterInfo) chapters.get(0));
-		currChapter = ri.chapter;
-		setContent(((HaodooChapterInfo) chapters.get(currChapter)).lines);
+			formatPalmDocDB(recBuf, recPos, (HaodooTOCR) TOC.get(0));
+		chapter = ri.chapter;
+		content.setContent(((HaodooTOCR) TOC.get(chapter)).lines);
 		return this;
-	}
-
-	public void unload(BookContent aBook)
-	{
-	}
-
-	@Override
-	public int getChapterCount()
-	{
-		return chapters.size();
-	}
-
-	@Override
-	public String getChapterTitle(int index)
-	{
-		return chapters.get(index).title;
-	}
-
-	@Override
-	public ArrayList<ChapterInfo> getChapterInfoList()
-	{
-		return chapters;
-	}
-
-	@Override
-	public int getCurrChapter()
-	{
-		return currChapter;
 	}
 
 	@Override
 	protected boolean loadChapter(int index)
 	{
-		currChapter = index;
-		setContent(((HaodooChapterInfo) chapters.get(index)).lines);
+		chapter = index;
+		content.setContent(((HaodooTOCR) TOC.get(index)).lines);
 		return true;
+	}
+
+	@Override
+	public BookContent getContent(int index)
+	{
+		return content;
+	}
+
+	@Override
+	public void close()
+	{
 	}
 }

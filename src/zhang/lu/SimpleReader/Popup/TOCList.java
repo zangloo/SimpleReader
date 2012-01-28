@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import zhang.lu.SimpleReader.Book.BookContent;
+import zhang.lu.SimpleReader.Book.TOCRecord;
 import zhang.lu.SimpleReader.R;
 
 import java.util.ArrayList;
@@ -20,13 +20,13 @@ import java.util.ArrayList;
  * Date: 11-9-27
  * Time: 下午1:28
  */
-public class ChapterManager extends PopupList
+public class TOCList extends PopupList
 {
 	private Typeface tf = null;
 	private ArrayAdapter<String> aa;
 	private int chapter;
 
-	public ChapterManager(Context context, final AdapterView.OnItemClickListener onItemClickListener)
+	public TOCList(Context context, final AdapterView.OnItemClickListener onItemClickListener)
 	{
 		super(context);
 
@@ -50,10 +50,10 @@ public class ChapterManager extends PopupList
 		setOnItemClickListener(onItemClickListener);
 	}
 
-	public void show(ArrayList<BookContent.ChapterInfo> cs, int index, Typeface typeface, int top, int width, int height)
+	public void show(ArrayList<TOCRecord> cs, int index, Typeface typeface, int top, int width, int height)
 	{
 		aa.clear();
-		for (BookContent.ChapterInfo c : cs)
+		for (TOCRecord c : cs)
 			aa.add(c.title());
 		aa.notifyDataSetChanged();
 

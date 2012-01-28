@@ -30,7 +30,7 @@ public class TxtLoader implements BookLoader.Loader
 		return txt.replace("\r", "");
 	}
 
-	public BookContent load(VFile f, Config.ReadingInfo ri) throws Exception
+	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
 		List<String> lines = new ArrayList<String>();
 		String cs;
@@ -44,10 +44,6 @@ public class TxtLoader implements BookLoader.Loader
 		String line;
 		while ((line = br.readLine()) != null)
 			lines.add(formatText(line));
-		return new PlainTextContent(lines);
-	}
-
-	public void unload(BookContent aBook)
-	{
+		return new SingleChapterBook(new PlainTextContent(lines));
 	}
 }

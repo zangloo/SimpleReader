@@ -12,8 +12,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-import zhang.lu.SimpleReader.Book.BookContent;
 import zhang.lu.SimpleReader.Book.SRBOnline;
+import zhang.lu.SimpleReader.Book.TOCRecord;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -205,7 +205,7 @@ public class CloudFile extends VFile
 		}
 	}
 
-	public ArrayList<BookContent.ChapterInfo> getChapters() throws IOException, URISyntaxException
+	public ArrayList<TOCRecord> getChapters() throws IOException, URISyntaxException
 	{
 		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
@@ -215,9 +215,9 @@ public class CloudFile extends VFile
 		JsonParser jp = f.createJsonParser(in);
 
 		checkNextToken(jp, JsonToken.START_ARRAY);
-		ArrayList<BookContent.ChapterInfo> cs = new ArrayList<BookContent.ChapterInfo>();
+		ArrayList<TOCRecord> cs = new ArrayList<TOCRecord>();
 		while (jp.nextToken() == JsonToken.VALUE_STRING)
-			cs.add(new SRBOnline.OnlineChapterInfo(jp.getText()));
+			cs.add(new SRBOnline.OnlineTOC(jp.getText()));
 		jp.close();
 		return cs;
 	}
@@ -262,7 +262,7 @@ public class CloudFile extends VFile
 				checkNextToken(jp, JsonToken.VALUE_STRING);
 				String note = jp.getText();
 
-				SRBOnline.OnlineChapterInfo.addNote(notes, line, offset, note);
+				SRBOnline.OnlineTOC.addNote(notes, line, offset, note);
 			}
 		}
 		jp.close();

@@ -1,5 +1,6 @@
 package zhang.lu.SimpleReader.Book;
 
+import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.VFS.CloudFile;
 import zhang.lu.SimpleReader.VFS.VFile;
@@ -17,12 +18,12 @@ import java.util.HashMap;
  */
 public class SRBOnline implements BookLoader.Loader
 {
-	public static class OnlineChapterInfo extends BookContent.ChapterInfo
+	public static class OnlineTOC extends TOCRecord
 	{
 		private ArrayList<String> lines = null;
 		private HashMap<Long, String> notes = null;
 
-		public OnlineChapterInfo(String t)
+		public OnlineTOC(String t)
 		{
 			super(t);
 		}
@@ -43,40 +44,66 @@ public class SRBOnline implements BookLoader.Loader
 		}
 	}
 
-	private static class SRBOnlineContent extends PlainTextContent
+	private static class SRBOnlineBookContent extends PlainTextContent
 	{
-		private int chapter;
-		private ArrayList<ChapterInfo> chapters = new ArrayList<ChapterInfo>();
+		CloudFile.OnlineProperty op;
+		OnlineTOC oci = null;
+
+		SRBOnlineBookContent(CloudFile.OnlineProperty property)
+		{
+			super();
+			op = property;
+		}
+
+		public void setOCI(@Nullable OnlineTOC info)
+		{
+			oci = info;
+		}
+
+		@Override
+		public boolean hasNotes()
+		{
+			return op.hasNotes;
+		}
+
+		@Override
+		public String getNote(int line, int offset)
+		{
+			if (!op.hasNotes)
+				return null;
+			if (line >= getLineCount())
+				return null;
+			String l = line(line);
+			if (offset >= l.length())
+				return null;
+			if (l.charAt(offset) != op.mark)
+				return null;
+			if (oci == null)
+				return null;
+			return oci.getNote(line + op.indexBase, offset);
+		}
+	}
+
+	private static class SRBOnlineBook extends ChaptersBook
+	{
 		private CloudFile cf = null;
 		private CloudFile.OnlineProperty op = null;
+		private SRBOnlineBookContent content;
 
-		private SRBOnlineContent(VFile file, Config.ReadingInfo ri) throws IOException, URISyntaxException
+		private SRBOnlineBook(VFile file, Config.ReadingInfo ri) throws IOException, URISyntaxException
 		{
 			cf = (CloudFile) file;
-			chapters = cf.getChapters();
+			TOC = cf.getChapters();
 			op = cf.getProperty();
 			if (op == null)
 				throw new IOException("Can't open file");
 			chapter = ri.chapter;
+
+			if (ri.chapter >= TOC.size())
+				throw new IOException(String.format("Error open chapter %d @ \"%s\"", ri.chapter, file.getPath()));
+
+			content = new SRBOnlineBookContent(op);
 			loadChapter(chapter);
-		}
-
-		@Override
-		public int getChapterCount()
-		{
-			return chapters.size();
-		}
-
-		@Override
-		public String getChapterTitle(int index)
-		{
-			return chapters.get(index).title;
-		}
-
-		@Override
-		public ArrayList<ChapterInfo> getChapterInfoList()
-		{
-			return chapters;
 		}
 
 		@Override
@@ -90,63 +117,49 @@ public class SRBOnline implements BookLoader.Loader
 		{
 			try {
 				chapter = index + op.indexBase;
-				OnlineChapterInfo oci = (OnlineChapterInfo) chapters.get(index);
+				OnlineTOC oci = (OnlineTOC) TOC.get(index);
 				if (oci.lines == null) {
 					oci.lines = cf.getLines(chapter);
 					if (op.hasNotes)
 						oci.notes = cf.getNotes(chapter);
 				}
-				setContent(oci.lines);
+				content.setOCI(oci);
+				content.setContent(oci.lines);
 			} catch (Exception e) {
 				ArrayList<String> list = new ArrayList<String>();
 				list.add(e.getMessage());
-				setContent(list);
+				content.setOCI(null);
+				content.setContent(list);
 			}
 			return true;
 		}
 
 		@Override
-		public boolean hasNotes()
+		public BookContent getContent(int index)
 		{
-			return op.hasNotes;
+			return content;
 		}
 
 		@Override
-		public String getNote(int line, int offset)
+		public void close()
 		{
-			OnlineChapterInfo oci = (OnlineChapterInfo) chapters.get(getCurrChapter());
-			if (!op.hasNotes)
-				return null;
-			if (line >= oci.lines.size())
-				return null;
-			String l = oci.lines.get(line);
-			if (offset >= l.length())
-				return null;
-			if (l.charAt(offset) != op.mark)
-				return null;
-			return oci.getNote(line + op.indexBase, offset);
+			cf = null;
+			op = null;
+			TOC.clear();
 		}
 	}
 
 	public boolean isBelong(VFile f)
 	{
 		return (CloudFile.class.isInstance(f)) &&
-			(f.getPath().toLowerCase().endsWith("." + SimpleReaderBook.suffix));
+			(f.getPath().toLowerCase().endsWith("." + SimpleReaderBookLoader.suffix));
 	}
 
-	public BookContent load(VFile file, Config.ReadingInfo ri) throws Exception
+	public Book load(VFile file, Config.ReadingInfo ri) throws Exception
 	{
 		if (!isBelong(file))
 			throw new IOException("Not supported");
 
-		return new SRBOnlineContent(file, ri);
-	}
-
-	public void unload(BookContent aBook)
-	{
-		SRBOnlineContent b = (SRBOnlineContent) aBook;
-		b.cf = null;
-		b.op = null;
-		b.chapters.clear();
+		return new SRBOnlineBook(file, ri);
 	}
 }
