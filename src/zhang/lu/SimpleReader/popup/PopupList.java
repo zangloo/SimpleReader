@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Popup;
+package zhang.lu.SimpleReader.popup;
 
 import android.content.Context;
 import android.graphics.Typeface;

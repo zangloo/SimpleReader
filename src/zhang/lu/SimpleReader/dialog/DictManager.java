@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Dialog;
+package zhang.lu.SimpleReader.dialog;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -10,7 +10,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import zhang.lu.SimpleReader.R;
 import zhang.lu.SimpleReader.Util;
-import zhang.lu.SimpleReader.View.SimpleTextView;
+import zhang.lu.SimpleReader.view.SimpleTextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;

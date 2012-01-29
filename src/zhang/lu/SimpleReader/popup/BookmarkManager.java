@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Popup;
+package zhang.lu.SimpleReader.popup;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -15,7 +15,7 @@ import android.widget.TextView;
 import zhang.lu.SimpleReader.book.Book;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.R;
-import zhang.lu.SimpleReader.View.SimpleTextView;
+import zhang.lu.SimpleReader.view.SimpleTextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;

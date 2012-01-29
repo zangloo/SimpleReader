@@ -1,7 +1,7 @@
 package zhang.lu.SimpleReader.book.txt;
 
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.book.*;
 
 import java.io.BufferedReader;

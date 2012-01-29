@@ -3,7 +3,7 @@ package zhang.lu.SimpleReader.book.SimpleReader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.book.Content;
 import zhang.lu.SimpleReader.book.TOCRecord;
 import zhang.lu.SimpleReader.book.TextContent;

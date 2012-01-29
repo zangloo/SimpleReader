@@ -7,9 +7,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import org.jetbrains.annotations.Nullable;
-import zhang.lu.SimpleReader.Popup.BookmarkManager;
-import zhang.lu.SimpleReader.VFS.VFile;
-import zhang.lu.SimpleReader.View.SimpleTextView;
+import zhang.lu.SimpleReader.popup.BookmarkManager;
+import zhang.lu.SimpleReader.vfs.VFile;
+import zhang.lu.SimpleReader.view.SimpleTextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;

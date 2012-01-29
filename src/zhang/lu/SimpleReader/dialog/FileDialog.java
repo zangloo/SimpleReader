@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Dialog;
+package zhang.lu.SimpleReader.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -11,7 +11,7 @@ import android.widget.*;
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.R;
-import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;

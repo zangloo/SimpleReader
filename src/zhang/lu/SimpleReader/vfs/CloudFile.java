@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.VFS;
+package zhang.lu.SimpleReader.vfs;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

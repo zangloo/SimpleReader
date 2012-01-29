@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.VFS;
+package zhang.lu.SimpleReader.vfs;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;

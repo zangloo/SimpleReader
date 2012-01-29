@@ -2,7 +2,7 @@ package zhang.lu.SimpleReader.book.html;
 
 import org.jsoup.Jsoup;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.book.*;
 
 import java.io.InputStream;

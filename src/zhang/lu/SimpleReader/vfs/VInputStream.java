@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.VFS;
+package zhang.lu.SimpleReader.vfs;
 
 import java.io.IOException;
 import java.io.InputStream;

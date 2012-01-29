@@ -8,8 +8,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLReaderAdapter;
 import org.xml.sax.helpers.XMLReaderFactory;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.VFS.RealFile;
-import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.vfs.RealFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.book.BookLoader;
 import zhang.lu.SimpleReader.book.TOCRecord;
 

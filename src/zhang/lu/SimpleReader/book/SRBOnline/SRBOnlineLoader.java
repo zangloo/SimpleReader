@@ -2,8 +2,8 @@ package zhang.lu.SimpleReader.book.SRBOnline;
 
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.VFS.CloudFile;
-import zhang.lu.SimpleReader.VFS.VFile;
+import zhang.lu.SimpleReader.vfs.CloudFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.book.*;
 import zhang.lu.SimpleReader.book.SimpleReader.SimpleReaderLoader;
 

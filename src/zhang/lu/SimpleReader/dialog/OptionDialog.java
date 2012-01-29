@@ -1,4 +1,4 @@
-package zhang.lu.SimpleReader.Dialog;
+package zhang.lu.SimpleReader.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
