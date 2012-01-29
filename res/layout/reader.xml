@@ -35,10 +35,10 @@
 				android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 		</LinearLayout>
 	</LinearLayout>
-	<zhang.lu.SimpleReader.View.HTextView android:id="@+id/hbook_text" android:layout_width="fill_parent"
+	<zhang.lu.SimpleReader.view.HTextView android:id="@+id/hbook_text" android:layout_width="fill_parent"
 					      android:layout_height="wrap_content"
 					      android:layout_weight="1"/>
-	<zhang.lu.SimpleReader.View.XTextView android:id="@+id/xbook_text" android:layout_width="fill_parent"
+	<zhang.lu.SimpleReader.view.XTextView android:id="@+id/xbook_text" android:layout_width="fill_parent"
 					      android:layout_height="wrap_content"
 					      android:layout_weight="1" android:visibility="gone"/>
 </LinearLayout>
