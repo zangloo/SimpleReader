@@ -47,12 +47,6 @@ public abstract class Book
 			loadChapter(index);
 	}
 
-	// book's chapters has level
-	public boolean hasLevel()
-	{
-		return false;
-	}
-
 	// close book
 	public abstract void close();
 }

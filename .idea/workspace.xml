@@ -8,16 +8,15 @@
         <option name="nightMode" value="notnight" />
         <option name="targetHashString" value="android-8" />
         <option name="theme" value="Theme" />
+        <option name="visible" value="false" />
       </GlobalState>
     </option>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8da49b8d-901f-4985-8fc2-f52a3cdd17c3" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/SimpleReader.iml" afterPath="$PROJECT_DIR$/SimpleReader.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/layout/hnotedlg.xml" afterPath="$PROJECT_DIR$/res/layout/hnotedlg.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/layout/reader.xml" afterPath="$PROJECT_DIR$/res/layout/reader.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/Book.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/Book.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/TOCList.java" afterPath="$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/TOCList.java" />
     </list>
     <ignored path="SimpleReader.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -141,8 +140,8 @@
       <property name="field_breakpoints_groupByClasses" value="true" />
       <property name="method_breakpoints_groupByClasses" value="true" />
       <property name="exception_breakpoints_viewId" value="TABLE" />
-      <property name="field_breakpoints_viewId" value="TABLE" />
       <property name="exception_breakpoints_groupByClasses" value="true" />
+      <property name="field_breakpoints_viewId" value="TABLE" />
       <property name="method_breakpoints_groupByMethods" value="false" />
     </ui_properties>
   </component>
@@ -154,7 +153,19 @@
     <favorites_list name="SimpleReader" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="TOCList.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/TOCList.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="42" column="77" selection-start="1205" selection-end="1205" vertical-scroll-proportion="0.1570946">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -173,11 +184,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/TOCList.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/BookmarkManager.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Config.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/dialog/OptionDialog.java" />
-        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/dialog/FileDialog.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/dialog/DictManager.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java" />
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/haodoo/HaodooLoader.java" />
@@ -189,6 +195,11 @@
         <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/epub/EPubLoader.java" />
         <option value="$PROJECT_DIR$/res/layout/reader.xml" />
         <option value="$PROJECT_DIR$/res/layout/hnotedlg.xml" />
+        <option value="$PROJECT_DIR$/res/layout/popuplist.xml" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/Book.java" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/PopupList.java" />
+        <option value="$PROJECT_DIR$/res/layout/toclist.xml" />
+        <option value="$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/TOCList.java" />
       </list>
     </option>
   </component>
@@ -269,26 +280,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="SimpleReader" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="SimpleReader" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="SimpleReader" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="Scope" />
       <pane id="PackagesPane">
         <subPane>
@@ -318,20 +309,112 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="popup" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SimpleReader" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="layout" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="Favorites" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="60" />
-    <property name="OverrideImplement.combined" value="true" />
-    <property name="project.structure.proportion" value="0.15" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="116" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="OverrideImplement.combined" value="true" />
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
-    <property name="MemberChooser.sorted" value="false" />
-    <property name="recentsLimit" value="5" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="75" />
+    <property name="recentsLimit" value="5" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="90" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="724" />
@@ -347,12 +430,12 @@
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="options.splitter.details.proportions" value="0.2" />
-    <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder0" value="0" />
+    <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder1" value="1" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder2" value="2" />
-    <property name="options.lastSelected" value="preferences.lookFeel" />
+    <property name="options.lastSelected" value="project.propVCSSupport.Mappings" />
     <property name="project.structure.side.proportion" value="0.20000002" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="options.searchVisible" value="true" />
@@ -364,10 +447,10 @@
       <recent name="horizontalpager" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\android\works\SimpleReader\res\layout" />
       <recent name="D:\android\works\SimpleReader\libs" />
       <recent name="D:\android\works\SimpleReader\res\values" />
       <recent name="D:\android\works\SimpleReader\src" />
-      <recent name="D:\android\works\SimpleReader\res\layout" />
       <recent name="D:\android\works\SimpleReader\src\zhang\lu\SimpleReader\Book" />
     </key>
     <key name="MoveMembersDialog.RECENTS_KEY">
@@ -412,24 +495,6 @@
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Make" enabled="true" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-      </method>
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -455,6 +520,24 @@
       <envs />
       <properties />
       <listeners />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
@@ -630,27 +713,27 @@
     <frame x="-4" y="-4" width="1004" height="776" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34398782" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34389856" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.6803653" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4216134" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="12" y="284" width="972" height="200" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296355" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32488114" sideWeight="0.0" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31537244" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32724506" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.61187214" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887974" sideWeight="0.5631659" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39917696" sideWeight="0.48784193" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.31449127" sideWeight="0.67511886" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.61187214" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3987667" sideWeight="0.48784193" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3134635" sideWeight="0.67511886" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.318542" sideWeight="0.0" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Android Logcat" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.318542" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32911393" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.6803653" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32267883" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Kahlua" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31537244" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Kahlua" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32921812" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="SVN Repositories" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3292683" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="left" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887974" sideWeight="0.5631659" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -737,84 +820,83 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/txt/TxtLoader.java">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/view/SimpleTextView.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="32" selection-start="110" selection-end="110" vertical-scroll-proportion="0.08108108" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/Book.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="22" selection-start="175" selection-end="175" vertical-scroll-proportion="0.27027026" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/epub/EPubLoader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="181" column="33" selection-start="4718" selection-end="4718" vertical-scroll-proportion="0.44958678" />
+        <state line="16" column="22" selection-start="405" selection-end="405" vertical-scroll-proportion="0.27027026" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/view/XTextView.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="29" selection-start="380" selection-end="380" vertical-scroll-proportion="0.3553719" />
+        <state line="15" column="13" selection-start="296" selection-end="296" vertical-scroll-proportion="0.27027026" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/view/HNoteView.java">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Util.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="13" selection-start="376" selection-end="376" vertical-scroll-proportion="0.28021017" />
+        <state line="15" column="22" selection-start="343" selection-end="343" vertical-scroll-proportion="0.2644628" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/notedlg.xml">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Reader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+        <state line="32" column="13" selection-start="1071" selection-end="1071" vertical-scroll-proportion="0.10810811" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/optdlg.xml">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/Config.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+        <state line="25" column="13" selection-start="659" selection-end="659" vertical-scroll-proportion="0.2972973" />
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../sdk/platforms/android-8/android.jar!/android/widget/PopupWindow.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="13" selection-start="152" selection-end="152" vertical-scroll-proportion="0.10810811" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/TOCRecord.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="13" selection-start="138" selection-end="138" vertical-scroll-proportion="0.21157025" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/res/layout/popuplist.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+        <state line="0" column="0" selection-start="0" selection-end="953" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/reader.xml">
+    <entry file="jar://$PROJECT_DIR$/../../sdk/platforms/android-8/android.jar!/android/widget/ExpandableListView.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="34" selection-start="1375" selection-end="1376" vertical-scroll-proportion="0.20363636" />
+        <state line="5" column="13" selection-start="152" selection-end="152" vertical-scroll-proportion="0.10810811" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/statuspanel.xml">
+    <entry file="jar://$PROJECT_DIR$/../../sdk/platforms/android-8/android.jar!/android/widget/ListAdapter.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+        <state line="5" column="17" selection-start="156" selection-end="156" vertical-scroll-proportion="0.105785124" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/epub/EPubBook.java">
+    <entry file="jar://$PROJECT_DIR$/../../sdk/platforms/android-8/android.jar!/android/widget/ExpandableListAdapter.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="51" selection-start="1166" selection-end="1166" vertical-scroll-proportion="0.02909091" />
+        <state line="5" column="17" selection-start="156" selection-end="156" vertical-scroll-proportion="0.105785124" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/SimpleReader/SimpleReaderBook.java">
+    <entry file="file://$PROJECT_DIR$/res/layout/optdlg.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="255" column="46" selection-start="7120" selection-end="7120" vertical-scroll-proportion="0.028021015" />
+        <state line="21" column="22" selection-start="1498" selection-end="1536" vertical-scroll-proportion="0.5553719" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/filedlg.xml">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/PopupList.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+        <state line="83" column="0" selection-start="1966" selection-end="2141" vertical-scroll-proportion="0.6561983" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/filelist.xml">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/book/Book.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+        <state line="49" column="0" selection-start="1051" selection-end="1051" vertical-scroll-proportion="0.76198345" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/res/layout/hnotedlg.xml">
+    <entry file="file://$PROJECT_DIR$/src/zhang/lu/SimpleReader/popup/TOCList.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="31" selection-start="348" selection-end="348" vertical-scroll-proportion="0.16216215" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/values/strings.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
+        <state line="42" column="77" selection-start="1205" selection-end="1205" vertical-scroll-proportion="0.1570946">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
       </provider>
     </entry>
   </component>

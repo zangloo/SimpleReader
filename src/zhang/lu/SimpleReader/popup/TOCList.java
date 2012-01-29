@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import zhang.lu.SimpleReader.book.TOCRecord;
 import zhang.lu.SimpleReader.R;
+import zhang.lu.SimpleReader.book.TOCRecord;
 
 import java.util.ArrayList;
 
@@ -40,7 +40,7 @@ public class TOCList extends PopupList
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTypeface(tf);
 				if (position == chapter)
-					tv.setTextColor(Color.RED);
+					tv.setTextColor(Color.rgb(0, 250, 250));
 				else
 					tv.setTextColor(Color.WHITE);
 				return v;
@@ -54,7 +54,11 @@ public class TOCList extends PopupList
 	{
 		aa.clear();
 		for (TOCRecord c : cs)
-			aa.add(c.title());
+			if (c.level() == 0)
+				aa.add("●" + c.title());
+			else
+				aa.add(c.title());
+
 		aa.notifyDataSetChanged();
 
 		tf = typeface;
