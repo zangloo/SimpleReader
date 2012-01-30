@@ -140,19 +140,19 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public int getChapterCount()
+	public int chapterCount()
 	{
 		return chapterCount;
 	}
 
 	@Override
-	public String getChapterTitle()
+	public String chapterTitle()
 	{
-		return getChapterTitle(getCurrChapter());
+		return chapterTitle(currChapter());
 	}
 
 	@Override
-	public String getChapterTitle(int index)
+	public String chapterTitle(int index)
 	{
 		Cursor c = db.rawQuery(chapterSQL, new String[] {String.valueOf(index + indexBase)});
 		if (!c.moveToFirst()) {
@@ -168,7 +168,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	@Override
 	public ArrayList<TOCRecord> getTOC()
 	{
-		ArrayList<TOCRecord> l = new ArrayList<TOCRecord>(getChapterCount());
+		ArrayList<TOCRecord> l = new ArrayList<TOCRecord>(chapterCount());
 		Cursor c = db.rawQuery(chapterListSQL, null);
 		while (c.moveToNext())
 			l.add(new TOCRecord(c.getString(0)));
@@ -177,7 +177,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public int getCurrChapter()
+	public int currChapter()
 	{
 		return chapter - indexBase;
 	}
@@ -191,7 +191,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public Content getContent(int index)
+	public Content content(int index)
 	{
 		return this;
 	}

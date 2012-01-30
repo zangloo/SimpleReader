@@ -14,13 +14,13 @@ public abstract class ChaptersBook extends Book
 	protected int chapter;
 
 	// return chapter count
-	public int getChapterCount()
+	public int chapterCount()
 	{
 		return TOC.size();
 	}
 
 	// return chapter title at index
-	public String getChapterTitle(int index)
+	public String chapterTitle(int index)
 	{
 		return TOC.get(index).title;
 	}
@@ -32,14 +32,14 @@ public abstract class ChaptersBook extends Book
 	}
 
 	// get current chapter index
-	public int getCurrChapter()
+	public int currChapter()
 	{
 		return chapter;
 	}
 
 	public boolean gotoChapter(int index)
 	{
-		return !((index < 0) || (index >= getChapterCount()) || (index == getCurrChapter())) &&
+		return !((index < 0) || (index >= chapterCount()) || (index == currChapter())) &&
 			loadChapter(index);
 	}
 

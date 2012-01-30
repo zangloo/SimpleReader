@@ -130,9 +130,9 @@ public class BookmarkManager extends PopupList
 			for (BookmarkManager.Bookmark b : bml) {
 				HashMap<String, Object> map = new HashMap<String, Object>();
 				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
-				if (book.getChapterCount() > 1)
+				if (book.chapterCount() > 1)
 					map.put(BOOKMARK_LIST_TITLE_POS,
-						book.getChapterTitle(b.chapter) + "(" + b.line + " : " + b.offset +
+						book.chapterTitle(b.chapter) + "(" + b.line + " : " + b.offset +
 							")");
 				else
 					map.put(BOOKMARK_LIST_TITLE_POS, "(" + b.line + " : " + b.offset + ")");

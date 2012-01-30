@@ -407,7 +407,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 	}
 
 	@Override
-	public Content getContent(int index)
+	public Content content(int index)
 	{
 		return content;
 	}

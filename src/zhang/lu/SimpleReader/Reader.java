@@ -13,15 +13,15 @@ import android.os.Message;
 import android.view.*;
 import android.widget.*;
 import zhang.lu.SimpleReader.book.Book;
-import zhang.lu.SimpleReader.book.Content;
 import zhang.lu.SimpleReader.book.BookLoader;
+import zhang.lu.SimpleReader.book.Content;
 import zhang.lu.SimpleReader.dialog.DictManager;
 import zhang.lu.SimpleReader.dialog.FileDialog;
 import zhang.lu.SimpleReader.dialog.OptionDialog;
 import zhang.lu.SimpleReader.popup.BookmarkManager;
-import zhang.lu.SimpleReader.popup.TOCList;
 import zhang.lu.SimpleReader.popup.PopupMenu;
 import zhang.lu.SimpleReader.popup.StatusPanel;
+import zhang.lu.SimpleReader.popup.TOCList;
 import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.view.SimpleTextView;
 
@@ -116,7 +116,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		super.onCreate(savedInstanceState);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				     WindowManager.LayoutParams.FLAG_FULLSCREEN);
+			WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.reader);
 
@@ -191,18 +191,18 @@ public class Reader extends Activity implements View.OnTouchListener
 		Config.ReadingInfo rri = new Config.ReadingInfo();
 		rri.line = bv.getPosIndex();
 		rri.offset = bv.getPosOffset();
-		rri.chapter = book.getCurrChapter();
+		rri.chapter = book.currChapter();
+		rri.ctitle = book.chapterTitle();
 		rri.name = ri.name;
-		rri.ctitle = book.getChapterTitle();
 		rri.percent = bv.getPos();
 		ris.push(rri);
 	}
 
 	private void updateBookView(Config.ReadingInfo rri)
 	{
-		if (rri.chapter != book.getCurrChapter()) {
+		if (rri.chapter != book.currChapter()) {
 			book.gotoChapter(rri.chapter);
-			bv.setContent(book.getContent());
+			bv.setContent(book.content());
 		}
 		bv.setPos(rri.line, rri.offset);
 	}
@@ -250,8 +250,10 @@ public class Reader extends Activity implements View.OnTouchListener
 		super.onDestroy();
 		bv.setContent(null);
 		bv.setPos(0, 0);
-		book.close();
-		book = null;
+		if (book != null) {
+			book.close();
+			book = null;
+		}
 		config.close();
 		dictManager.unloadDict();
 	}
@@ -304,7 +306,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		switch (id) {
 			case FILE_DIALOG_ID:
 				((FileDialog) dialog).update(config.getCurrFile(), config.getRecentFilesList(),
-							     config.isOnlineEnabled());
+					config.isOnlineEnabled());
 				break;
 			case OPTION_DIALOG_ID:
 				((OptionDialog) dialog).update(config.dup());
@@ -334,7 +336,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			// not work, so do it manually. if you know why, tell me please
 			// npw.showAtLocation(bv, Gravity.TOP | Gravity.RIGHT, (int) e.getRawX(), (int) e.getRawY());
 			npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX() - w + 2/* scrollView board*/,
-					   (int) e.getRawY());
+				(int) e.getRawY());
 		} else {
 			nt.measure((screenWidth >> 1) + View.MeasureSpec.AT_MOST, View.MeasureSpec.UNSPECIFIED);
 			int w = Math.min(nt.getMeasuredWidth(), screenWidth >> 1) + POPUP_WINDOW_BOARD_SIZE;
@@ -362,6 +364,8 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void showSearchPanel()
 	{
+		if (book == null)
+			return;
 		pushReadingInfo();
 		sp.setVisibility(View.VISIBLE);
 		sp.setEnabled(true);
@@ -376,6 +380,8 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void showSeekPanel()
 	{
+		if (book == null)
+			return;
 		pushReadingInfo();
 		skp.setVisibility(View.VISIBLE);
 		skp.setEnabled(true);
@@ -492,9 +498,9 @@ public class Reader extends Activity implements View.OnTouchListener
 			menu.findItem(menuViewLock).setTitle(R.string.menu_unlock_view);
 		else
 			menu.findItem(menuViewLock).setTitle(R.string.menu_lock_view);
-		menu.findItem(menuChapterMgr).setVisible(book.getChapterCount() > 1);
+		menu.findItem(menuChapterMgr).setVisible((book != null) && (book.chapterCount() > 1));
 		menu.findItem(menuColorBright)
-		    .setTitle(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night);
+			.setTitle(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night);
 		return true;
 	}
 
@@ -521,8 +527,8 @@ public class Reader extends Activity implements View.OnTouchListener
 			return;
 		}
 
-		if (book.getChapterCount() > 1)
-			if (book.gotoChapter(book.getCurrChapter() + 1)) {
+		if (book.chapterCount() > 1)
+			if (book.gotoChapter(book.currChapter() + 1)) {
 				switchChapterUpdate(0, 0);
 				loading = false;
 				return;
@@ -574,8 +580,8 @@ public class Reader extends Activity implements View.OnTouchListener
 			return;
 		}
 
-		if (book.getChapterCount() > 1)
-			if (book.gotoChapter(book.getCurrChapter() - 1)) {
+		if (book.chapterCount() > 1)
+			if (book.gotoChapter(book.currChapter() - 1)) {
 				switchChapterUpdate(-1, -1);
 				loading = false;
 				return;
@@ -614,8 +620,8 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		if (ri == null)
 			return;
-		ri.chapter = book.getCurrChapter();
-		ri.ctitle = book.getChapterTitle();
+		ri.chapter = book.currChapter();
+		ri.ctitle = book.chapterTitle();
 		ri.line = bv.getPosIndex();
 		ri.offset = bv.getPosOffset();
 		ri.percent = bv.getPos();
@@ -636,9 +642,9 @@ public class Reader extends Activity implements View.OnTouchListener
 				Util.errorMsg(Reader.this, getString(R.string.error_open_file) + errmsg);
 			} else {
 				ris.clear();
-				if (book.getChapterCount() > 1) {
+				if (book.chapterCount() > 1) {
 					book.gotoChapter(ri.chapter);
-					bv.setContent(book.getContent());
+					bv.setContent(book.content());
 				}
 				bv.setPos(ri.line, ri.offset);
 				hidePanels();
@@ -670,7 +676,7 @@ public class Reader extends Activity implements View.OnTouchListener
 						book.close();
 					book = nb;
 					config.setReadingFile(fp);
-					bv.setContent(book.getContent());
+					bv.setContent(book.content());
 					ri = nri;
 					msg.arg1 = 1;
 				} catch (Exception e) {
@@ -710,7 +716,7 @@ public class Reader extends Activity implements View.OnTouchListener
 				if (sr != null) {
 					bv.setPos(sr.line, sr.offset);
 					bv.setHighlightInfo(new SimpleTextView.HighlightInfo(sr.line, sr.offset,
-											     sr.offset + s.length()));
+						sr.offset + s.length()));
 					bv.invalidate();
 				}
 			}
@@ -851,7 +857,7 @@ public class Reader extends Activity implements View.OnTouchListener
 				pushReadingInfo();
 
 				BookmarkManager.Bookmark bm = bookmarkManager.getBookmark(position);
-				if (book.getCurrChapter() != bm.chapter) {
+				if (book.currChapter() != bm.chapter) {
 					book.gotoChapter(bm.chapter);
 					switchChapterUpdate(bm.line, bm.offset);
 				} else {
@@ -916,12 +922,12 @@ public class Reader extends Activity implements View.OnTouchListener
 	// line == -1, mean set to end of content
 	private void switchChapterUpdate(int line, int offset)
 	{
-		bv.setContent(book.getContent());
+		bv.setContent(book.content());
 		if (line >= 0)
 			bv.setPos(line, offset);
 		else
 			bv.gotoEnd();
-		ri.chapter = book.getCurrChapter();
+		ri.chapter = book.currChapter();
 
 		updateSeekBarPanel();
 		bv.invalidate();
@@ -935,16 +941,16 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void showChapterList(int x)
 	{
-		if ((config.getCurrFile() != null) && (book.getChapterCount() > 1))
-			TOCList.show(book.getTOC(), book.getCurrChapter(), tf, bv.getTop(), x,
-					    screenHeight - bv.getTop());
+		if ((config.getCurrFile() != null) && (book.chapterCount() > 1))
+			TOCList.show(book.getTOC(), book.currChapter(), tf, bv.getTop(), x,
+				screenHeight - bv.getTop());
 	}
 
 	private void showStatusPanel()
 	{
 		if ((ri != null) && (book != null)) {
-			ri.chapter = book.getCurrChapter();
-			ri.ctitle = book.getChapterTitle();
+			ri.chapter = book.currChapter();
+			ri.ctitle = book.chapterTitle();
 			ri.percent = bv.getPos();
 			ri.line = bv.getPosIndex();
 			ri.offset = bv.getPosOffset();
@@ -1058,7 +1064,7 @@ public class Reader extends Activity implements View.OnTouchListener
 						}
 						if (bookmarkManager.isShowing())
 							bookmarkManager.update((int) (screenWidth - e2.getRawX()),
-									       screenHeight);
+								screenHeight);
 						else
 							showBookmarkMgr((int) (screenWidth - e2.getRawX()));
 

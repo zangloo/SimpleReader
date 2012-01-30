@@ -88,7 +88,7 @@ class EPubBook extends ChaptersBook
 	}
 
 	@Override
-	public Content getContent(int index) { return content; }
+	public Content content(int index) { return content; }
 
 	@Override
 	public void close() {}

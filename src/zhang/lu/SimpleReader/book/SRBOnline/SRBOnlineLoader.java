@@ -109,7 +109,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 		}
 
 		@Override
-		public int getCurrChapter()
+		public int currChapter()
 		{
 			return chapter - op.indexBase;
 		}
@@ -137,7 +137,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 		}
 
 		@Override
-		public Content getContent(int index)
+		public Content content(int index)
 		{
 			return content;
 		}

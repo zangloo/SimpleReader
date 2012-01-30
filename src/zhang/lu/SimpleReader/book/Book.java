@@ -11,39 +11,39 @@ import java.util.ArrayList;
 public abstract class Book
 {
 	// return chapter count
-	public abstract int getChapterCount();
+	public abstract int chapterCount();
 
 	// return current chapter title at index
-	public String getChapterTitle()
+	public String chapterTitle()
 	{
-		return getChapterTitle(getCurrChapter());
+		return chapterTitle(currChapter());
 	}
 
 	// return chapter title at index
-	public abstract String getChapterTitle(int index);
+	public abstract String chapterTitle(int index);
 
 	// return all chapter title
 	public abstract ArrayList<TOCRecord> getTOC();
 
 	// get current chapter index
-	public abstract int getCurrChapter();
+	public abstract int currChapter();
 
 	// load chapter info
 	protected abstract boolean loadChapter(int index);
 
 	// get current chapter content
-	public Content getContent()
+	public Content content()
 	{
-		return getContent(getCurrChapter());
+		return content(currChapter());
 	}
 
 	// get chapter content
-	public abstract Content getContent(int index);
+	public abstract Content content(int index);
 
 	// switch to chapter index
 	public boolean gotoChapter(int index)
 	{
-		return !((index < 0) || (index >= getChapterCount()) || (index == getCurrChapter())) &&
+		return !((index < 0) || (index >= chapterCount()) || (index == currChapter())) &&
 			loadChapter(index);
 	}
 

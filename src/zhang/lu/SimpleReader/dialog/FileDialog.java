@@ -316,6 +316,8 @@ public class FileDialog extends Dialog
 
 		int pos = -1;
 
+		if (ps == null)
+			return 0;
 		for (int i = 0; i < ps.size(); i++) {
 			VFile.Property p = ps.get(i);
 			map = new HashMap<String, Object>();

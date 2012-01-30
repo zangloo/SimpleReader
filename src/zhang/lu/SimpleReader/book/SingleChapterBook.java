@@ -18,13 +18,13 @@ public class SingleChapterBook extends Book
 	}
 
 	@Override
-	public int getChapterCount()
+	public int chapterCount()
 	{
 		return 1;
 	}
 
 	@Override
-	public String getChapterTitle(int index)
+	public String chapterTitle(int index)
 	{
 		return null;
 	}
@@ -36,7 +36,7 @@ public class SingleChapterBook extends Book
 	}
 
 	@Override
-	public int getCurrChapter()
+	public int currChapter()
 	{
 		return 0;
 	}
@@ -48,7 +48,7 @@ public class SingleChapterBook extends Book
 	}
 
 	@Override
-	public Content getContent(int index)
+	public Content content(int index)
 	{
 		return content;
 	}
