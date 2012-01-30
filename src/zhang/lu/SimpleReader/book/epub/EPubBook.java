@@ -20,33 +20,28 @@ import java.util.HashMap;
  */
 class EPubBook extends ChaptersBook
 {
-	private Content content;
-	private PlainTextContent ptc = new PlainTextContent();
-	private EPubImageContent ic;
+	private EPubImageContent content = new EPubImageContent();
 	private final ZipFile zf;
 	private final String ops_path;
 
-	private class EPubImageContent extends ImageContent
+	private class EPubImageContent extends PlainTextContent
 	{
-		ArrayList<String> imgref = new ArrayList<String>();
 		HashMap<Integer, Bitmap> images = new HashMap<Integer, Bitmap>();
+		int imageCount = 0;
 
 		@Override
-		public int imageCount()
-		{
-			return imgref.size();
-		}
+		public int imageCount() {return imageCount;}
 
 		@Override
 		public Bitmap image(int index)
 		{
 			if (images.containsKey(index))
 				return images.get(index);
-			Bitmap bm = BookUtil.loadPicFromZip(zf, ops_path + imgref.get(index));
+			Bitmap bm = BookUtil.loadPicFromZip(zf, ops_path + line(index));
 			images.put(index, bm);
 
 			if (bm == null)
-				Log.e("EPubImageContent.image", "Can not load image:" + imgref.get(index));
+				Log.e("EPubImageContent.image", "Can not load image:" + line(index));
 			return bm;
 		}
 	}
@@ -56,7 +51,6 @@ class EPubBook extends ChaptersBook
 		ops_path = ops;
 		zf = file;
 		TOC = nps;
-		ic = new EPubImageContent();
 		loadChapter(ri.chapter);
 	}
 
@@ -69,6 +63,7 @@ class EPubBook extends ChaptersBook
 
 			final ZipArchiveEntry zae = zf.getEntry(ops_path + np.href);
 			ArrayList<String> lines = new ArrayList<String>();
+			ArrayList<String> imgref = new ArrayList<String>();
 
 			InputStream is = zf.getInputStream(zae);
 			String cs;
@@ -76,21 +71,18 @@ class EPubBook extends ChaptersBook
 			is.close();
 
 			is = zf.getInputStream(zae);
-			ic.imgref.clear();
-			BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, ic.imgref);
+			BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, imgref);
 
-			if (ic.imgref.size() == 0) {
-				ptc.setContent(lines);
-				content = ptc;
-			} else {
-				ic.images.clear();
-				content = ic;
+			content.imageCount = imgref.size();
+			if (content.imageCount > 0) {
+				lines.addAll(0, imgref);
+				content.images.clear();
 			}
+			content.setContent(lines);
 		} catch (Exception e) {
 			ArrayList<String> list = new ArrayList<String>();
 			list.add(e.getMessage());
-			ptc.setContent(list);
-			content = ptc;
+			content.setContent(list);
 		}
 		return true;
 	}

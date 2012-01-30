@@ -89,7 +89,7 @@ public class HTextView extends SimpleTextView
 				nextpi++;
 				line = null;
 			}
-		} while ((nextpi < content.getLineCount()) & (lc < ml));
+		} while ((nextpi < content.lineCount()) & (lc < ml));
 		for (int i = lc; i < ml; i++)
 			fingerPosIndex[i] = -1;
 	}

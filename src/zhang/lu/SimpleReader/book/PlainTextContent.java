@@ -1,5 +1,6 @@
 package zhang.lu.SimpleReader.book;
 
+import android.graphics.Bitmap;
 import zhang.lu.SimpleReader.Reader;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.List;
  * Date: 11-9-6
  * Time: 下午8:32
  */
-public class PlainTextContent extends TextContent
+public class PlainTextContent implements Content
 {
 	private List<String> lines;
 	private int booksize = 0;
@@ -51,7 +52,7 @@ public class PlainTextContent extends TextContent
 	}
 
 	@Override
-	public int getLineCount()
+	public int lineCount()
 	{
 		return lines.size();
 	}
@@ -74,4 +75,56 @@ public class PlainTextContent extends TextContent
 
 		return s;
 	}
+
+	@Override
+	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
+	{
+		for (int i = cpi.line; i < lineCount(); i++) {
+			int pos = line(i).indexOf(txt, cpi.offset);
+			if (pos >= 0) {
+				cpi.line = i;
+				cpi.offset = pos;
+				return cpi;
+			}
+			cpi.offset = 0;
+		}
+		return null;
+	}
+
+	@Override
+	public ContentPosInfo getPercentPos(int percent)
+	{
+		int p = size() * percent / 100;
+		int c = 0, i;
+
+		for (i = 0; i < lineCount(); i++) {
+			c += line(i).length();
+			if (c > p)
+				break;
+		}
+		ContentPosInfo cpi = new ContentPosInfo();
+		if (c > p) {
+			cpi.line = i;
+			cpi.offset = line(i).length() - (c - p);
+		} else {
+			cpi.line = i - 1;
+			cpi.offset = 0;
+		}
+		return cpi;
+	}
+
+	@Override
+	public int imageCount() { return 0; }
+
+	@Override
+	public Bitmap image(int index) { return null; }
+
+	@Override
+	public boolean hasNotes() { return false; }
+
+	@Override
+	public String getNote(int line, int offset) { return null; }
+
+	@Override
+	public void clear() {}
 }

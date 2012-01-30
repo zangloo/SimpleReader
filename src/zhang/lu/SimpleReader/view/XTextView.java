@@ -153,7 +153,7 @@ public class XTextView extends SimpleTextView
 				line = null;
 			} else
 				nextpo = p;
-		} while ((nextpi < content.getLineCount()) & (lc < ml));
+		} while ((nextpi < content.lineCount()) & (lc < ml));
 	}
 
 	@Override

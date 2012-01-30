@@ -91,11 +91,11 @@ public abstract class SimpleTextView extends View
 		}
 
 		canvas.drawColor(bcolor);
-		if (content.type() == Content.Type.image) {
+		if (pi < content.imageCount()) {
 			drawImage(canvas);
 			return;
 		}
-		if (pi >= content.getLineCount())
+		if (pi >= content.lineCount())
 			return;
 		drawText(canvas);
 		//testDraw(canvas);
@@ -105,7 +105,7 @@ public abstract class SimpleTextView extends View
 	{
 		if (pi >= content.imageCount())
 			return;
-		Bitmap bm =content.image(pi);
+		Bitmap bm = content.image(pi);
 		if (bm == null)
 			return;
 		canvas.drawBitmap(bm, null, new Rect(0, 0, w, h), null);
@@ -196,41 +196,46 @@ public abstract class SimpleTextView extends View
 
 	public boolean pageDown()
 	{
-		boolean ret;
-		if (content.type() == Content.Type.image) {
-			if (pi >= (content.imageCount() - 1))
-				return false;
+		if (pi < content.imageCount() - 1)
 			pi++;
-			ret = true;
-		} else
-			ret = calcNextPos();
+		else if (pi == content.imageCount() - 1)
+			if (content.lineCount() <= content.imageCount())
+				return false;
+			else
+				pi++;
+		else if (!calcNextPos())
+			return false;
 
-		if (ret)
-			invalidate();
-
-		return ret;
+		invalidate();
+		return true;
 	}
 
 	public boolean pageUp()
 	{
-		boolean ret;
-		if (content.type() == Content.Type.image) {
-			if (pi == 0)
+		if ((pi == 0) && (po == 0))
+			return false;
+
+		if (pi < content.imageCount())
+			if (pi > 0)
+				pi--;
+			else
 				return false;
+		else if ((pi == content.imageCount()) && (po == 0))
 			pi--;
-			ret = true;
-		} else
-			ret = calcPrevPos();
+		else if (!calcPrevPos())
+			return false;
+		else if (pi < content.imageCount()) {
+			pi = content.imageCount();
+			po = 0;
+		}
 
-		if (ret)
-			invalidate();
-
-		return ret;
+		invalidate();
+		return true;
 	}
 
 	protected boolean calcNextPos()
 	{
-		if (nextpi >= content.getLineCount())
+		if (nextpi >= content.lineCount())
 			return false;
 		pi = nextpi;
 		po = nextpo;
@@ -248,21 +253,12 @@ public abstract class SimpleTextView extends View
 
 	public int getPos()
 	{
-		if (content.type() == Content.Type.image)
-			return pi * 100/ content.imageCount();
 		calcPos();
 		return pos;
 	}
 
 	public void setPos(int np)
 	{
-		if (content.type() == Content.Type.image) {
-			int i = content.imageCount() * np / 100;
-			if (i == content.imageCount())
-				i--;
-			setPos(i, 0);
-			return;
-		}
 		if (content.size() == 0)
 			return;
 
@@ -277,20 +273,12 @@ public abstract class SimpleTextView extends View
 
 	public void setPos(int posIndex, int posOffset)
 	{
-		if (content.type() == Content.Type.image){
-			if (posIndex >= content.imageCount())
-				pi = 0;
-			else
-				pi = posIndex;
-			po = 0;
-			return;
-		}
 		if (content.size() == 0)
 			return;
 
 		pos = 0;
 
-		if (posIndex >= content.getLineCount()) {
+		if (posIndex >= content.lineCount()) {
 			pi = po = 0;
 		} else if (posOffset >= content.line(posIndex).length()) {
 			pi = posIndex;
@@ -319,7 +307,7 @@ public abstract class SimpleTextView extends View
 
 	public FingerPosInfo getFingerPosInfo(float x, float y)
 	{
-		if (content.type() == Content.Type.image)
+		if (pi < content.imageCount())
 			return null;
 
 		FingerPosInfo pi = calcFingerPos(x, y);
@@ -334,7 +322,7 @@ public abstract class SimpleTextView extends View
 
 	public String getFingerPosNote(float x, float y)
 	{
-		if (content.type() == Content.Type.image)
+		if (pi < content.imageCount())
 			return null;
 
 		if (!content.hasNotes())
@@ -348,7 +336,7 @@ public abstract class SimpleTextView extends View
 
 	public Content.ContentPosInfo searchText(String t)
 	{
-		if (content.type() == Content.Type.image)
+		if (pi < content.imageCount())
 			return null;
 		if (t == null)
 			return null;
@@ -382,13 +370,17 @@ public abstract class SimpleTextView extends View
 
 	public void gotoEnd()
 	{
-		if (content.type() == Content.Type.image) {
-			pi = po = 0;
-			return;
-		}
-		pi = content.getLineCount();
+		pi = content.lineCount();
 		po = 0;
 		calcPrevPos();
+
+		if (pi >= content.imageCount())
+			return;
+		po = 0;
+		if (content.lineCount() > content.imageCount())
+			pi = content.imageCount();
+		else
+			pi = content.imageCount() - 1;
 	}
 
 	protected abstract int calcNextLineOffset();

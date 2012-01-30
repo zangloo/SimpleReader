@@ -2,11 +2,11 @@ package zhang.lu.SimpleReader.book.SimpleReader;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.book.Content;
 import zhang.lu.SimpleReader.book.TOCRecord;
-import zhang.lu.SimpleReader.book.TextContent;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,9 +18,9 @@ import java.util.HashMap;
  * Date: 11-9-6
  * Time: 下午8:21
  */
-public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
+public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements Content
 {
-	public static final String[] INFO_TABLE_COLS = new String[]{"key", "value"};
+	public static final String[] INFO_TABLE_COLS = new String[] {"key", "value"};
 	public static final String INFO_TABLE_NAME = "info";
 
 	//private static final String configVersion = "version";
@@ -81,7 +81,6 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 	private int booksize;
 	private int lineCount;
 	private int chapter;
-	private SimpleReaderContent content;
 
 	// cache size
 	private static final int LINE_CACHE_SIZE = 90;
@@ -89,134 +88,10 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
 	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
 
-	private class SimpleReaderContent extends TextContent
-	{
-		@Override
-		public String line(int index)
-		{
-			if (lineCache.containsKey(index))
-				return lineCache.get(index);
-			int lineno = index + indexBase;
-			int b = Math.max(lineno - LINE_CACHE_PREFETCH_SIZE, indexBase);
-			int e = Math.min(lineno + LINE_CACHE_SIZE, lineCount + indexBase - 1);
-
-			Cursor c = db.rawQuery(lineSQL, new String[]{String.valueOf(chapter), String.valueOf(b), String
-				.valueOf(e)});
-			int i = b - indexBase;
-			while (c.moveToNext()) {
-				if (!lineCache.containsKey(i))
-					lineCache.put(i, c.getString(0));
-				i++;
-			}
-			c.close();
-			return lineCache.get(index);
-		}
-
-		@Override
-		public int getLineCount()
-		{
-			return lineCount;
-		}
-
-		@Override
-		public int size(int end)
-		{
-			if (end == 0)
-				return 0;
-			if (end >= lineCount)
-				return booksize;
-
-			return selectSize(end);
-		}
-
-		@Override
-		public int size()
-		{
-			return booksize;
-		}
-
-		@Override
-		public boolean hasNotes()
-		{
-			return hasNotes;
-		}
-
-		@Override
-		public String getNote(int index, int offset)
-		{
-			if (!hasNotes)
-				return null;
-			if (index >= lineCount)
-				return null;
-			String l = line(index);
-			String n = null;
-			if (offset >= l.length())
-				return null;
-			if (l.charAt(offset) != markChar)
-				return null;
-			Cursor c = db.rawQuery(noteSQL, new String[]{String.valueOf(chapter), String
-				.valueOf(index + indexBase), String.valueOf(offset)});
-			if (c.moveToFirst())
-				n = c.getString(0);
-			c.close();
-			return n;
-		}
-
-		@Override
-		public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
-		{
-			if (cpi.offset > 0) {
-				if ((cpi.offset = line(cpi.line).indexOf(txt, cpi.offset)) >= 0)
-					return cpi;
-				cpi.line++;
-			}
-
-			int idx = indexBase - 1;
-			Cursor c = db.rawQuery(searchSQL, new String[]{String.valueOf(chapter), String
-				.valueOf(cpi.line + indexBase), txt});
-			if (c.moveToFirst())
-				idx = c.getInt(0);
-			c.close();
-			if (idx < indexBase)
-				return null;
-
-			idx -= indexBase;
-			String line = line(idx);
-			cpi.line = idx;
-			cpi.offset = line.indexOf(txt);
-
-			return cpi;
-		}
-
-		@Override
-		public ContentPosInfo getPercentPos(int percent)
-		{
-			int p = booksize * percent / 100;
-			ContentPosInfo cpi = new ContentPosInfo();
-
-			int idx = indexBase - 1;
-			Cursor c = db.rawQuery(posSQL, new String[]{String.valueOf(chapter), String.valueOf(p)});
-			if (!c.moveToFirst()) {
-				cpi.line = 0;
-				cpi.offset = 0;
-			} else
-				idx = c.getInt(0);
-			c.close();
-			if (idx < indexBase)
-				return cpi;
-
-			idx -= indexBase;
-			cpi.line = idx;
-			String l = line(idx);
-			cpi.offset = p - (size(idx + 1) - l.length());
-			return cpi;
-		}
-	}
-
 	SimpleReaderBook(VFile f, Config.ReadingInfo ri) throws IOException
 	{
 		db = SQLiteDatabase.openDatabase(f.getRealPath(), null,
-						 SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
+			SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
 
 		HashMap<String, String> map = new HashMap<String, String>();
 		Cursor cursor = db.query(INFO_TABLE_NAME, INFO_TABLE_COLS, null, null, null, null, null);
@@ -262,7 +137,6 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 			throw new IOException("Format incorrect");
 
 		lineCache.clear();
-		content = new SimpleReaderContent();
 	}
 
 	@Override
@@ -280,7 +154,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 	@Override
 	public String getChapterTitle(int index)
 	{
-		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(index + indexBase)});
+		Cursor c = db.rawQuery(chapterSQL, new String[] {String.valueOf(index + indexBase)});
 		if (!c.moveToFirst()) {
 			c.close();
 			return "";
@@ -319,7 +193,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 	@Override
 	public Content getContent(int index)
 	{
-		return content;
+		return this;
 	}
 
 	private void updateValues()
@@ -331,7 +205,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 
 	private int selectLineCount()
 	{
-		Cursor cursor = db.rawQuery(countSQL, new String[]{String.valueOf(chapter)});
+		Cursor cursor = db.rawQuery(countSQL, new String[] {String.valueOf(chapter)});
 
 		if (!cursor.moveToNext()) {
 			cursor.close();
@@ -345,7 +219,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 	private int selectSize(int end)
 	{
 		Cursor c = db
-			.rawQuery(sizeSQL, new String[]{String.valueOf(chapter), String.valueOf(end + indexBase - 1)});
+			.rawQuery(sizeSQL, new String[] {String.valueOf(chapter), String.valueOf(end + indexBase - 1)});
 		if (!c.moveToFirst()) {
 			c.close();
 			return 0;
@@ -361,4 +235,134 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book
 		db.close();
 		lineCache.clear();
 	}
+
+	@Override
+	public String line(int index)
+	{
+		if (lineCache.containsKey(index))
+			return lineCache.get(index);
+		int lineno = index + indexBase;
+		int b = Math.max(lineno - LINE_CACHE_PREFETCH_SIZE, indexBase);
+		int e = Math.min(lineno + LINE_CACHE_SIZE, lineCount + indexBase - 1);
+
+		Cursor c = db.rawQuery(lineSQL, new String[] {String.valueOf(chapter), String.valueOf(b), String
+			.valueOf(e)});
+		int i = b - indexBase;
+		while (c.moveToNext()) {
+			if (!lineCache.containsKey(i))
+				lineCache.put(i, c.getString(0));
+			i++;
+		}
+		c.close();
+		return lineCache.get(index);
+	}
+
+	@Override
+	public int lineCount()
+	{
+		return lineCount;
+	}
+
+	@Override
+	public int size(int end)
+	{
+		if (end == 0)
+			return 0;
+		if (end >= lineCount)
+			return booksize;
+
+		return selectSize(end);
+	}
+
+	@Override
+	public int size()
+	{
+		return booksize;
+	}
+
+	@Override
+	public boolean hasNotes()
+	{
+		return hasNotes;
+	}
+
+	@Override
+	public String getNote(int index, int offset)
+	{
+		if (!hasNotes)
+			return null;
+		if (index >= lineCount)
+			return null;
+		String l = line(index);
+		String n = null;
+		if (offset >= l.length())
+			return null;
+		if (l.charAt(offset) != markChar)
+			return null;
+		Cursor c = db.rawQuery(noteSQL, new String[] {String.valueOf(chapter), String
+			.valueOf(index + indexBase), String.valueOf(offset)});
+		if (c.moveToFirst())
+			n = c.getString(0);
+		c.close();
+		return n;
+	}
+
+	@Override
+	public void clear() {}
+
+	@Override
+	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
+	{
+		if (cpi.offset > 0) {
+			if ((cpi.offset = line(cpi.line).indexOf(txt, cpi.offset)) >= 0)
+				return cpi;
+			cpi.line++;
+		}
+
+		int idx = indexBase - 1;
+		Cursor c = db.rawQuery(searchSQL, new String[] {String.valueOf(chapter), String
+			.valueOf(cpi.line + indexBase), txt});
+		if (c.moveToFirst())
+			idx = c.getInt(0);
+		c.close();
+		if (idx < indexBase)
+			return null;
+
+		idx -= indexBase;
+		String line = line(idx);
+		cpi.line = idx;
+		cpi.offset = line.indexOf(txt);
+
+		return cpi;
+	}
+
+	@Override
+	public ContentPosInfo getPercentPos(int percent)
+	{
+		int p = booksize * percent / 100;
+		ContentPosInfo cpi = new ContentPosInfo();
+
+		int idx = indexBase - 1;
+		Cursor c = db.rawQuery(posSQL, new String[] {String.valueOf(chapter), String.valueOf(p)});
+		if (!c.moveToFirst()) {
+			cpi.line = 0;
+			cpi.offset = 0;
+		} else
+			idx = c.getInt(0);
+		c.close();
+		if (idx < indexBase)
+			return cpi;
+
+		idx -= indexBase;
+		cpi.line = idx;
+		String l = line(idx);
+		cpi.offset = p - (size(idx + 1) - l.length());
+		return cpi;
+	}
+
+	@Override
+	public int imageCount() { return 0; }
+
+	@Override
+	public Bitmap image(int index) { return null; }
 }

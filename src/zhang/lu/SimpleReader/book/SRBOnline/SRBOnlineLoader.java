@@ -73,7 +73,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 		{
 			if (!op.hasNotes)
 				return null;
-			if (line >= getLineCount())
+			if (line >= lineCount())
 				return null;
 			String l = line(line);
 			if (offset >= l.length())
