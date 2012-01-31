@@ -502,9 +502,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		menu.findItem(menuColorBright)
 			.setTitle(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night);
 
-		WindowManager.LayoutParams attrs = getWindow().getAttributes();
-		attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
-		getWindow().setAttributes(attrs);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 		return true;
 	}
 
@@ -512,10 +510,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	public void onOptionsMenuClosed(Menu menu)
 	{
 		super.onOptionsMenuClosed(menu);
-
-		WindowManager.LayoutParams attrs = getWindow().getAttributes();
-		attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
-		getWindow().setAttributes(attrs);
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 	}
 
 	public boolean onTouch(View view, MotionEvent e)
