@@ -501,7 +501,21 @@ public class Reader extends Activity implements View.OnTouchListener
 		menu.findItem(menuChapterMgr).setVisible((book != null) && (book.chapterCount() > 1));
 		menu.findItem(menuColorBright)
 			.setTitle(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night);
+
+		WindowManager.LayoutParams attrs = getWindow().getAttributes();
+		attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
+		getWindow().setAttributes(attrs);
 		return true;
+	}
+
+	@Override
+	public void onOptionsMenuClosed(Menu menu)
+	{
+		super.onOptionsMenuClosed(menu);
+
+		WindowManager.LayoutParams attrs = getWindow().getAttributes();
+		attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+		getWindow().setAttributes(attrs);
 	}
 
 	public boolean onTouch(View view, MotionEvent e)
@@ -517,6 +531,8 @@ public class Reader extends Activity implements View.OnTouchListener
 			return;
 		}
 
+		if (book == null)
+			return;
 		if (loading)
 			return;
 
@@ -569,6 +585,9 @@ public class Reader extends Activity implements View.OnTouchListener
 			updateSeekBarPanel();
 			return;
 		}
+
+		if (book == null)
+			return;
 
 		if (loading)
 			return;
@@ -749,7 +768,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 			public void onProgressChanged(SeekBar seekBar, int i, boolean b)
 			{
-				if ((!b) || (config.getCurrFile() == null))
+				if ((!b) || (book == null))
 					return;
 				updateSeekBarPanelText(i);
 				bv.setPos(i);
@@ -852,7 +871,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
 				bookmarkManager.hide();
-				if (config.getCurrFile() == null)
+				if (book == null)
 					return;
 				pushReadingInfo();
 
@@ -935,13 +954,13 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void showBookmarkMgr(int x)
 	{
-		if (config.getCurrFile() != null)
+		if (book != null)
 			bookmarkManager.show(ri, book, tf, bv.getTop(), x, screenHeight - bv.getTop());
 	}
 
 	private void showChapterList(int x)
 	{
-		if ((config.getCurrFile() != null) && (book.chapterCount() > 1))
+		if ((book != null) && (book.chapterCount() > 1))
 			TOCList.show(book.getTOC(), book.currChapter(), tf, bv.getTop(), x,
 				screenHeight - bv.getTop());
 	}
@@ -980,7 +999,7 @@ public class Reader extends Activity implements View.OnTouchListener
 				bv.invalidate();
 			}
 
-			public void onBatteryLevelClick()
+			public void onColorButtonClick()
 			{
 				switchColorBright();
 				bv.invalidate();
@@ -1130,9 +1149,10 @@ public class Reader extends Activity implements View.OnTouchListener
 
 			public void onLongPress(MotionEvent e)
 			{
-				if (config.getCurrFile() != null)
-					fingerPosInfo = bv.getFingerPosInfo(e.getX(), e.getY());
+				if (book == null)
+					return;
 
+				fingerPosInfo = bv.getFingerPosInfo(e.getX(), e.getY());
 				pm.show(fingerPosInfo == null ? null : fingerPosInfo.str, tf, screenWidth >> 1,
 					(int) e.getRawX(), (int) e.getRawY(), config.isDictEnabled());
 			}

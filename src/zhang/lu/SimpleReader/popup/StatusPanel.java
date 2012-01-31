@@ -1,11 +1,6 @@
 package zhang.lu.SimpleReader.popup;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.BatteryManager;
-import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +10,6 @@ import android.widget.TextView;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.R;
 
-import java.util.Date;
 import java.util.Stack;
 
 /**
@@ -34,39 +28,18 @@ public class StatusPanel extends PopupWindow
 
 		void onPosChanged(Config.ReadingInfo ri);
 
-		void onBatteryLevelClick();
+		void onColorButtonClick();
 	}
 
-	public static final String DATE_FORMAT_STRING = "kk:mm";
 	public static final int POPUP_WIN_BOARD_SIZE = 3 * 2;
 
 	private OnPanelClickListener pcl;
 	private View layout;
-	private TextView ptv, ftv, btv, ttv, ctv;
+	private TextView ptv, ftv, ctv;
 	private Button pbt, nbt;
 	private Stack<Config.ReadingInfo> ris;
 	private Stack<Config.ReadingInfo> nis = new Stack<Config.ReadingInfo>();
 	private Config.ReadingInfo cri;
-
-	private BroadcastReceiver timeTickReceiver = new BroadcastReceiver()
-	{
-		@Override
-		public void onReceive(Context arg0, Intent intent)
-		{
-			updateTime();
-		}
-	};
-	private BroadcastReceiver batteryChangedReceiver = new BroadcastReceiver()
-	{
-		@Override
-		public void onReceive(Context arg0, Intent intent)
-		{
-			//int batteryIcon = intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL, 0);
-			int batteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-			//biv.setImageResource(batteryIcon);
-			btv.setText("[" + batteryLevel + "%]");
-		}
-	};
 
 	public StatusPanel(Context context, OnPanelClickListener onPanelClickListener)
 	{
@@ -84,8 +57,6 @@ public class StatusPanel extends PopupWindow
 		ftv = (TextView) layout.findViewById(R.id.reading_book_text);
 		ctv = (TextView) layout.findViewById(R.id.reading_chapter_text);
 		ptv = (TextView) layout.findViewById(R.id.reading_percent_text);
-		ttv = (TextView) layout.findViewById(R.id.reading_time_text);
-		btv = (TextView) layout.findViewById(R.id.battery_level_text);
 
 		pbt = (Button) layout.findViewById(R.id.button_prev_pos);
 		nbt = (Button) layout.findViewById(R.id.button_next_pos);
@@ -137,7 +108,7 @@ public class StatusPanel extends PopupWindow
 		{
 			public void onClick(View view)
 			{
-				pcl.onBatteryLevelClick();
+				pcl.onColorButtonClick();
 			}
 		});
 	}
@@ -151,13 +122,9 @@ public class StatusPanel extends PopupWindow
 		nbt.setEnabled(false);
 
 		updateReadingInfo(ri);
-		updateTime();
 
-		Context context = layout.getContext();
-		context.registerReceiver(timeTickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
-		context.registerReceiver(batteryChangedReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 		setWidth(width);
-		layout.measure(width + View.MeasureSpec.EXACTLY, 0);
+		layout.measure(width - POPUP_WIN_BOARD_SIZE + View.MeasureSpec.EXACTLY, 0);
 		setHeight(layout.getMeasuredHeight() + POPUP_WIN_BOARD_SIZE);
 		showAtLocation(layout, Gravity.TOP | Gravity.CENTER, 0, 0);
 	}
@@ -165,27 +132,6 @@ public class StatusPanel extends PopupWindow
 	public void hide()
 	{
 		dismiss();
-	}
-
-	@Override
-	public void dismiss()
-	{
-		super.dismiss();
-		Context context = layout.getContext();
-		context.unregisterReceiver(timeTickReceiver);
-		context.unregisterReceiver(batteryChangedReceiver);
-	}
-
-	@Override
-	public void update(int width, int height)
-	{
-		layout.measure(width + View.MeasureSpec.EXACTLY, 0);
-		super.update(width, layout.getMeasuredHeight() + POPUP_WIN_BOARD_SIZE);
-	}
-
-	private void updateTime()
-	{
-		ttv.setText(DateFormat.format(DATE_FORMAT_STRING, new Date(System.currentTimeMillis())));
 	}
 
 	private void updateReadingInfo(Config.ReadingInfo ri)

@@ -68,8 +68,6 @@
 	<string name="font_name_label">選擇字體：</string>
 	<string name="default_font_label">缺省字體</string>
 
-	<string name="battery_label">電量：</string>
-	<string name="time_label">時間：</string>
 	<string name="pos_label">位置：</string>
 	<string name="button_switch_bright_label">切換顔色</string>
 	<string name="button_prev_pos_label">←</string>
