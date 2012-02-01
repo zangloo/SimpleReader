@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
@@ -48,9 +49,11 @@ public class TOCList extends PopupList
 		};
 		setAdapter(aa);
 		setOnItemClickListener(onItemClickListener);
+
+		setHeight(WindowManager.LayoutParams.FILL_PARENT);
 	}
 
-	public void show(ArrayList<TOCRecord> cs, int index, Typeface typeface, int top, int width, int height)
+	public void show(ArrayList<TOCRecord> cs, int index, Typeface typeface, int top, int width)
 	{
 		aa.clear();
 		for (TOCRecord c : cs)
@@ -63,7 +66,6 @@ public class TOCList extends PopupList
 
 		tf = typeface;
 		setWidth(width);
-		setHeight(height);
 		showAtLocation(getContentView(), Gravity.LEFT | Gravity.CENTER, 0, top);
 		setSelection(chapter = index);
 	}

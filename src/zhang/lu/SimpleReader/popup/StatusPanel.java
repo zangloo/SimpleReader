@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -31,8 +32,6 @@ public class StatusPanel extends PopupWindow
 		void onColorButtonClick();
 	}
 
-	public static final int POPUP_WIN_BOARD_SIZE = 3 * 2;
-
 	private OnPanelClickListener pcl;
 	private View layout;
 	private TextView ptv, ftv, ctv;
@@ -49,8 +48,8 @@ public class StatusPanel extends PopupWindow
 
 		setContentView(layout);
 		setFocusable(true);
-		setHeight(100);
-		setWidth(100);
+		setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
+		setWidth(WindowManager.LayoutParams.FILL_PARENT);
 
 		pcl = onPanelClickListener;
 
@@ -113,7 +112,7 @@ public class StatusPanel extends PopupWindow
 		});
 	}
 
-	public void show(Stack<Config.ReadingInfo> ris, Config.ReadingInfo ri, int width)
+	public void show(Stack<Config.ReadingInfo> ris, Config.ReadingInfo ri)
 	{
 		this.ris = ris;
 		nis.clear();
@@ -122,10 +121,6 @@ public class StatusPanel extends PopupWindow
 		nbt.setEnabled(false);
 
 		updateReadingInfo(ri);
-
-		setWidth(width);
-		layout.measure(width - POPUP_WIN_BOARD_SIZE + View.MeasureSpec.EXACTLY, 0);
-		setHeight(layout.getMeasuredHeight() + POPUP_WIN_BOARD_SIZE);
 		showAtLocation(layout, Gravity.TOP | Gravity.CENTER, 0, 0);
 	}
 

@@ -8,13 +8,14 @@ import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import zhang.lu.SimpleReader.book.Book;
 import zhang.lu.SimpleReader.Config;
 import zhang.lu.SimpleReader.R;
+import zhang.lu.SimpleReader.book.Book;
 import zhang.lu.SimpleReader.view.SimpleTextView;
 
 import java.util.ArrayList;
@@ -89,8 +90,8 @@ public class BookmarkManager extends PopupList
 		config = conf;
 		bls = new ArrayList<HashMap<String, Object>>();
 		sa = new SimpleAdapter(context, bls, android.R.layout.two_line_list_item,
-				       new String[]{BOOKMARK_LIST_TITLE_DESC, BOOKMARK_LIST_TITLE_POS},
-				       new int[]{android.R.id.text1, android.R.id.text2})
+			new String[] {BOOKMARK_LIST_TITLE_DESC, BOOKMARK_LIST_TITLE_POS},
+			new int[] {android.R.id.text1, android.R.id.text2})
 		{
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
@@ -139,15 +140,15 @@ public class BookmarkManager extends PopupList
 				bls.add(map);
 			}
 		sa.notifyDataSetChanged();
+		setHeight(WindowManager.LayoutParams.FILL_PARENT);
 	}
 
-	public void show(Config.ReadingInfo ri, Book b, Typeface typeface, int top, int width, int height)
+	public void show(Config.ReadingInfo ri, Book b, Typeface typeface, int top, int width)
 	{
 		readingInfo = ri;
 		tf = typeface;
 		book = b;
 		setWidth(width);
-		setHeight(height);
 		updateBookmarkList();
 		showAtLocation(getContentView(), Gravity.RIGHT | Gravity.CENTER, 0, top);
 	}

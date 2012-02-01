@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
@@ -69,6 +70,7 @@ public class PopupMenu extends PopupList
 		};
 		setAdapter(aa);
 		setOnItemClickListener(onItemClickListener);
+		setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
 	}
 
 	public void show(String title, Typeface typeface, int width, int x, int y, boolean showDict)
@@ -87,8 +89,7 @@ public class PopupMenu extends PopupList
 		}
 		aa.notifyDataSetChanged();
 
-		setHeight(measureHeight(width));
-		setWidth(width + POPUP_WINDOW_BOARD_SIZE);
+		setWidth(width);
 		showAtLocation(getContentView(), Gravity.TOP | Gravity.LEFT, x, y);
 	}
 

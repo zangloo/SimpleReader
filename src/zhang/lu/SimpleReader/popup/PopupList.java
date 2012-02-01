@@ -15,8 +15,6 @@ import zhang.lu.SimpleReader.R;
  */
 public class PopupList extends PopupWindow
 {
-	protected static final int POPUP_WINDOW_BOARD_SIZE = 4 * 2;
-
 	private ListView lv;
 	private TextView tv;
 	private int mw = 0;
@@ -66,19 +64,6 @@ public class PopupList extends PopupWindow
 	public void setMaxWidth(int width)
 	{
 		mw = width;
-	}
-
-	public int measureHeight(int width)
-	{
-		ListAdapter ba = lv.getAdapter();
-		int h = 0;
-		for (int i = 0; i < ba.getCount(); i++) {
-			View li = ba.getView(i, null, lv);
-			li.measure(width + View.MeasureSpec.EXACTLY, 0);
-			h += li.getMeasuredHeight() + lv.getDividerHeight();
-		}
-		tv.measure(width + View.MeasureSpec.EXACTLY, View.MeasureSpec.UNSPECIFIED);
-		return h + tv.getMeasuredHeight() + 2 + POPUP_WINDOW_BOARD_SIZE;
 	}
 
 	@Override

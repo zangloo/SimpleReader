@@ -950,14 +950,13 @@ public class Reader extends Activity implements View.OnTouchListener
 	private void showBookmarkMgr(int x)
 	{
 		if (book != null)
-			bookmarkManager.show(ri, book, tf, bv.getTop(), x, screenHeight - bv.getTop());
+			bookmarkManager.show(ri, book, tf, bv.getTop(), x);
 	}
 
 	private void showChapterList(int x)
 	{
 		if ((book != null) && (book.chapterCount() > 1))
-			TOCList.show(book.getTOC(), book.currChapter(), tf, bv.getTop(), x,
-				screenHeight - bv.getTop());
+			TOCList.show(book.getTOC(), book.currChapter(), tf, bv.getTop(), x);
 	}
 
 	private void showStatusPanel()
@@ -969,7 +968,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			ri.line = bv.getPosIndex();
 			ri.offset = bv.getPosOffset();
 		}
-		statusPanel.show(ris, ri, screenWidth);
+		statusPanel.show(ris, ri);
 	}
 
 	private void initStatusPanel()
