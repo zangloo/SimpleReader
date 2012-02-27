@@ -116,6 +116,8 @@ public class BookmarkManager extends PopupList
 				return true;
 			}
 		});
+
+		setHeight(WindowManager.LayoutParams.FILL_PARENT);
 	}
 
 	public Bookmark getBookmark(int index)
@@ -140,7 +142,6 @@ public class BookmarkManager extends PopupList
 				bls.add(map);
 			}
 		sa.notifyDataSetChanged();
-		setHeight(WindowManager.LayoutParams.FILL_PARENT);
 	}
 
 	public void show(Config.ReadingInfo ri, Book b, Typeface typeface, int top, int width)

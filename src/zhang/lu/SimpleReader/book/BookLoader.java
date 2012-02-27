@@ -1,15 +1,17 @@
 package zhang.lu.SimpleReader.book;
 
+import android.content.Context;
 import android.util.Log;
 import org.xml.sax.SAXException;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.vfs.VFile;
-import zhang.lu.SimpleReader.book.haodoo.HaodooLoader;
+import zhang.lu.SimpleReader.R;
 import zhang.lu.SimpleReader.book.SRBOnline.SRBOnlineLoader;
 import zhang.lu.SimpleReader.book.SimpleReader.SimpleReaderLoader;
 import zhang.lu.SimpleReader.book.epub.EPubLoader;
+import zhang.lu.SimpleReader.book.haodoo.HaodooLoader;
 import zhang.lu.SimpleReader.book.html.HtmlLoader;
 import zhang.lu.SimpleReader.book.txt.TxtLoader;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -31,20 +33,16 @@ public class BookLoader
 	}
 
 	private static List<Loader> loaders = new ArrayList<Loader>();
-	private static Loader defaultLoader = null;
 
 	private static void init()
 	{
-		defaultLoader = new TxtLoader();
-
-		loaders.add(defaultLoader);
-
+		loaders.add(new TxtLoader());
 		loaders.add(new HtmlLoader());
 		loaders.add(new HaodooLoader());
 		loaders.add(new SimpleReaderLoader());
 		loaders.add(new SRBOnlineLoader());
 		try {
-			System.setProperty("org.xml.sax.driver","org.xmlpull.v1.sax2.Driver");
+			System.setProperty("org.xml.sax.driver", "org.xmlpull.v1.sax2.Driver");
 			loaders.add(new EPubLoader());
 		} catch (SAXException e) {
 			Log.e("BookLoader.init", e.getMessage());
@@ -56,17 +54,19 @@ public class BookLoader
 		for (Loader l : loaders)
 			if (l.isBelong(f))
 				return l;
-		return defaultLoader;
+		return null;
 	}
 
-	public static Book loadFile(String filePath, Config.ReadingInfo ri) throws Exception
+	public static Book loadFile(Context context, String filePath, Config.ReadingInfo ri) throws Exception
 	{
 		VFile f = VFile.create(filePath);
 		if (!f.exists())
 			throw new FileNotFoundException();
-		if (defaultLoader == null)
+		if (loaders.size() == 0)
 			init();
 		Loader nl = findLoader(f);
+		if (nl == null)
+			throw new Exception(context.getString(R.string.file_not_supported));
 		return nl.load(f, ri);
 	}
 }

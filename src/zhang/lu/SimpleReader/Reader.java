@@ -333,8 +333,6 @@ public class Reader extends Activity implements View.OnTouchListener
 					nsv.scrollTo(nt.getMeasuredWidth(), 0);
 				}
 			}, 10);
-			// not work, so do it manually. if you know why, tell me please
-			// npw.showAtLocation(bv, Gravity.TOP | Gravity.RIGHT, (int) e.getRawX(), (int) e.getRawY());
 			npw.showAtLocation(bv, Gravity.NO_GRAVITY, (int) e.getRawX() - w + 2/* scrollView board*/,
 				(int) e.getRawY());
 		} else {
@@ -684,7 +682,7 @@ public class Reader extends Activity implements View.OnTouchListener
 				saveReadingInfo();
 				try {
 					Config.ReadingInfo nri = config.getReadingInfo(fp);
-					Book nb = BookLoader.loadFile(fp, nri);
+					Book nb = BookLoader.loadFile(Reader.this, fp, nri);
 					// close book on success open new one
 					if (book != null)
 						book.close();
@@ -1072,7 +1070,8 @@ public class Reader extends Activity implements View.OnTouchListener
 						break;
 					case bookmark:
 						if ((e1.getRawX() - e2.getRawX()) < boardLen) {
-							bookmarkManager.hide();
+							if (bookmarkManager.isShowing())
+								bookmarkManager.hide();
 							break;
 						}
 						if (bookmarkManager.isShowing())
@@ -1084,7 +1083,8 @@ public class Reader extends Activity implements View.OnTouchListener
 						break;
 					case chapter:
 						if ((e2.getRawX() - e1.getRawX()) < boardLen) {
-							TOCList.hide();
+							if (TOCList.isShowing())
+								TOCList.hide();
 							break;
 						}
 						if (TOCList.isShowing())

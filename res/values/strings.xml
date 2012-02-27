@@ -75,4 +75,6 @@
 
 	<string name="loading">加載中...</string>
 	<string name="about_title">關於</string>
+
+    <string name="file_not_supported">文件格式不支持，无法打开。</string>
 </resources>
