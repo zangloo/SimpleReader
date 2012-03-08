@@ -1,8 +1,10 @@
 package zhang.lu.SimpleReader;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Typeface;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.text.ClipboardManager;
 import android.view.*;
 import android.widget.*;
 import zhang.lu.SimpleReader.book.Book;
@@ -26,6 +29,7 @@ import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.view.SimpleTextView;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
@@ -828,7 +832,11 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void initPopupMenu()
 	{
-		pm = new PopupMenu(this, new AdapterView.OnItemClickListener()
+		HashMap<Integer, String> mi = new HashMap<Integer, String>();
+		mi.put(R.string.menu_dict, getString(R.string.menu_dict));
+		mi.put(R.string.menu_bookmark, getString(R.string.menu_bookmark));
+		mi.put(R.string.menu_copy_title, getString(R.string.menu_copy_title));
+		pm = new PopupMenu(this, mi, new AdapterView.OnItemClickListener()
 		{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 			{
@@ -843,6 +851,28 @@ public class Reader extends Activity implements View.OnTouchListener
 						if (ri != null)
 							bookmarkManager.addDialog(
 								BookmarkManager.createBookmark(fingerPosInfo, ri));
+						break;
+					case R.string.menu_copy_title:
+						if ((book == null) || (fingerPosInfo == null))
+							break;
+						String l = book.content().line(fingerPosInfo.line);
+						final EditText et = new EditText(Reader.this);
+						et.setText(l);
+						new AlertDialog.Builder(Reader.this).setTitle(
+							R.string.menu_copy_title).setView(et)
+							.setPositiveButton(R.string.button_copy_text,
+								new DialogInterface.OnClickListener()
+								{
+									@Override
+									public void onClick(DialogInterface dialog, int which)
+									{
+										ClipboardManager cb =
+											(ClipboardManager) getSystemService(
+												CLIPBOARD_SERVICE);
+										cb.setText(et.getText());
+									}
+								})
+							.setNegativeButton(R.string.button_cancel_text, null).show();
 						break;
 				}
 				pm.hide();
@@ -1035,6 +1065,8 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		gs = new GestureDetector(new GestureDetector.OnGestureListener()
 		{
+			ArrayList<Integer> items = new ArrayList<Integer>();
+
 			public boolean onDown(MotionEvent e)
 			{
 				if (e.getRawY() < boardLen)
@@ -1147,8 +1179,18 @@ public class Reader extends Activity implements View.OnTouchListener
 					return;
 
 				fingerPosInfo = bv.getFingerPosInfo(e.getX(), e.getY());
-				pm.show(fingerPosInfo == null ? null : fingerPosInfo.str, tf, screenWidth >> 1,
-					(int) e.getRawX(), (int) e.getRawY(), config.isDictEnabled());
+
+				String title = fingerPosInfo == null ? null : fingerPosInfo.str;
+				items.clear();
+				if (title != null) {
+					items.add(R.string.menu_bookmark);
+					if (config.isDictEnabled())
+						items.add(R.string.menu_dict);
+					items.add(R.string.menu_copy_title);
+				} else
+					title = getString(R.string.no_text_selected);
+
+				pm.show(title, tf, screenWidth >> 1, (int) e.getRawX(), (int) e.getRawY(), items);
 			}
 
 			public boolean onFling(MotionEvent e1, MotionEvent e2, float v, float v1)

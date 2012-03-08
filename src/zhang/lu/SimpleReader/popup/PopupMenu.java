@@ -10,8 +10,8 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import zhang.lu.SimpleReader.R;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -38,19 +38,15 @@ public class PopupMenu extends PopupList
 		}
 	}
 
-	// same order with enum menu
-	private static final int[] menuTitleIDS = new int[]{R.string.menu_bookmark, R.string.menu_dict};
-	private static HashMap<Integer, String> menuInfo = new HashMap<Integer, String>();
+	private static HashMap<Integer, String> menuInfo;
 
 	private ArrayAdapter<PopupMenuItem> aa;
 
-	public PopupMenu(Context context, final AdapterView.OnItemClickListener onItemClickListener)
+	public PopupMenu(Context context, HashMap<Integer, String> mi, final AdapterView.OnItemClickListener onItemClickListener)
 	{
 		super(context);
 
-		menuInfo.clear();
-		for (int id : menuTitleIDS)
-			menuInfo.put(id, context.getString(id));
+		menuInfo = mi;
 		aa = new ArrayAdapter<PopupMenuItem>(context, android.R.layout.simple_list_item_1)
 		{
 			@Override
@@ -73,20 +69,14 @@ public class PopupMenu extends PopupList
 		setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
 	}
 
-	public void show(String title, Typeface typeface, int width, int x, int y, boolean showDict)
+	public void show(String title, Typeface typeface, int width, int x, int y, ArrayList<Integer> items)
 	{
-		if (title == null)
-			setTitle(getContentView().getContext().getString(R.string.no_text_selected));
-		else
-			setTitle(title);
+		setTitle(title);
 		setTitleTypeface(typeface);
 
 		aa.clear();
-		if (title != null) {
-			aa.add(new PopupMenuItem(R.string.menu_bookmark));
-			if (showDict)
-				aa.add(new PopupMenuItem(R.string.menu_dict));
-		}
+		for (int i : items)
+			aa.add(new PopupMenuItem(i));
 		aa.notifyDataSetChanged();
 
 		setWidth(width);
