@@ -78,6 +78,7 @@ public class ImageViewer extends PopupWindow
 
 	private int check(int v, int mv)
 	{
+		if (mv < 0) return 0;
 		if (v < (-mv)) return -mv;
 		if (v > mv) return mv;
 		return v;
