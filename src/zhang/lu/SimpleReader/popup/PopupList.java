@@ -17,7 +17,7 @@ public class PopupList extends PopupWindow
 {
 	private ListView lv;
 	private TextView tv;
-	private int mw = 0;
+	static private int mw = 0;
 
 	public PopupList(Context context)
 	{
@@ -61,7 +61,7 @@ public class PopupList extends PopupWindow
 		tv.setTypeface(tf);
 	}
 
-	public void setMaxWidth(int width)
+	static public void setMaxWidth(int width)
 	{
 		mw = width;
 	}
@@ -71,8 +71,6 @@ public class PopupList extends PopupWindow
 	{
 		if (mw != 0)
 			width = Math.min(mw, width);
-		if (width == getWidth())
-			return;
 		super.update(width, height);
 	}
 }

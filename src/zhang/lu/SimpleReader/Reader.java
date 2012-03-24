@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteException;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,10 +22,7 @@ import zhang.lu.SimpleReader.book.Content;
 import zhang.lu.SimpleReader.dialog.DictManager;
 import zhang.lu.SimpleReader.dialog.FileDialog;
 import zhang.lu.SimpleReader.dialog.OptionDialog;
-import zhang.lu.SimpleReader.popup.BookmarkManager;
-import zhang.lu.SimpleReader.popup.PopupMenu;
-import zhang.lu.SimpleReader.popup.StatusPanel;
-import zhang.lu.SimpleReader.popup.TOCList;
+import zhang.lu.SimpleReader.popup.*;
 import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.view.SimpleTextView;
 
@@ -91,6 +89,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private Config.ReadingInfo ri = null;
 	private BookmarkManager bookmarkManager = null;
 	private TOCList TOCList = null;
+	private ImageViewer imageViewer = null;
 	private StatusPanel statusPanel = null;
 	private DictManager dictManager;
 	private Typeface tf = null;
@@ -182,11 +181,12 @@ public class Reader extends Activity implements View.OnTouchListener
 		currOrient = newConfig.orientation;
 		updateWH();
 		if (bookmarkManager.isShowing())
-			bookmarkManager.update(bookmarkManager.getWidth(), screenHeight - bv.getTop());
-		if (statusPanel.isShowing())
-			statusPanel.update(screenWidth, statusPanel.getHeight());
+			bookmarkManager.update(bookmarkManager.getWidth(), WindowManager.LayoutParams.FILL_PARENT);
 		if (TOCList.isShowing())
-			TOCList.update(TOCList.getWidth(), screenHeight - bv.getTop());
+			TOCList.update(TOCList.getWidth(), WindowManager.LayoutParams.FILL_PARENT);
+		if (imageViewer.isShowing())
+			imageViewer.update(WindowManager.LayoutParams.FILL_PARENT,
+				WindowManager.LayoutParams.FILL_PARENT);
 		super.onConfigurationChanged(newConfig);
 	}
 
@@ -835,7 +835,10 @@ public class Reader extends Activity implements View.OnTouchListener
 		HashMap<Integer, String> mi = new HashMap<Integer, String>();
 		mi.put(R.string.menu_dict, getString(R.string.menu_dict));
 		mi.put(R.string.menu_bookmark, getString(R.string.menu_bookmark));
-		mi.put(R.string.menu_copy_title, getString(R.string.menu_copy_title));
+		mi.put(R.string.menu_copy, getString(R.string.menu_copy));
+		mi.put(R.string.menu_image_view, getString(R.string.menu_image_view));
+
+		imageViewer = new ImageViewer(this);
 		pm = new PopupMenu(this, mi, new AdapterView.OnItemClickListener()
 		{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
@@ -852,14 +855,14 @@ public class Reader extends Activity implements View.OnTouchListener
 							bookmarkManager.addDialog(
 								BookmarkManager.createBookmark(fingerPosInfo, ri));
 						break;
-					case R.string.menu_copy_title:
-						if ((book == null) || (fingerPosInfo == null))
+					case R.string.menu_copy:
+						if (book == null)
 							break;
 						String l = book.content().line(fingerPosInfo.line);
 						final EditText et = new EditText(Reader.this);
 						et.setText(l);
 						new AlertDialog.Builder(Reader.this).setTitle(
-							R.string.menu_copy_title).setView(et)
+							R.string.menu_copy).setView(et)
 							.setPositiveButton(R.string.button_copy_text,
 								new DialogInterface.OnClickListener()
 								{
@@ -874,15 +877,16 @@ public class Reader extends Activity implements View.OnTouchListener
 								})
 							.setNegativeButton(R.string.button_cancel_text, null).show();
 						break;
+					case R.string.menu_image_view:
+						Bitmap bm = bv.getImage();
+						if (bm == null)
+							break;
+						imageViewer.show(bm,
+							fingerPosInfo.x * ImageViewer.CENT_SCALE / screenWidth,
+							fingerPosInfo.y * ImageViewer.CENT_SCALE / screenHeight);
+						break;
 				}
 				pm.hide();
-			}
-		});
-		pm.setOnDismissListener(new PopupWindow.OnDismissListener()
-		{
-			public void onDismiss()
-			{
-				fingerPosInfo = null;
 			}
 		});
 	}
@@ -939,8 +943,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
-		bookmarkManager.setMaxWidth(screenWidth * 3 / 4);
-		TOCList.setMaxWidth(screenWidth * 3 / 4);
+		PopupList.setMaxWidth(screenWidth * 3 / 4);
 	}
 
 	private void initNote()
@@ -1180,16 +1183,26 @@ public class Reader extends Activity implements View.OnTouchListener
 
 				fingerPosInfo = bv.getFingerPosInfo(e.getX(), e.getY());
 
-				String title = fingerPosInfo == null ? null : fingerPosInfo.str;
+				fingerPosInfo.x = (int) e.getX();
+				fingerPosInfo.y = (int) e.getY();
+				String title = null;
 				items.clear();
-				if (title != null) {
-					items.add(R.string.menu_bookmark);
-					if (config.isDictEnabled())
-						items.add(R.string.menu_dict);
-					items.add(R.string.menu_copy_title);
-				} else
-					title = getString(R.string.no_text_selected);
-
+				switch (fingerPosInfo.type) {
+					case text:
+						title = fingerPosInfo.str;
+						items.add(R.string.menu_bookmark);
+						if (config.isDictEnabled())
+							items.add(R.string.menu_dict);
+						items.add(R.string.menu_copy);
+						break;
+					case image:
+						title = getString(R.string.image_selected);
+						items.add(R.string.menu_image_view);
+						break;
+					case none:
+						title = getString(R.string.no_text_selected);
+						break;
+				}
 				pm.show(title, tf, screenWidth >> 1, (int) e.getRawX(), (int) e.getRawY(), items);
 			}
 

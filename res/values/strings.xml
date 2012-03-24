@@ -10,6 +10,7 @@
 	<string name="error_write_config">無法保存配置文件</string>
 	<string name="error_empty_file">文件為空</string>
 	<string name="no_text_selected">未選中任何內容</string>
+	<string name="image_selected">圖片</string>
 
 	<string name="menu_file">文件</string>
 	<string name="menu_search">檢索</string>
@@ -78,6 +79,8 @@
 
     <string name="file_not_supported">文件格式不支持，無法打開。</string>
 
-    <string name="menu_copy_title">複制選中行</string>
+    <string name="menu_copy">複制選中行</string>
     <string name="button_copy_text">複制</string>
+
+    <string name="menu_image_view">查看圖片</string>
 </resources>

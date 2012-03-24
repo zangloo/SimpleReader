@@ -16,10 +16,17 @@ import zhang.lu.SimpleReader.book.PlainTextContent;
  */
 public abstract class SimpleTextView extends View
 {
+	public static enum FingerPosType
+	{
+		text, image, none
+	}
+
 	public static class FingerPosInfo
 	{
 		public int line, offset;
 		public String str;
+		public FingerPosType type;
+		public int x, y;
 	}
 
 	public static class HighlightInfo
@@ -58,7 +65,6 @@ public abstract class SimpleTextView extends View
 	protected float fw, fh, fd;
 	protected int w, h;
 	protected float xoffset, yoffset;
-
 
 	public SimpleTextView(Context context, AttributeSet attrs)
 	{
@@ -105,64 +111,68 @@ public abstract class SimpleTextView extends View
 	{
 		if (pi >= content.imageCount())
 			return;
-		Bitmap bm = content.image(pi);
-		if (bm == null)
+		if (content.image(pi) == null)
 			return;
-		canvas.drawBitmap(bm, null, new Rect(0, 0, w, h), null);
+		canvas.drawBitmap(content.image(pi), null, new Rect(0, 0, w, h), null);
+	}
+
+	public Bitmap getImage()
+	{
+		return content.image(pi);
 	}
 
 	/*
-		 private void testDraw(Canvas canvas)
-		 {
-			 Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-			 textPaint.setTextSize(40);
-			 textPaint.setColor(Color.BLACK);
+			 private void testDraw(Canvas canvas)
+			 {
+				 Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+				 textPaint.setTextSize(40);
+				 textPaint.setColor(Color.BLACK);
 
-			 // FontMetrics对象
-			 Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+				 // FontMetrics对象
+				 Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
 
-			 String text = "abcdefghijklmnopqrstu计算每一个坐标";
+				 String text = "abcdefghijklmnopqrstu计算每一个坐标";
 
-			 // 计算每一个坐标
-			 float baseX = 0;
-			 float baseY = 100;
-			 float topY = baseY + fontMetrics.top;
-			 float ascentY = baseY + fontMetrics.ascent;
-			 float descentY = baseY + fontMetrics.descent;
-			 float bottomY = baseY + fontMetrics.bottom;
+				 // 计算每一个坐标
+				 float baseX = 0;
+				 float baseY = 100;
+				 float topY = baseY + fontMetrics.top;
+				 float ascentY = baseY + fontMetrics.ascent;
+				 float descentY = baseY + fontMetrics.descent;
+				 float bottomY = baseY + fontMetrics.bottom;
 
-			 // 绘制文本
-			 canvas.drawText(text, baseX, baseY, textPaint);
+				 // 绘制文本
+				 canvas.drawText(text, baseX, baseY, textPaint);
 
-			 // BaseLine描画
-			 Paint baseLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-			 baseLinePaint.setColor(Color.RED);
-			 canvas.drawLine(0, baseY, getWidth(), baseY, baseLinePaint);
+				 // BaseLine描画
+				 Paint baseLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+				 baseLinePaint.setColor(Color.RED);
+				 canvas.drawLine(0, baseY, getWidth(), baseY, baseLinePaint);
 
-			 // Base描画
-			 canvas.drawCircle(baseX, baseY, 5, baseLinePaint);
+				 // Base描画
+				 canvas.drawCircle(baseX, baseY, 5, baseLinePaint);
 
-			 // TopLine描画
-			 Paint topLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-			 topLinePaint.setColor(Color.LTGRAY);
-			 canvas.drawLine(0, topY, getWidth(), topY, topLinePaint);
-			 // AscentLine描画
-			 Paint ascentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-			 ascentLinePaint.setColor(Color.GREEN);
-			 canvas.drawLine(0, ascentY, getWidth(), ascentY, ascentLinePaint);
+				 // TopLine描画
+				 Paint topLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+				 topLinePaint.setColor(Color.LTGRAY);
+				 canvas.drawLine(0, topY, getWidth(), topY, topLinePaint);
+				 // AscentLine描画
+				 Paint ascentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+				 ascentLinePaint.setColor(Color.GREEN);
+				 canvas.drawLine(0, ascentY, getWidth(), ascentY, ascentLinePaint);
 
-			 // DescentLine描画
-			 Paint descentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-			 descentLinePaint.setColor(Color.YELLOW);
-			 canvas.drawLine(0, descentY, getWidth(), descentY, descentLinePaint);
+				 // DescentLine描画
+				 Paint descentLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+				 descentLinePaint.setColor(Color.YELLOW);
+				 canvas.drawLine(0, descentY, getWidth(), descentY, descentLinePaint);
 
-			 // ButtomLine描画
-			 Paint bottomLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-			 bottomLinePaint.setColor(Color.MAGENTA);
-			 canvas.drawLine(0, bottomY, getWidth(), bottomY, bottomLinePaint);
+				 // ButtomLine描画
+				 Paint bottomLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+				 bottomLinePaint.setColor(Color.MAGENTA);
+				 canvas.drawLine(0, bottomY, getWidth(), bottomY, bottomLinePaint);
 
-		 }
-	 */
+			 }
+		 */
 	public void setColorAndFont(int aColor, int aBcolor, int fontSize, Typeface typeface)
 	{
 		boardGAP = fontSize / 3;
@@ -307,17 +317,26 @@ public abstract class SimpleTextView extends View
 
 	public FingerPosInfo getFingerPosInfo(float x, float y)
 	{
-		if (pi < content.imageCount())
-			return null;
+		FingerPosInfo fpi;
+		if (pi < content.imageCount()) {
+			fpi = new FingerPosInfo();
+			fpi.type = FingerPosType.image;
+			fpi.line = pi;
+			return fpi;
+		}
 
-		FingerPosInfo pi = calcFingerPos(x, y);
-		if (pi == null)
+		fpi = calcFingerPos(x, y);
+		if (fpi == null) {
+			fpi = new FingerPosInfo();
+			fpi.type = FingerPosType.none;
+			return fpi;
+		}
+		fpi.type = FingerPosType.text;
+		String l = content.line(fpi.line);
+		if (fpi.offset >= l.length())
 			return null;
-		String l = content.line(pi.line);
-		if (pi.offset >= l.length())
-			return null;
-		pi.str = l.substring(pi.offset);
-		return pi;
+		fpi.str = l.substring(fpi.offset);
+		return fpi;
 	}
 
 	public String getFingerPosNote(float x, float y)
