@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -151,6 +152,8 @@ public class Reader extends Activity implements View.OnTouchListener
 		xbv = (SimpleTextView) findViewById(R.id.xbook_text);
 		xbv.setOnTouchListener(this);
 		setView(config.isHanStyle());
+		BitmapDrawable bd = (BitmapDrawable) getResources().getDrawable(R.drawable.zoom);
+		SimpleTextView.setZoomIcon(bd.getBitmap());
 
 		dictManager = new DictManager(this);
 		setDictEnable(config.isDictEnabled());
@@ -836,7 +839,6 @@ public class Reader extends Activity implements View.OnTouchListener
 		mi.put(R.string.menu_dict, getString(R.string.menu_dict));
 		mi.put(R.string.menu_bookmark, getString(R.string.menu_bookmark));
 		mi.put(R.string.menu_copy, getString(R.string.menu_copy));
-		mi.put(R.string.menu_image_view, getString(R.string.menu_image_view));
 
 		imageViewer = new ImageViewer(this);
 		pm = new PopupMenu(this, mi, new AdapterView.OnItemClickListener()
@@ -876,14 +878,6 @@ public class Reader extends Activity implements View.OnTouchListener
 									}
 								})
 							.setNegativeButton(R.string.button_cancel_text, null).show();
-						break;
-					case R.string.menu_image_view:
-						Bitmap bm = bv.getImage();
-						if (bm == null)
-							break;
-						imageViewer.show(bm,
-							fingerPosInfo.x * ImageViewer.CENT_SCALE / screenWidth,
-							fingerPosInfo.y * ImageViewer.CENT_SCALE / screenHeight);
 						break;
 				}
 				pm.hide();
@@ -1142,6 +1136,14 @@ public class Reader extends Activity implements View.OnTouchListener
 
 			public boolean onSingleTapUp(MotionEvent e)
 			{
+				if ((bv.currentPageType() == SimpleTextView.PageType.image)
+					&& (e.getX() > (screenWidth - SimpleTextView.zoomIconSize))
+					&& (e.getY() > (screenHeight - SimpleTextView.zoomIconSize))) {
+					Bitmap bm = bv.getImage();
+					if (bm != null)
+						imageViewer.show(bm);
+					return true;
+				}
 				String note = bv.getFingerPosNote(e.getX(), e.getY());
 				if (note != null) {
 					showNote(note, e);
@@ -1196,9 +1198,6 @@ public class Reader extends Activity implements View.OnTouchListener
 						items.add(R.string.menu_copy);
 						break;
 					case image:
-						title = getString(R.string.image_selected);
-						items.add(R.string.menu_image_view);
-						break;
 					case none:
 						title = getString(R.string.no_text_selected);
 						break;

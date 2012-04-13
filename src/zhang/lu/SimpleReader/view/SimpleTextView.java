@@ -21,6 +21,11 @@ public abstract class SimpleTextView extends View
 		text, image, none
 	}
 
+	public static enum PageType
+	{
+		text, image
+	}
+
 	public static class FingerPosInfo
 	{
 		public int line, offset;
@@ -47,6 +52,7 @@ public abstract class SimpleTextView extends View
 	public static final int defaultNightTextColor = Color.WHITE;
 	public static final int defaultNightBackgroundColor = Color.BLACK;
 	public static final int defaultFontSize = 26;
+	public static final int zoomIconSize = 48;
 
 	private static final Content defaultContent = new PlainTextContent();
 	protected static Content content = defaultContent;
@@ -65,6 +71,8 @@ public abstract class SimpleTextView extends View
 	protected float fw, fh, fd;
 	protected int w, h;
 	protected float xoffset, yoffset;
+
+	private static Bitmap zoomIcon = null;
 
 	public SimpleTextView(Context context, AttributeSet attrs)
 	{
@@ -111,14 +119,25 @@ public abstract class SimpleTextView extends View
 	{
 		if (pi >= content.imageCount())
 			return;
-		if (content.image(pi) == null)
+		Bitmap b;
+		if ((b = content.image(pi)) == null)
 			return;
-		canvas.drawBitmap(content.image(pi), null, new Rect(0, 0, w, h), null);
+		canvas.drawBitmap(b, null, new Rect(0, 0, w, h), null);
+		if (zoomIcon != null) {
+			canvas.drawBitmap(zoomIcon, null,
+				new Rect(w - zoomIconSize, h - zoomIconSize, w, h),
+				null);
+		}
 	}
 
 	public Bitmap getImage()
 	{
 		return content.image(pi);
+	}
+
+	public static void setZoomIcon(Bitmap icon)
+	{
+		zoomIcon = icon;
 	}
 
 	/*
@@ -400,6 +419,14 @@ public abstract class SimpleTextView extends View
 			pi = content.imageCount();
 		else
 			pi = content.imageCount() - 1;
+	}
+
+	public PageType currentPageType()
+	{
+		if (pi < content.imageCount())
+			return PageType.image;
+		else
+			return PageType.text;
 	}
 
 	protected abstract int calcNextLineOffset();

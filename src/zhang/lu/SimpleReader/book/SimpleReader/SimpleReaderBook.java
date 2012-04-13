@@ -20,7 +20,7 @@ import java.util.HashMap;
  */
 public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements Content
 {
-	public static final String[] INFO_TABLE_COLS = new String[] {"key", "value"};
+	public static final String[] INFO_TABLE_COLS = new String[]{"key", "value"};
 	public static final String INFO_TABLE_NAME = "info";
 
 	//private static final String configVersion = "version";
@@ -154,7 +154,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	@Override
 	public String chapterTitle(int index)
 	{
-		Cursor c = db.rawQuery(chapterSQL, new String[] {String.valueOf(index + indexBase)});
+		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(index + indexBase)});
 		if (!c.moveToFirst()) {
 			c.close();
 			return "";
@@ -205,7 +205,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 
 	private int selectLineCount()
 	{
-		Cursor cursor = db.rawQuery(countSQL, new String[] {String.valueOf(chapter)});
+		Cursor cursor = db.rawQuery(countSQL, new String[]{String.valueOf(chapter)});
 
 		if (!cursor.moveToNext()) {
 			cursor.close();
@@ -219,7 +219,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	private int selectSize(int end)
 	{
 		Cursor c = db
-			.rawQuery(sizeSQL, new String[] {String.valueOf(chapter), String.valueOf(end + indexBase - 1)});
+			.rawQuery(sizeSQL, new String[]{String.valueOf(chapter), String.valueOf(end + indexBase - 1)});
 		if (!c.moveToFirst()) {
 			c.close();
 			return 0;
@@ -245,7 +245,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 		int b = Math.max(lineno - LINE_CACHE_PREFETCH_SIZE, indexBase);
 		int e = Math.min(lineno + LINE_CACHE_SIZE, lineCount + indexBase - 1);
 
-		Cursor c = db.rawQuery(lineSQL, new String[] {String.valueOf(chapter), String.valueOf(b), String
+		Cursor c = db.rawQuery(lineSQL, new String[]{String.valueOf(chapter), String.valueOf(b), String
 			.valueOf(e)});
 		int i = b - indexBase;
 		while (c.moveToNext()) {
@@ -299,7 +299,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 			return null;
 		if (l.charAt(offset) != markChar)
 			return null;
-		Cursor c = db.rawQuery(noteSQL, new String[] {String.valueOf(chapter), String
+		Cursor c = db.rawQuery(noteSQL, new String[]{String.valueOf(chapter), String
 			.valueOf(index + indexBase), String.valueOf(offset)});
 		if (c.moveToFirst())
 			n = c.getString(0);
@@ -320,7 +320,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 		}
 
 		int idx = indexBase - 1;
-		Cursor c = db.rawQuery(searchSQL, new String[] {String.valueOf(chapter), String
+		Cursor c = db.rawQuery(searchSQL, new String[]{String.valueOf(chapter), String
 			.valueOf(cpi.line + indexBase), txt});
 		if (c.moveToFirst())
 			idx = c.getInt(0);
@@ -343,7 +343,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 		ContentPosInfo cpi = new ContentPosInfo();
 
 		int idx = indexBase - 1;
-		Cursor c = db.rawQuery(posSQL, new String[] {String.valueOf(chapter), String.valueOf(p)});
+		Cursor c = db.rawQuery(posSQL, new String[]{String.valueOf(chapter), String.valueOf(p)});
 		if (!c.moveToFirst()) {
 			cpi.line = 0;
 			cpi.offset = 0;
