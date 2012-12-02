@@ -99,8 +99,14 @@ public class HTextView extends SimpleTextView
 	{
 		int l = (int) ((w - xoffset - x) / fw);
 		int c = (int) ((y - yoffset - fd) / fh);
-		if ((l < 0) ||(c < 0) ||  (l >= ml) || (c >= mc))
-			return null;
+		if (l < 0)
+			l = 0;
+		else if (l >= ml)
+			l = ml - 1;
+		if (c < 0)
+			c = 0;
+		else if(c >= mc)
+			c = mc - 1;
 		if (fingerPosIndex[l] == -1)
 			return null;
 		int i = fingerPosOffset[l] + c;
