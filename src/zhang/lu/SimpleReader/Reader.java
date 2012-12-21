@@ -374,7 +374,6 @@ public class Reader extends Activity implements View.OnTouchListener
 		pushReadingInfo();
 		sp.setVisibility(View.VISIBLE);
 		sp.setEnabled(true);
-		et.requestFocus();
 	}
 
 	private void hideSeekPanel()
