@@ -91,7 +91,7 @@ public class UString
 	public String substring(int from)
 	{
 		if (allBMP)
-			return substring(from);
+			return data.substring(from);
 		return data.substring(index16(from));
 	}
 
