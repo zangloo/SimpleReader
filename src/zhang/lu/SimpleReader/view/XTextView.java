@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import zhang.lu.SimpleReader.UString;
 
 import java.util.ArrayList;
 
@@ -19,9 +20,9 @@ public class XTextView extends SimpleTextView
 
 	private class ViewLineInfo
 	{
-		int line;	// index of book content
-		int offset;	// offset of the line for draw
-		char[] str;	// char array of line for draw
+		int line;        // index of book content
+		int offset;        // offset of the line for draw
+		char[] str;        // char array of line for draw
 
 		ViewLineInfo(int l, int o, char[] s)
 		{
@@ -44,7 +45,7 @@ public class XTextView extends SimpleTextView
 		if (reset)
 			return npo;
 		int o, to = 0;
-		String line = content.line(pi);
+		UString line = content.line(pi);
 		do {
 			o = to;
 			to = calcChars(line, o, npo + 1);
@@ -57,7 +58,7 @@ public class XTextView extends SimpleTextView
 	{
 		if (reset)
 			return -1;
-		String line = content.line(pi);
+		UString line = content.line(pi);
 		int npo = calcChars(line, po, line.length());
 
 		return (npo == line.length()) ? -1 : npo;
@@ -79,7 +80,7 @@ public class XTextView extends SimpleTextView
 			return false;
 
 		int lc = 0, cp;
-		String line;
+		UString line;
 
 		if (po == 0) {
 			pi--;
@@ -119,11 +120,11 @@ public class XTextView extends SimpleTextView
 		nextpo = po;
 		y = yoffset + fh;
 
-		String line = null;
+		UString line = null;
 		vls.clear();
 		do {
 			if (line == null)
-				line = replaceTextChar(content.line(nextpi).toCharArray(), OC, NC);
+				line = content.line(nextpi).replaceChars(OC, NC);
 			int p;
 			p = calcChars(line, nextpo, line.length());
 			if (p > nextpo) {
@@ -181,26 +182,35 @@ public class XTextView extends SimpleTextView
 		return null;
 	}
 
-	private float calcWidth(String line, int posFrom, int posTo)
+	private float calcWidth(UString line, int posFrom, int posTo)
 	{
-		return paint.measureText(line, posFrom, posTo);
+		return paint.measureText(line.toString(), posFrom, posTo);
 	}
 
-	private int calcChars(String line, int posFrom, int posTo)
+	private int calcChars(UString line, int posFrom, int posTo)
 	{
-		return paint.breakText(line, posFrom, posTo, true, mll, null) + posFrom;
+		return breakTextChars(line, posFrom, posTo) + posFrom;
 	}
 
-	private int calcLines(String line, int posTo, ArrayList<Integer> li)
+	private int calcLines(UString line, int posTo, ArrayList<Integer> li)
 	{
 		int i = 0, lc = 0;
 
 		li.clear();
 		do {
 			li.add(i);
-			i += paint.breakText(line, i, posTo, true, mll, null);
+			i += breakTextChars(line, i, posTo);
 			lc++;
 		} while (i < posTo);
 		return lc;
+	}
+
+	private int breakTextChars(UString line, int posFrom, int posTo)
+	{
+		int f, t;
+		f = line.index16(posFrom);
+		t = line.index16(posTo);
+		int count = paint.breakText(line.toString(), f, t, true, mll, null);
+		return line.count32(f, f + count);
 	}
 }

@@ -1,8 +1,9 @@
 package zhang.lu.SimpleReader.book.txt;
 
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.vfs.VFile;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.*;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -33,7 +34,7 @@ public class TxtLoader implements BookLoader.Loader
 
 	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
-		List<String> lines = new ArrayList<String>();
+		List<UString> lines = new ArrayList<UString>();
 		String cs;
 
 		InputStream fs = f.getInputStream();
@@ -44,7 +45,7 @@ public class TxtLoader implements BookLoader.Loader
 
 		String line;
 		while ((line = br.readLine()) != null)
-			lines.add(formatText(line));
+			lines.add(new UString(formatText(line)));
 		return new SingleChapterBook(new PlainTextContent(lines));
 	}
 }

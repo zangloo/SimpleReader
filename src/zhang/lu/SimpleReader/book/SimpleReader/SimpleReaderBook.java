@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import zhang.lu.SimpleReader.Config;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.Content;
 import zhang.lu.SimpleReader.book.TOCRecord;
 import zhang.lu.SimpleReader.vfs.VFile;
@@ -86,7 +87,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	private static final int LINE_CACHE_SIZE = 90;
 	// fetch lines from (<index> - LINE_CACHE_PREFETCH_SIZE) to (<index> + LINE_CACHE_SIZE - 1)
 	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
-	private HashMap<Integer, String> lineCache = new HashMap<Integer, String>();
+	private HashMap<Integer, UString> lineCache = new HashMap<Integer, UString>();
 
 	SimpleReaderBook(VFile f, Config.ReadingInfo ri) throws IOException
 	{
@@ -237,7 +238,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public String line(int index)
+	public UString line(int index)
 	{
 		if (lineCache.containsKey(index))
 			return lineCache.get(index);
@@ -250,7 +251,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 		int i = b - indexBase;
 		while (c.moveToNext()) {
 			if (!lineCache.containsKey(i))
-				lineCache.put(i, c.getString(0));
+				lineCache.put(i, new UString(c.getString(0)));
 			i++;
 		}
 		c.close();
@@ -293,7 +294,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 			return null;
 		if (index >= lineCount)
 			return null;
-		String l = line(index);
+		UString l = line(index);
 		String n = null;
 		if (offset >= l.length())
 			return null;
@@ -329,7 +330,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 			return null;
 
 		idx -= indexBase;
-		String line = line(idx);
+		UString line = line(idx);
 		cpi.line = idx;
 		cpi.offset = line.indexOf(txt);
 
@@ -355,7 +356,7 @@ public class SimpleReaderBook extends zhang.lu.SimpleReader.book.Book implements
 
 		idx -= indexBase;
 		cpi.line = idx;
-		String l = line(idx);
+		UString l = line(idx);
 		cpi.offset = p - (size(idx + 1) - l.length());
 		return cpi;
 	}

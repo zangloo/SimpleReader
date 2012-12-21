@@ -10,6 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.mozilla.universalchardet.UniversalDetector;
+import zhang.lu.SimpleReader.UString;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,23 +32,23 @@ public class BookUtil
 	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
 
 	// put all text into lines
-	public static void HTML2Text(Element node, List<String> lines)
+	public static void HTML2Text(Element node, List<UString> lines)
 	{
 		HTML2Text(node, lines, null);
 	}
 
 	// if images != null, this function will return with all images href.
-	public static void HTML2Text(Element node, List<String> lines, @Nullable ArrayList<String> images)
+	public static void HTML2Text(Element node, List<UString> lines, @Nullable ArrayList<UString> images)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
 				String t = ((TextNode) child).text();
 				if (t.trim().length() > 0)
-					lines.add(t);
+					lines.add(new UString(t));
 			} else if (child instanceof Element) {
 				final Element e = (Element) child;
 				if ((images != null) && (e.tagName().equalsIgnoreCase("img")))
-					images.add(e.attr("src"));
+					images.add(new UString(e.attr("src")));
 				else
 					HTML2Text(e, lines, images);
 			}

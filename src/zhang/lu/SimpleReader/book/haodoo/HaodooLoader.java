@@ -1,8 +1,9 @@
 package zhang.lu.SimpleReader.book.haodoo;
 
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.vfs.VFile;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.*;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -84,12 +85,12 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 
 	private static class HaodooTOCR extends TOCRecord
 	{
-		ArrayList<String> lines;
+		ArrayList<UString> lines;
 
 		HaodooTOCR(String t)
 		{
 			super(t);
-			lines = new ArrayList<String>();
+			lines = new ArrayList<UString>();
 		}
 	}
 
@@ -180,12 +181,12 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 
 		int p = 0, np;
 		while ((np = s.indexOf("\r\n", p)) >= 0) {
-			ci.lines.add(s.substring(p, np));
+			ci.lines.add(new UString(s.substring(p, np)));
 			p = np + 2;
 		}
 
 		if (p < s.length()) {
-			ci.lines.add(s.substring(p));
+			ci.lines.add(new UString(s.substring(p)));
 		}
 	}
 
@@ -348,7 +349,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 
 		int p = 0, np;
 		while ((np = searchByte(buf, p, size, (byte) '\n')) >= 0) {
-			ci.lines.add(new String(buf, p, np - p, encode));
+			ci.lines.add(new UString(new String(buf, p, np - p, encode)));
 			p = np + 1;
 		}
 

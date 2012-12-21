@@ -6,6 +6,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jsoup.Jsoup;
 import zhang.lu.SimpleReader.Config;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.*;
 
 import java.io.InputStream;
@@ -62,8 +63,8 @@ class EPubBook extends ChaptersBook
 			final EPubLoader.NavPoint np = (EPubLoader.NavPoint) TOC.get(index);
 
 			final ZipArchiveEntry zae = zf.getEntry(ops_path + np.href);
-			ArrayList<String> lines = new ArrayList<String>();
-			ArrayList<String> imgref = new ArrayList<String>();
+			ArrayList<UString> lines = new ArrayList<UString>();
+			ArrayList<UString> imgref = new ArrayList<UString>();
 
 			InputStream is = zf.getInputStream(zae);
 			String cs;
@@ -80,8 +81,8 @@ class EPubBook extends ChaptersBook
 			}
 			content.setContent(lines);
 		} catch (Exception e) {
-			ArrayList<String> list = new ArrayList<String>();
-			list.add(e.getMessage());
+			ArrayList<UString> list = new ArrayList<UString>();
+			list.add(new UString(e.getMessage()));
 			content.setContent(list);
 		}
 		return true;

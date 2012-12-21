@@ -12,6 +12,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.SRBOnline.SRBOnlineLoader;
 import zhang.lu.SimpleReader.book.TOCRecord;
 
@@ -222,7 +223,7 @@ public class CloudFile extends VFile
 		return cs;
 	}
 
-	public ArrayList<String> getLines(int cidx) throws IOException, URISyntaxException
+	public ArrayList<UString> getLines(int cidx) throws IOException, URISyntaxException
 	{
 		ArrayList<NameValuePair> p = new ArrayList<NameValuePair>();
 		p.add(new BasicNameValuePair(PARAM_PATH, path));
@@ -234,9 +235,9 @@ public class CloudFile extends VFile
 		JsonParser jp = f.createJsonParser(in);
 
 		checkNextToken(jp, JsonToken.START_ARRAY);
-		ArrayList<String> ss = new ArrayList<String>();
+		ArrayList<UString> ss = new ArrayList<UString>();
 		while (jp.nextToken() == JsonToken.VALUE_STRING)
-			ss.add(jp.getText());
+			ss.add(new UString(jp.getText()));
 		jp.close();
 		return ss;
 	}

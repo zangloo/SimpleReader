@@ -5,6 +5,7 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.view.View;
 import org.jetbrains.annotations.Nullable;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.Content;
 import zhang.lu.SimpleReader.book.PlainTextContent;
 
@@ -351,7 +352,7 @@ public abstract class SimpleTextView extends View
 			return fpi;
 		}
 		fpi.type = FingerPosType.text;
-		String l = content.line(fpi.line);
+		UString l = content.line(fpi.line);
 		if (fpi.offset >= l.length())
 			return null;
 		fpi.str = l.substring(fpi.offset);
@@ -392,13 +393,12 @@ public abstract class SimpleTextView extends View
 		return content.searchText(t, sr);
 	}
 
-	protected static String replaceTextChar(char[] txt, char[] oc, char[] nc)
+	public static void replaceTextChar(char[] txt, char[] oc, char[] nc)
 	{
 		for (int i = 0; i < oc.length; i++)
 			for (int j = 0; j < txt.length; j++)
 				if (txt[j] == oc[i])
 					txt[j] = nc[i];
-		return String.valueOf(txt);
 	}
 
 	public void setHighlightInfo(@Nullable HighlightInfo hightlightInfo)

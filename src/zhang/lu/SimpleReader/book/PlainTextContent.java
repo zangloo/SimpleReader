@@ -2,9 +2,9 @@ package zhang.lu.SimpleReader.book;
 
 import android.graphics.Bitmap;
 import zhang.lu.SimpleReader.Reader;
+import zhang.lu.SimpleReader.UString;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,23 +15,24 @@ import java.util.List;
  */
 public class PlainTextContent implements Content
 {
-	private List<String> lines;
+	private List<UString> lines;
 	private int booksize = 0;
 
 	public PlainTextContent()
 	{
-		lines = new ArrayList<String>();
-		Collections.addAll(lines, Reader.ReaderTip);
+		lines = new ArrayList<UString>();
+		for(String l:Reader.ReaderTip)
+			lines.add(new UString(l));
 		booksize = calcSize();
 	}
 
-	public PlainTextContent(List<String> content)
+	public PlainTextContent(List<UString> content)
 	{
 		lines = content;
 		booksize = calcSize();
 	}
 
-	public void setContent(List<String> content)
+	public void setContent(List<UString> content)
 	{
 		lines = content;
 		booksize = calcSize();
@@ -40,13 +41,13 @@ public class PlainTextContent implements Content
 	private int calcSize()
 	{
 		int s = 0;
-		for (String l : lines)
+		for (UString l : lines)
 			s += l.length();
 		return s;
 	}
 
 	@Override
-	public String line(int index)
+	public UString line(int index)
 	{
 		return lines.get(index);
 	}

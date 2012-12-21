@@ -2,10 +2,11 @@ package zhang.lu.SimpleReader.book.SRBOnline;
 
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.vfs.CloudFile;
-import zhang.lu.SimpleReader.vfs.VFile;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.*;
 import zhang.lu.SimpleReader.book.SimpleReader.SimpleReaderLoader;
+import zhang.lu.SimpleReader.vfs.CloudFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,7 +23,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 {
 	public static class OnlineTOC extends TOCRecord
 	{
-		private ArrayList<String> lines = null;
+		private ArrayList<UString> lines = null;
 		private HashMap<Long, String> notes = null;
 
 		public OnlineTOC(String t)
@@ -75,7 +76,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 				return null;
 			if (line >= lineCount())
 				return null;
-			String l = line(line);
+			UString l = line(line);
 			if (offset >= l.length())
 				return null;
 			if (l.charAt(offset) != op.mark)
@@ -128,8 +129,8 @@ public class SRBOnlineLoader implements BookLoader.Loader
 				content.setOCI(oci);
 				content.setContent(oci.lines);
 			} catch (Exception e) {
-				ArrayList<String> list = new ArrayList<String>();
-				list.add(e.getMessage());
+				ArrayList<UString> list = new ArrayList<UString>();
+				list.add(new UString(e.getMessage()));
 				content.setOCI(null);
 				content.setContent(list);
 			}

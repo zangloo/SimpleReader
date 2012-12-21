@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import zhang.lu.SimpleReader.UString;
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,8 +14,8 @@ import android.util.AttributeSet;
  */
 public class HTextView extends SimpleTextView
 {
-	public static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─','…', 9, '(', ')', '[', ']', '<', '>', '{', '}'};
-	public static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱','⋮', '　', '︵', '︶', '︹', '︺', '︻', '︼', '︷', '︸'};
+	public static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', '…', 9, '(', ')', '[', ']', '<', '>', '{', '}'};
+	public static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '⋮', '　', '︵', '︶', '︹', '︺', '︻', '︼', '︷', '︸'};
 
 	private int mc;
 	private int[] fingerPosIndex;
@@ -37,53 +38,55 @@ public class HTextView extends SimpleTextView
 	{
 		int lc = 0;
 		float x, y;
-		float[] xy = new float[mc * 2];
-		char[] buf = new char[mc];
+		float[] xy = new float[mc * 2 * 2];
+		char[] buf = new char[mc * 2];
 
 		nextpi = pi;
 		nextpo = po;
 		x = w - xoffset - fw;
 
-		String line = null;
+		UString line = null;
 		do {
 			if (line == null)
-				line = replaceTextChar(content.line(nextpi).toCharArray(), SC, TC);
+				line = content.line(nextpi).replaceChars(SC, TC);
 			y = yoffset + fh;
 			int cc = line.length() - nextpo;
 			if (cc > mc)
 				cc = mc;
 			fingerPosIndex[lc] = nextpi;
 			fingerPosOffset[lc] = nextpo;
-			int i = 0;
-			for (; i < cc; i++) {
-				buf[i] = line.charAt(nextpo + i);
-				xy[i * 2] = x;
-				xy[i * 2 + 1] = y;
+			int len = 0;
+			int count16 = 0;
+			for (; len < cc; len++) {
+				int ch = line.charAt(nextpo + len);
+				count16 += Character.toChars(ch, buf, count16);
+				xy[len * 2] = x;
+				xy[len * 2 + 1] = y;
 				y += fh;
 			}
 			if (cc > 0) {
-				canvas.drawPosText(buf, 0, cc, xy, paint);
+				canvas.drawPosText(buf, 0, count16, xy, paint);
 				if ((hli != null) && (hli.line == nextpi) && (hli.end > nextpo) &&
-					(hli.begin < nextpo + i)) {
+					(hli.begin < nextpo + len)) {
 					int b = Math.max(hli.begin, nextpo);
-					int e = Math.min(hli.end, nextpo + i);
+					int e = Math.min(hli.end, nextpo + len);
 					for (int j = 0; j < e - b; j++) {
 						xy[j * 2] = xy[(b - nextpo + j) * 2];
 						xy[j * 2 + 1] = xy[(b - nextpo + j) * 2 + 1];
 					}
 					Rect r = new Rect((int) xy[0], (int) (xy[1] - fh + fd),
-							  (int) (xy[(e - b - 1) * 2] + fw),
-							  (int) (xy[(e - b - 1) * 2 + 1] + fd));
+						(int) (xy[(e - b - 1) * 2] + fw),
+						(int) (xy[(e - b - 1) * 2 + 1] + fd));
 					canvas.drawRect(r, paint);
 					paint.setColor(bcolor);
-					canvas.drawPosText(buf, b - nextpo, e - b, xy, paint);
+					canvas.drawPosText(buf, b - nextpo, line.count16(b, e), xy, paint);
 					paint.setColor(color);
 				}
 			}
 			lc++;
 			x -= fw;
 
-			nextpo += i;
+			nextpo += len;
 			if (nextpo == line.length()) {
 				nextpo = 0;
 				nextpi++;
@@ -105,7 +108,7 @@ public class HTextView extends SimpleTextView
 			l = ml - 1;
 		if (c < 0)
 			c = 0;
-		else if(c >= mc)
+		else if (c >= mc)
 			c = mc - 1;
 		if (fingerPosIndex[l] == -1)
 			return null;

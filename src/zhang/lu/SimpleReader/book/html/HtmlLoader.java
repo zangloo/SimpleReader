@@ -2,8 +2,9 @@ package zhang.lu.SimpleReader.book.html;
 
 import org.jsoup.Jsoup;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.vfs.VFile;
+import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.*;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class HtmlLoader implements BookLoader.Loader
 
 	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
-		List<String> lines = new ArrayList<String>();
+		List<UString> lines = new ArrayList<UString>();
 		String cs;
 
 		InputStream fs = f.getInputStream();

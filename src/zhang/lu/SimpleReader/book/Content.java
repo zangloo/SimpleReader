@@ -1,6 +1,7 @@
 package zhang.lu.SimpleReader.book;
 
 import android.graphics.Bitmap;
+import zhang.lu.SimpleReader.UString;
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,7 +38,7 @@ public interface Content
 	public Bitmap image(int index);
 
 	// return line at index
-	public String line(int index);
+	public UString line(int index);
 
 	// return line count
 	public int lineCount();
