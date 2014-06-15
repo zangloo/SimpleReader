@@ -6,15 +6,17 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
 import org.jetbrains.annotations.Nullable;
-import zhang.lu.SimpleReader.popup.BookmarkManager;
-import zhang.lu.SimpleReader.vfs.VFile;
-import zhang.lu.SimpleReader.view.SimpleTextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import zhang.lu.SimpleReader.popup.BookmarkManager;
+import zhang.lu.SimpleReader.vfs.VFile;
+import zhang.lu.SimpleReader.view.SimpleTextView;
 
 /**
  * Created by IntelliJ IDEA.
@@ -45,12 +47,21 @@ public class Config extends SQLiteOpenHelper
 			value = v;
 		}
 
-		public int v() { return value; }
+		public int v()
+		{
+			return value;
+		}
 
 		@Override
-		public String toString() { return string; }
+		public String toString()
+		{
+			return string;
+		}
 
-		public String s() { return super.toString(); }
+		public String s()
+		{
+			return super.toString();
+		}
 	}
 
 	public static class ReadingInfo
@@ -62,7 +73,10 @@ public class Config extends SQLiteOpenHelper
 		public int percent;
 		private long id;
 
-		public long getID() {return id;}
+		public long getID()
+		{
+			return id;
+		}
 	}
 
 	private static final int DB_VERSION = 2;
@@ -122,15 +136,16 @@ public class Config extends SQLiteOpenHelper
 	public void onCreate(SQLiteDatabase db)
 	{
 		db.execSQL("create table " + CONFIG_TABLE_NAME + "(" + CONFIG_TABLE_COLS[0] + "  text primary key, " +
-				   CONFIG_TABLE_COLS[1] + " text)");
+			CONFIG_TABLE_COLS[1] + " text)");
 		db.execSQL(
 			"create table " + BOOK_INFO_TABLE_NAME + "(" + BOOK_INFO_TABLE_COLS[0] + " text primary key, " +
 				BOOK_INFO_TABLE_COLS[1] + " integer, " + BOOK_INFO_TABLE_COLS[2] + " text, " +
 				BOOK_INFO_TABLE_COLS[3] + " integer, " + BOOK_INFO_TABLE_COLS[4] + " integer, " +
-				BOOK_INFO_TABLE_COLS[5] + " integer)");
+				BOOK_INFO_TABLE_COLS[5] + " integer)"
+		);
 		db.execSQL("create table " + BOOKMARKS_TABLE_NAME + "(" + BOOKMARKS_TABLE_COLS[0] + " integer, " +
-				   BOOKMARKS_TABLE_COLS[1] + "  text, " + BOOKMARKS_TABLE_COLS[2] + " integer, " +
-				   BOOKMARKS_TABLE_COLS[3] + " integer, " + BOOKMARKS_TABLE_COLS[4] + " integer)");
+			BOOKMARKS_TABLE_COLS[1] + "  text, " + BOOKMARKS_TABLE_COLS[2] + " integer, " +
+			BOOKMARKS_TABLE_COLS[3] + " integer, " + BOOKMARKS_TABLE_COLS[4] + " integer)");
 
 		// will this database be so big, that need to be indexed?
 		db.execSQL(
@@ -148,7 +163,7 @@ public class Config extends SQLiteOpenHelper
 		switch (oldVersion) {
 			case 1:
 				db.execSQL("alter table " + BOOK_INFO_TABLE_NAME + " add " + BOOK_INFO_TABLE_COLS[2] +
-						   " text");
+					" text");
 				break;
 		}
 	}
@@ -179,37 +194,8 @@ public class Config extends SQLiteOpenHelper
 		fontFile = getString(config, configFontFile, null);
 		pagingDirect = GestureDirect.valueOf(getString(config, configPagingDirect, GestureDirect.up.s()));
 
-		StringBuilder sql = new StringBuilder("select ");
-		sql.append(BOOK_INFO_TABLE_COLS[0]);
-		sql.append(',');
-		sql.append(BOOK_INFO_TABLE_COLS[1]);
-		sql.append(',');
-		sql.append(BOOK_INFO_TABLE_COLS[2]);
-		sql.append(',');
-		sql.append(BOOK_INFO_TABLE_COLS[3]);
-		sql.append(',');
-		sql.append(BOOK_INFO_TABLE_COLS[4]);
-		sql.append(',');
-		sql.append(BOOK_INFO_TABLE_COLS[5]);
-		sql.append(", bi.");
-		sql.append(BOOK_INFO_TABLE_COLS[6]);
-		sql.append(" from ");
-		sql.append(BOOK_INFO_TABLE_NAME);
-		sql.append(" bi, ");
-		sql.append(CONFIG_TABLE_NAME);
-		sql.append(" cf where bi.");
-		sql.append(BOOK_INFO_TABLE_COLS[0]);
-		sql.append(" = cf.");
-		sql.append(CONFIG_TABLE_COLS[1]);
-		sql.append(" and cf.");
-		sql.append(CONFIG_TABLE_COLS[0]);
-		sql.append(" like '");
-		sql.append(RECENTLY_FILE_PREFIX);
-		sql.append("%' order by cf.");
-		sql.append(CONFIG_TABLE_COLS[0]);
-
 		rfl.clear();
-		cursor = db.rawQuery(sql.toString(), null);
+		cursor = db.rawQuery("select " + BOOK_INFO_TABLE_COLS[0] + ',' + BOOK_INFO_TABLE_COLS[1] + ',' + BOOK_INFO_TABLE_COLS[2] + ',' + BOOK_INFO_TABLE_COLS[3] + ',' + BOOK_INFO_TABLE_COLS[4] + ',' + BOOK_INFO_TABLE_COLS[5] + ", bi." + BOOK_INFO_TABLE_COLS[6] + " from " + BOOK_INFO_TABLE_NAME + " bi, " + CONFIG_TABLE_NAME + " cf where bi." + BOOK_INFO_TABLE_COLS[0] + " = cf." + CONFIG_TABLE_COLS[1] + " and cf." + CONFIG_TABLE_COLS[0] + " like '" + RECENTLY_FILE_PREFIX + "%' order by cf." + CONFIG_TABLE_COLS[0], null);
 		while (cursor.moveToNext())
 			rfl.add(retrieveReadingInfo(cursor, new ReadingInfo()));
 		cursor.close();
@@ -237,7 +223,7 @@ public class Config extends SQLiteOpenHelper
 	private int getInt(Map<String, String> config, String name, int defaultValue)
 	{
 		try {
-			return new Integer(config.get(name));
+			return Integer.valueOf(config.get(name));
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -279,7 +265,7 @@ public class Config extends SQLiteOpenHelper
 		db.execSQL("delete from " + CONFIG_TABLE_NAME);
 		for (Map.Entry<String, String> e : config.entrySet())
 			db.execSQL("insert into " + CONFIG_TABLE_NAME + " values (?, ?)",
-				   new String[]{e.getKey(), e.getValue()});
+				new String[]{e.getKey(), e.getValue()});
 	}
 
 	public Config dup()
@@ -362,7 +348,7 @@ public class Config extends SQLiteOpenHelper
 
 		Cursor cursor = db
 			.query(BOOK_INFO_TABLE_NAME, BOOK_INFO_TABLE_COLS, "name = ?", new String[]{filename}, null,
-			       null, null);
+				null, null);
 		if (cursor.moveToFirst())
 			retrieveReadingInfo(cursor, ri);
 		cursor.close();
@@ -555,14 +541,14 @@ public class Config extends SQLiteOpenHelper
 
 		Cursor cursor = db
 			.query(BOOKMARKS_TABLE_NAME, BOOKMARKS_TABLE_COLS, BOOKMARKS_TABLE_COLS[0] + " = " + ri.id,
-			       null, null, null,
-			       BOOKMARKS_TABLE_COLS[2] + "," + BOOKMARKS_TABLE_COLS[3] + "," + BOOKMARKS_TABLE_COLS[4]);
+				null, null, null,
+				BOOKMARKS_TABLE_COLS[2] + "," + BOOKMARKS_TABLE_COLS[3] + "," + BOOKMARKS_TABLE_COLS[4]);
 
 		ArrayList<BookmarkManager.Bookmark> bml = new ArrayList<BookmarkManager.Bookmark>();
 
 		while (cursor.moveToNext())
 			bml.add(BookmarkManager.createBookmark(cursor.getString(1), cursor.getInt(2), cursor.getInt(3),
-							       cursor.getInt(4), cursor.getInt(5), ri));
+				cursor.getInt(4), cursor.getInt(5), ri));
 		cursor.close();
 
 		return bml;
