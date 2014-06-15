@@ -9,6 +9,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -115,6 +117,14 @@ public class ZipBasedFile extends VFile
 				p.name = n;
 				ps.add(p);
 			}
+			Collections.sort(ps, new Comparator<Property>()
+			{
+				@Override
+				public int compare(Property p1, Property p2)
+				{
+					return p1.name.compareTo(p2.name);
+				}
+			});
 			return ps;
 		} catch (FileNotFoundException e) {
 			return null;
