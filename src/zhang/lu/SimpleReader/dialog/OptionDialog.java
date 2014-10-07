@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.*;
 import zhang.lu.SimpleReader.Config;
@@ -60,8 +61,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 		// font size list
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
-									android.R.layout.simple_spinner_item,
-									fontSizeStringList);
+			android.R.layout.simple_spinner_item,
+			fontSizeStringList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		Spinner spinner = (Spinner) findViewById(R.id.font_size);
 		spinner.setAdapter(adapter);
@@ -94,8 +95,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
   */
 
 		ArrayAdapter<Config.GestureDirect> aa = new ArrayAdapter<Config.GestureDirect>(getContext(),
-											       android.R.layout.simple_spinner_item,
-											       pds);
+			android.R.layout.simple_spinner_item,
+			pds);
 		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.paging_direct);
 		spinner.setAdapter(aa);
@@ -153,7 +154,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		spinner.setOnItemSelectedListener(this);
 
 		tp.setTypeface(getTypeface(conf.getFontFile()));
-		tp.setTextSize(fs);
+		tp.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fs);
 
 		isBright = conf.isColorBright();
 		spinner = (Spinner) findViewById(R.id.color_mode);
@@ -272,7 +273,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		switch (s.getId()) {
 			case R.id.font_size:
 				fs = fontSizeList[s.getSelectedItemPosition()];
-				tp.setTextSize(fs);
+				tp.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fs);
 				break;
 			case R.id.color_mode:
 				if (isBright != (s.getSelectedItemPosition() == 0)) {

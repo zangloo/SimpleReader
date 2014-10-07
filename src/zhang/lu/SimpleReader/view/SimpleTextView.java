@@ -3,6 +3,7 @@ package zhang.lu.SimpleReader.view;
 import android.content.Context;
 import android.graphics.*;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.View;
 import org.jetbrains.annotations.Nullable;
 import zhang.lu.SimpleReader.UString;
@@ -74,14 +75,16 @@ public abstract class SimpleTextView extends View
 	protected float xoffset, yoffset;
 
 	private static Bitmap zoomIcon = null;
+	DisplayMetrics metrics;
 
 	public SimpleTextView(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);
+		metrics = getContext().getResources().getDisplayMetrics();
 		paint = new Paint();
 		paint.setColor(defaultTextColor);
 		paint.setAntiAlias(true);
-		paint.setTextSize(defaultFontSize);
+		setTextSize(paint, defaultFontSize);
 		bcolor = defaultBackgroundColor;
 		color = defaultTextColor;
 		fontCalc();
@@ -199,11 +202,17 @@ public abstract class SimpleTextView extends View
 		bcolor = aBcolor;
 		color = aColor;
 		paint.setColor(color);
-		paint.setTextSize(fontSize);
+		setTextSize(paint, fontSize);
 		paint.setTypeface(typeface);
 		fontCalc();
 		reset = true;
 		//invalidate();
+	}
+
+	private void setTextSize(Paint paint, int dip)
+	{
+		float px = dip * (metrics.densityDpi / 160f);
+		paint.setTextSize(px);
 	}
 
 	public void setContent(@Nullable Content newContent)
