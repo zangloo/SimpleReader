@@ -24,6 +24,7 @@ import zhang.lu.SimpleReader.dialog.DictManager;
 import zhang.lu.SimpleReader.dialog.FileDialog;
 import zhang.lu.SimpleReader.dialog.OptionDialog;
 import zhang.lu.SimpleReader.popup.*;
+import zhang.lu.SimpleReader.popup.PopupMenu;
 import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.view.SimpleTextView;
 
@@ -67,7 +68,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private interface GestureCallbackInterface
 	{
-		public void callback();
+		void callback();
 	}
 
 	private SimpleTextView hbv, xbv;
