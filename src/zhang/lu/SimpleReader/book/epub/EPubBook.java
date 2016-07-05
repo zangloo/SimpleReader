@@ -31,7 +31,10 @@ class EPubBook extends ChaptersBook
 		int imageCount = 0;
 
 		@Override
-		public int imageCount() {return imageCount;}
+		public int imageCount()
+		{
+			return imageCount;
+		}
 
 		@Override
 		public Bitmap image(int index)
@@ -62,22 +65,27 @@ class EPubBook extends ChaptersBook
 			chapter = index;
 			final EPubLoader.NavPoint np = (EPubLoader.NavPoint) TOC.get(index);
 
-			final ZipArchiveEntry zae = zf.getEntry(ops_path + np.href);
+			ZipArchiveEntry zae;
 			ArrayList<UString> lines = new ArrayList<UString>();
-			ArrayList<UString> imgref = new ArrayList<UString>();
+			int start = 0;
+			for (String href : np.href) {
+				zae = zf.getEntry(ops_path + href);
+				ArrayList<UString> imgref = new ArrayList<UString>();
 
-			InputStream is = zf.getInputStream(zae);
-			String cs;
-			cs = BookUtil.detect(is);
-			is.close();
+				InputStream is = zf.getInputStream(zae);
+				String cs;
+				cs = BookUtil.detect(is);
+				is.close();
 
-			is = zf.getInputStream(zae);
-			BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, imgref);
+				is = zf.getInputStream(zae);
+				BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, imgref);
 
-			content.imageCount = imgref.size();
-			if (content.imageCount > 0) {
-				lines.addAll(0, imgref);
-				content.images.clear();
+				content.imageCount = imgref.size();
+				if (content.imageCount > 0) {
+					lines.addAll(start, imgref);
+					content.images.clear();
+				}
+				start += lines.size();
 			}
 			content.setContent(lines);
 		} catch (Exception e) {
@@ -89,9 +97,14 @@ class EPubBook extends ChaptersBook
 	}
 
 	@Override
-	public Content content(int index) { return content; }
+	public Content content(int index)
+	{
+		return content;
+	}
 
 	@Override
-	public void close() {}
+	public void close()
+	{
+	}
 }
 

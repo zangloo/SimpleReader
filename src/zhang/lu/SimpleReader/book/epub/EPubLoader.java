@@ -1,6 +1,8 @@
 package zhang.lu.SimpleReader.book.epub;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -8,18 +10,15 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLReaderAdapter;
 import org.xml.sax.helpers.XMLReaderFactory;
 import zhang.lu.SimpleReader.Config;
-import zhang.lu.SimpleReader.vfs.RealFile;
-import zhang.lu.SimpleReader.vfs.VFile;
 import zhang.lu.SimpleReader.book.BookLoader;
 import zhang.lu.SimpleReader.book.TOCRecord;
+import zhang.lu.SimpleReader.vfs.RealFile;
+import zhang.lu.SimpleReader.vfs.VFile;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,7 +41,7 @@ public class EPubLoader extends XMLReaderAdapter implements BookLoader.Loader
 	{
 		final int order;
 		final int level;
-		String href = "";
+		List<String> href = new ArrayList<String>();
 
 		NavPoint(int o, int l)
 		{
@@ -52,7 +51,10 @@ public class EPubLoader extends XMLReaderAdapter implements BookLoader.Loader
 		}
 
 		@Override
-		public int level() { return level; }
+		public int level()
+		{
+			return level;
+		}
 	}
 
 	private static final String TAG_NAVMAP = "navmap";
@@ -108,7 +110,7 @@ public class EPubLoader extends XMLReaderAdapter implements BookLoader.Loader
 					state = RS.label;
 				else if (TAG_CONTENT.equals(tag))
 					if (!ps.isEmpty())
-						ps.lastElement().href = atts.getValue("src");
+						ps.lastElement().href.add(atts.getValue("src"));
 				break;
 			case label:
 				if (TAG_TEXT.equals(tag)) {
@@ -182,13 +184,31 @@ public class EPubLoader extends XMLReaderAdapter implements BookLoader.Loader
 
 		// parser opf_file
 		is = zf.getInputStream(zf.getEntry(opf_file));
-		nl = db.parse(is).getDocumentElement().getElementsByTagName("item");
+		Document opf = db.parse(is);
+
+		List<String> spines = new ArrayList<String>();
+		nl = opf.getElementsByTagName("itemref");
+		for (int i = 0; i < nl.getLength(); i++) {
+			String idref = nl.item(i).getAttributes().getNamedItem("idref").getNodeValue();
+			spines.add(idref);
+		}
+
+		nl = opf.getDocumentElement().getElementsByTagName("item");
 		String ncx_file = null;
-		for (int i = 0; i < nl.getLength(); i++)
-			if (nl.item(i).getAttributes().getNamedItem("id").getNodeValue().equals("ncx")) {
-				ncx_file = ops_path + nl.item(i).getAttributes().getNamedItem("href").getNodeValue();
-				break;
+		Map<String, String> items = new HashMap<String, String>();
+		for (int i = 0; i < nl.getLength(); i++) {
+			NamedNodeMap attributes = nl.item(i).getAttributes();
+			String id = attributes.getNamedItem("id").getNodeValue();
+			if (id.equals("ncx")) {
+				ncx_file = ops_path + attributes.getNamedItem("href").getNodeValue();
+				continue;
 			}
+			items.put(id, attributes.getNamedItem("href").getNodeValue());
+		}
+
+		List<String> hrefs = new ArrayList<String>();
+		for (String spine : spines)
+			hrefs.add(items.get(spine));
 
 		if (ncx_file == null)
 			throw new Exception("Error parser the ops file:\"" + file.getPath() + "\"");
@@ -200,6 +220,17 @@ public class EPubLoader extends XMLReaderAdapter implements BookLoader.Loader
 
 		is = zf.getInputStream(zf.getEntry(ncx_file));
 		parse(new InputSource(is));
+
+		int i = 1;
+		NavPoint cur = (NavPoint) nps.get(0);
+		NavPoint np = nps.size() > 0 ? (NavPoint) nps.get(i) : null;
+		for (String href : hrefs)
+			if (np != null && href.equals(np.href.get(0))) {
+				i++;
+				cur = np;
+				np = i < nps.size() ? (NavPoint) nps.get(i) : null;
+			} else
+				cur.href.add(href);
 
 		if (nps.isEmpty())
 			throw new Exception("Error parser the ncx file:\"" + file.getPath() + "\"");
