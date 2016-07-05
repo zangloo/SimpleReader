@@ -14,7 +14,7 @@ import zhang.lu.SimpleReader.UString;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -38,7 +38,7 @@ public class BookUtil
 	}
 
 	// if images != null, this function will return with all images href.
-	public static void HTML2Text(Element node, List<UString> lines, @Nullable ArrayList<UString> images)
+	public static void HTML2Text(Element node, List<UString> lines, @Nullable LinkedHashSet<String> images)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
@@ -48,7 +48,7 @@ public class BookUtil
 			} else if (child instanceof Element) {
 				final Element e = (Element) child;
 				if ((images != null) && (e.tagName().equalsIgnoreCase("img")))
-					images.add(new UString(e.attr("src")));
+					images.add(e.attr("src"));
 				else
 					HTML2Text(e, lines, images);
 			}
@@ -82,9 +82,23 @@ public class BookUtil
 		return encoding;
 	}
 
+	static public String concatPath(String prefix, String path)
+	{
+		if (prefix.endsWith("/"))
+			prefix = prefix.substring(0, prefix.length() - 1);
+		while (path.startsWith("../")) {
+			path = path.substring(3);
+			int index = prefix.indexOf('/');
+			if (index == -1)
+				prefix = "";
+			else
+				prefix = prefix.substring(0, index);
+		}
+		return prefix + "/" + path;
+	}
+
 	static public Bitmap loadPicFromZip(ZipFile zip, String picName)
 	{
-
 		Bitmap bm = null;
 		try {
 			ZipArchiveEntry zae;

@@ -222,13 +222,17 @@ public class EPubLoader extends XMLReaderAdapter implements BookLoader.Loader
 		parse(new InputSource(is));
 
 		int i = 1;
-		NavPoint cur = (NavPoint) nps.get(0);
-		NavPoint np = nps.size() > 0 ? (NavPoint) nps.get(i) : null;
+		NavPoint cur = null;
+		NavPoint np = (NavPoint) nps.get(0);
 		for (String href : hrefs)
 			if (np != null && href.equals(np.href.get(0))) {
 				i++;
 				cur = np;
 				np = i < nps.size() ? (NavPoint) nps.get(i) : null;
+			} else if (cur == null) {
+				cur = new NavPoint(0, 0);
+				cur.href.add(href);
+				nps.add(0, cur);
 			} else
 				cur.href.add(href);
 

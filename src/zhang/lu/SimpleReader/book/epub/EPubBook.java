@@ -10,8 +10,7 @@ import zhang.lu.SimpleReader.UString;
 import zhang.lu.SimpleReader.book.*;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -41,7 +40,7 @@ class EPubBook extends ChaptersBook
 		{
 			if (images.containsKey(index))
 				return images.get(index);
-			Bitmap bm = BookUtil.loadPicFromZip(zf, ops_path + line(index));
+			Bitmap bm = BookUtil.loadPicFromZip(zf, line(index).toString());
 			images.put(index, bm);
 
 			if (bm == null)
@@ -68,9 +67,11 @@ class EPubBook extends ChaptersBook
 			ZipArchiveEntry zae;
 			ArrayList<UString> lines = new ArrayList<UString>();
 			int start = 0;
+			content.imageCount = 0;
 			for (String href : np.href) {
-				zae = zf.getEntry(ops_path + href);
-				ArrayList<UString> imgref = new ArrayList<UString>();
+				String htmlPath = ops_path + href;
+				zae = zf.getEntry(htmlPath);
+				LinkedHashSet<String> imgref = new LinkedHashSet<String>();
 
 				InputStream is = zf.getInputStream(zae);
 				String cs;
@@ -80,9 +81,17 @@ class EPubBook extends ChaptersBook
 				is = zf.getInputStream(zae);
 				BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, imgref);
 
-				content.imageCount = imgref.size();
-				if (content.imageCount > 0) {
-					lines.addAll(start, imgref);
+				content.imageCount += imgref.size();
+				if (imgref.size() > 0) {
+					int pos = htmlPath.lastIndexOf('/');
+					if (pos < 0)
+						pos = 0;
+					String path = htmlPath.substring(0, pos);
+					List<UString> realRef = new ArrayList<UString>(imgref.size());
+					for (String ref : imgref)
+						realRef.add(new UString(BookUtil.concatPath(path, ref)));
+
+					lines.addAll(start, realRef);
 					content.images.clear();
 				}
 				start += lines.size();

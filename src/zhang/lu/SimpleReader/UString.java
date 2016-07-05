@@ -12,8 +12,8 @@ import zhang.lu.SimpleReader.view.SimpleTextView;
  */
 public class UString
 {
-	String data;
-	boolean allBMP;
+	private String data;
+	private boolean allBMP;
 
 	public UString(String str)
 	{
