@@ -7,8 +7,11 @@
       <root url="jar://$PROJECT_DIR$/libs/annotations.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/juniversalchardet-1.0.3.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/jackson-mini-1.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/itextg-5.5.10.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/libs/itextg-5.5.10-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

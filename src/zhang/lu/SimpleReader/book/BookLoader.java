@@ -10,6 +10,7 @@ import zhang.lu.SimpleReader.book.SimpleReader.SimpleReaderLoader;
 import zhang.lu.SimpleReader.book.epub.EPubLoader;
 import zhang.lu.SimpleReader.book.haodoo.HaodooLoader;
 import zhang.lu.SimpleReader.book.html.HtmlLoader;
+import zhang.lu.SimpleReader.book.pdf.PDFLoader;
 import zhang.lu.SimpleReader.book.txt.TxtLoader;
 import zhang.lu.SimpleReader.vfs.VFile;
 
@@ -41,6 +42,7 @@ public class BookLoader
 		loaders.add(new HaodooLoader());
 		loaders.add(new SimpleReaderLoader());
 		loaders.add(new SRBOnlineLoader());
+		loaders.add(new PDFLoader());
 		try {
 			System.setProperty("org.xml.sax.driver", "org.xmlpull.v1.sax2.Driver");
 			loaders.add(new EPubLoader());
