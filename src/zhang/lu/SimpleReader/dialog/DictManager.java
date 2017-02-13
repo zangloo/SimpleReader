@@ -36,15 +36,15 @@ public class DictManager
 		String desc;
 	}
 
-	public static final String DICT_INFO_TABLE_NAME = "info";
-	public static final String[] DICT_INFO_QUERY_COLS = {"key", "value"};
+	private static final String DICT_INFO_TABLE_NAME = "info";
+	private static final String[] DICT_INFO_QUERY_COLS = {"key", "value"};
 
 	//public static final String DICT_VERSION_NAME = "version";
-	public static final String DICT_HAS_WORD_NAME = "hasWord";
-	public static final String DICT_MAX_KEY_LENGTH = "maxKeyLength";
-	public static final String DICT_SELECT_SQL = "selectSQL";
-	public static final String DICT_LIST_SQL = "listSQL";
-	public static final String DICT_WEB_VIEW = "webView";
+	private static final String DICT_HAS_WORD_NAME = "hasWord";
+	private static final String DICT_MAX_KEY_LENGTH = "maxKeyLength";
+	private static final String DICT_SELECT_SQL = "selectSQL";
+	private static final String DICT_LIST_SQL = "listSQL";
+	private static final String DICT_WEB_VIEW = "webView";
 
 	private Context context;
 	private AlertDialog ad;
@@ -101,7 +101,7 @@ public class DictManager
 			//dictVersion = di.get(DICT_VERSION_NAME);
 			dictHasWord = di.get(DICT_HAS_WORD_NAME).equals("true");
 			if (dictHasWord)
-				dictMaxWordLen = new Integer(di.get(DICT_MAX_KEY_LENGTH));
+				dictMaxWordLen = Integer.valueOf(di.get(DICT_MAX_KEY_LENGTH));
 			else
 				dictMaxWordLen = 1;
 			String s = di.get(DICT_WEB_VIEW);
