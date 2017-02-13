@@ -12,8 +12,12 @@ import zhang.lu.SimpleReader.R;
 import zhang.lu.SimpleReader.Util;
 import zhang.lu.SimpleReader.view.SimpleTextView;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,6 +27,8 @@ import java.util.HashMap;
  */
 public class DictManager
 {
+	private static final Pattern DictTextATag = Pattern.compile("<a[ ]+href=\"([^\"]+)\">");
+
 	static class DictData
 	{
 		String key;
@@ -184,8 +190,8 @@ public class DictManager
 	private void dictListDlg(String[] list)
 	{
 		new AlertDialog.Builder(context).setTitle(R.string.dict_list_title)
-						.setNegativeButton(R.string.button_cancel_text, null)
-						.setItems(list, dictListener).show();
+			.setNegativeButton(R.string.button_cancel_text, null)
+			.setItems(list, dictListener).show();
 	}
 
 	private void showDictDlg(String key)
@@ -202,7 +208,32 @@ public class DictManager
 	private void dictDlgPlain(DictData dd)
 	{
 		new AlertDialog.Builder(context).setTitle(dictName + ": " + dd.key).setMessage(dd.part + "\n" + dd.desc)
-						.setPositiveButton(R.string.button_ok_text, null).show();
+			.setPositiveButton(R.string.button_ok_text, null).show();
+	}
+
+	private void buildWebViewText(DictData dd, WebView wv)
+	{
+		String data;
+		if (dd.part.length() == 0)
+			data = dd.desc;
+		else
+			data = dd.part + "<br/>" + dd.desc;
+
+		String base;
+		if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
+			Matcher matcher = DictTextATag.matcher(data);
+			StringBuffer resultString = new StringBuffer();
+			while (matcher.find())
+				matcher.appendReplacement(resultString, "<a href=\"data://" + matcher.group(1) + "\">");
+
+			matcher.appendTail(resultString);
+
+			data = resultString.toString();
+			base = "data://";
+		} else
+			base = null;
+
+		wv.loadDataWithBaseURL(base, data, "text/html", "utf-8", null);
 	}
 
 	private void dictDlgWeb(DictData dd)
@@ -213,27 +244,24 @@ public class DictManager
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url)
 			{
-				DictData dd = getDictData(url);
+				DictData dd = null;
+				try {
+					if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.GINGERBREAD_MR1)
+						url = URLDecoder.decode(url, "UTF-8").substring(7);
+					dd = getDictData(url);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 				if (dd != null) {
-					String data;
-					if (dd.part.length() == 0)
-						data = dd.desc;
-					else
-						data = dd.part + "<br/>" + dd.desc;
-					view.loadDataWithBaseURL(null, data, "text/html", "utf-8", null);
+					buildWebViewText(dd, view);
 					view.scrollTo(0, 0);
 					ad.setTitle(dictName + ": " + dd.key);
 				}
 				return true;
 			}
 		});
-		String data;
-		if (dd.part.length() == 0)
-			data = dd.desc;
-		else
-			data = dd.part + "<br/>" + dd.desc;
-		wv.loadDataWithBaseURL(null, data, "text/html", "utf-8", null);
+		buildWebViewText(dd, wv);
 		ad = new AlertDialog.Builder(context).setTitle(dictName + ": " + dd.key).setView(wv)
-						     .setPositiveButton(R.string.button_ok_text, null).show();
+			.setPositiveButton(R.string.button_ok_text, null).show();
 	}
 }
