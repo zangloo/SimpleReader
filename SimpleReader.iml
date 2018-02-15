@@ -3,6 +3,9 @@
   <component name="FacetManager">
     <facet type="android" name="Android">
       <configuration>
+        <proGuardCfgFiles>
+          <file>file:///usr/local/java/tools/proguard/proguard-android.txt</file>
+        </proGuardCfgFiles>
         <includeAssetsFromLibraries>true</includeAssetsFromLibraries>
       </configuration>
     </facet>
@@ -18,4 +21,3 @@
     <orderEntry type="library" exported="" name="libs" level="project" />
   </component>
 </module>
-

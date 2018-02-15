@@ -220,7 +220,7 @@ public class DictManager
 			data = dd.part + "<br/>" + dd.desc;
 
 		String base;
-		if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.GINGERBREAD_MR1) {
+		if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
 			Matcher matcher = DictTextATag.matcher(data);
 			StringBuffer resultString = new StringBuffer();
 			while (matcher.find())
