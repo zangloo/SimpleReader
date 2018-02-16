@@ -246,7 +246,7 @@ public class DictManager
 			{
 				DictData dd = null;
 				try {
-					if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.GINGERBREAD_MR1)
+					if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR2)
 						url = URLDecoder.decode(url, "UTF-8").substring(7);
 					dd = getDictData(url);
 				} catch (UnsupportedEncodingException e) {
