@@ -32,11 +32,11 @@
 		<Button android:id="@+id/search_button_cancel" android:text="@string/button_cancel_text"
 		        android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 	</LinearLayout>
-	<zhang.lu.SimpleReader.view.HTextView android:id="@+id/hbook_text" android:layout_width="fill_parent"
-	                                      android:layout_height="wrap_content"
-	                                      android:layout_weight="1"/>
-	<zhang.lu.SimpleReader.view.XTextView android:id="@+id/xbook_text" android:layout_width="fill_parent"
-	                                      android:layout_height="wrap_content"
-	                                      android:layout_weight="1" android:visibility="gone"/>
+	<com.lingzeng.SimpleReader.view.HTextView android:id="@+id/hbook_text" android:layout_width="fill_parent"
+	                                          android:layout_height="wrap_content"
+	                                          android:layout_weight="1"/>
+	<com.lingzeng.SimpleReader.view.XTextView android:id="@+id/xbook_text" android:layout_width="fill_parent"
+	                                          android:layout_height="wrap_content"
+	                                          android:layout_weight="1" android:visibility="gone"/>
 </LinearLayout>
 

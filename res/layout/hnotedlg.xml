@@ -4,8 +4,8 @@
 	      android:layout_width="fill_parent" android:layout_height="fill_parent">
 	<HorizontalScrollView android:id="@+id/note_scroll" android:layout_width="fill_parent"
 		    android:layout_height="fill_parent">
-		<zhang.lu.SimpleReader.view.HNoteView android:id="@+id/note_text" android:layout_width="fill_parent"
-			  android:layout_height="fill_parent" android:textSize="20dip"
-			  android:textStyle="bold" android:textColor="#ffdcdcdc"/>
+		<com.lingzeng.SimpleReader.view.HNoteView android:id="@+id/note_text" android:layout_width="fill_parent"
+		                                          android:layout_height="fill_parent" android:textSize="20dip"
+		                                          android:textStyle="bold" android:textColor="#ffdcdcdc"/>
 	</HorizontalScrollView>
 </LinearLayout>
