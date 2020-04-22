@@ -21,15 +21,12 @@ import java.io.FilenameFilter;
  * Date: 10-12-9
  * Time: 下午8:38
  */
-public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener
-{
-	public static interface OnOptionAcceptListener
-	{
+public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+	public static interface OnOptionAcceptListener {
 		void onOptionAccept(Config cfg);
 	}
 
-	private static final String[] fontSizeStringList = new String[]{"20", "22", "24", "26", "28", "30", "32", "34",};
-	private static final int[] fontSizeList = new int[]{20, 22, 24, 26, 28, 30, 32, 34,};
+	private static final String[] fontSizeStringList = new String[]{"20", "22", "24", "26", "28", "30", "32", "34", "36", "38", "40", "42", "44", "46", "48", "50"};
 	private static final String colorFormatString = "%03d";
 	private static final String[] zipEncodeList = new String[]{"GBK", "BIG5", "UTF8"};
 	private static String[] colorModeList;
@@ -45,14 +42,12 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 	private Config.GestureDirect[] pds = Config.GestureDirect.values();
 	private String[] fnl = null;
 
-	public OptionDialog(Context context)
-	{
+	public OptionDialog(Context context) {
 		super(context);
 	}
 
 
-	public void init(OnOptionAcceptListener listener)
-	{
+	public void init(OnOptionAcceptListener listener) {
 		oal = listener;
 		setContentView(R.layout.optdlg);
 		setTitle(getContext().getString(R.string.dialog_option_title));
@@ -69,10 +64,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		spinner.setOnItemSelectedListener(this);
 
 		Button btn = (Button) findViewById(R.id.button_cancel);
-		btn.setOnClickListener(new View.OnClickListener()
-		{
-			public void onClick(View v)
-			{
+		btn.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
 				dismiss();
 			}
 		});
@@ -113,8 +106,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 	}
 
-	public void update(Config config)
-	{
+	public void update(Config config) {
 		conf = config;
 		color = conf.getColor();
 		bcolor = conf.getBColor();
@@ -123,10 +115,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		fs = conf.getFontSize();
 
 		// font list
-		String[] fl = (new File(Reader.fontPath)).list(new FilenameFilter()
-		{
-			public boolean accept(File file, String s)
-			{
+		String[] fl = (new File(Reader.fontPath)).list(new FilenameFilter() {
+			public boolean accept(File file, String s) {
 				return s.endsWith(Reader.fontSuffix);
 			}
 		});
@@ -162,8 +152,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		loadColor(isBright);
 
 		spinner = (Spinner) findViewById(R.id.font_size);
-		for (int i = 0; i < fontSizeList.length; i++)
-			if (fontSizeList[i] == fs) {
+		for (int i = 0; i < fontSizeStringList.length; i++)
+			if (Integer.parseInt(fontSizeStringList[i]) == fs) {
 				spinner.setSelection(i, true);
 				break;
 			}
@@ -196,10 +186,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		cb.setChecked(conf.isDictEnabled());
 
 		spinner = (Spinner) findViewById(R.id.dict_file);
-		fl = (new File(Reader.dictPath)).list(new FilenameFilter()
-		{
-			public boolean accept(File file, String s)
-			{
+		fl = (new File(Reader.dictPath)).list(new FilenameFilter() {
+			public boolean accept(File file, String s) {
 				return s.endsWith(Reader.dictSuffix);
 			}
 		});
@@ -225,8 +213,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		sv.scrollTo(0, 0);
 	}
 
-	public void onClick(View view)
-	{
+	public void onClick(View view) {
 		saveColor(isBright);
 
 		conf.setFontSize(fs);
@@ -257,8 +244,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		dismiss();
 	}
 
-	private Typeface getTypeface(String name)
-	{
+	private Typeface getTypeface(String name) {
 		String fn = Reader.fontPath + name + Reader.fontSuffix;
 		File ff = new File(fn);
 		if (ff.exists())
@@ -267,12 +253,11 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 			return null;
 	}
 
-	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
-	{
+	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 		Spinner s = (Spinner) adapterView;
 		switch (s.getId()) {
 			case R.id.font_size:
-				fs = fontSizeList[s.getSelectedItemPosition()];
+				fs = Integer.parseInt(fontSizeStringList[s.getSelectedItemPosition()]);
 				tp.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fs);
 				break;
 			case R.id.color_mode:
@@ -291,12 +276,10 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		}
 	}
 
-	public void onNothingSelected(AdapterView<?> adapterView)
-	{
+	public void onNothingSelected(AdapterView<?> adapterView) {
 	}
 
-	public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser)
-	{
+	public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
 		TextView v;
 
 		switch (seekBar.getId()) {
@@ -334,16 +317,13 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		tp.setBackgroundColor(Color.rgb(br, bg, bb));
 	}
 
-	public void onStartTrackingTouch(SeekBar seekBar)
-	{
+	public void onStartTrackingTouch(SeekBar seekBar) {
 	}
 
-	public void onStopTrackingTouch(SeekBar seekBar)
-	{
+	public void onStopTrackingTouch(SeekBar seekBar) {
 	}
 
-	private void saveColor(boolean bright)
-	{
+	private void saveColor(boolean bright) {
 		if (bright) {
 			color = Color.rgb(r, g, b);
 			bcolor = Color.rgb(br, bg, bb);
@@ -354,8 +334,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 	}
 
-	private void loadColor(boolean bright)
-	{
+	private void loadColor(boolean bright) {
 		tp = (TextView) findViewById(R.id.text_preview);
 		if (bright) {
 			r = Color.red(color);
@@ -415,8 +394,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		v.setText(String.format(colorFormatString, bb));
 	}
 
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-	{
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		View df = findViewById(R.id.dict_file);
 		df.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
 	}
