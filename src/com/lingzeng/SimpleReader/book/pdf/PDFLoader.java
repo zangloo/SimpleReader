@@ -84,7 +84,7 @@ public class PDFLoader extends ChaptersBook implements BookLoader.Loader
 			lines = new ArrayList<UString>();
 			lines.add(new UString(e.getMessage()));
 		}
-		return new PlainTextContent(lines);
+		return new ContentBase((List) lines);
 	}
 
 	@Override

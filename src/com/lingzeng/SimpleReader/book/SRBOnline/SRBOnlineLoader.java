@@ -1,17 +1,18 @@
 package com.lingzeng.SimpleReader.book.SRBOnline;
 
-import org.jetbrains.annotations.Nullable;
 import com.lingzeng.SimpleReader.Config;
 import com.lingzeng.SimpleReader.UString;
 import com.lingzeng.SimpleReader.book.*;
 import com.lingzeng.SimpleReader.book.SimpleReader.SimpleReaderLoader;
 import com.lingzeng.SimpleReader.vfs.CloudFile;
 import com.lingzeng.SimpleReader.vfs.VFile;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -47,7 +48,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 		}
 	}
 
-	private static class SRBOnlineContent extends PlainTextContent
+	private static class SRBOnlineContent extends ContentBase
 	{
 		CloudFile.OnlineProperty op;
 		OnlineTOC oci = null;
@@ -76,7 +77,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 				return null;
 			if (line >= lineCount())
 				return null;
-			UString l = line(line);
+			UString l = text(line);
 			if (offset >= l.length())
 				return null;
 			if (l.charAt(offset) != op.mark)
@@ -127,12 +128,12 @@ public class SRBOnlineLoader implements BookLoader.Loader
 						oci.notes = cf.getNotes(chapter);
 				}
 				content.setOCI(oci);
-				content.setContent(oci.lines);
+				content.setContent((List) oci.lines);
 			} catch (Exception e) {
 				ArrayList<UString> list = new ArrayList<UString>();
 				list.add(new UString(e.getMessage()));
 				content.setOCI(null);
-				content.setContent(list);
+				content.setContent((List) list);
 			}
 			return true;
 		}

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import com.lingzeng.SimpleReader.ContentImage;
+import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.UString;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ public class XTextView extends SimpleTextView
 {
 	private int mll;
 
-	private class ViewLineInfo
+	private static class ViewLineInfo
 	{
 		int line;        // index of book content
 		int offset;        // offset of the line for draw
@@ -32,7 +34,7 @@ public class XTextView extends SimpleTextView
 		}
 	}
 
-	private ArrayList<ViewLineInfo> vls = new ArrayList<ViewLineInfo>();
+	private final ArrayList<ViewLineInfo> vls = new ArrayList<>();
 
 	public XTextView(Context context, AttributeSet attrs)
 	{
@@ -45,10 +47,12 @@ public class XTextView extends SimpleTextView
 		if (reset)
 			return npo;
 		int o, to = 0;
-		UString line = content.line(pi);
+		ContentLine line = content.line(pi);
+		if (line.isImage())
+			return npo;
 		do {
 			o = to;
-			to = calcChars(line, o, npo + 1);
+			to = calcChars((UString) line, o, npo + 1);
 		} while (to <= npo);
 		return o;
 	}
@@ -58,8 +62,10 @@ public class XTextView extends SimpleTextView
 	{
 		if (reset)
 			return -1;
-		UString line = content.line(pi);
-		int npo = calcChars(line, po, line.length());
+		ContentLine line = content.line(pi);
+		if (line.isImage())
+			return -1;
+		int npo = calcChars((UString) line, po, line.length());
 
 		return (npo == line.length()) ? -1 : npo;
 	}
@@ -67,10 +73,10 @@ public class XTextView extends SimpleTextView
 	@Override
 	protected void resetValues()
 	{
-		ml = (int) ((h - boardGAP * 2) / fh);
+		maxLinePerPage = (int) ((pageHeight - boardGAP * 2) / fontHeight);
 		xoffset = boardGAP;
-		yoffset = (h - (fh * ml)) / 2 - fd;
-		mll = w - 2 * boardGAP;
+		yoffset = (pageHeight - (fontHeight * maxLinePerPage)) / 2 - fontDescent;
+		mll = pageWidth - 2 * boardGAP;
 	}
 
 	@Override
@@ -79,29 +85,36 @@ public class XTextView extends SimpleTextView
 		if ((pi == 0) && (po == 0))
 			return false;
 
-		int lc = 0, cp;
-		UString line;
+		int lineCount = 0, currentPosition;
+		ContentLine line;
 
 		if (po == 0) {
 			pi--;
 			line = content.line(pi);
-			cp = line.length();
+			if (line.isImage()) {
+				po = 0;
+				return true;
+			}
+			currentPosition = line.length();
 		} else {
 			line = content.line(pi);
-			cp = po;
+			currentPosition = po;
 		}
 
-		ArrayList<Integer> li = new ArrayList<Integer>();
+		ArrayList<Integer> li = new ArrayList<>();
 		while (true) {
-			lc += calcLines(line, cp, li);
-			if (lc >= ml) {
-				po = li.get(lc - ml);
+			lineCount += calcLines((UString) line, currentPosition, li);
+			if (lineCount >= maxLinePerPage) {
+				po = li.get(lineCount - maxLinePerPage);
 				return true;
 			}
 			if (pi == 0)
 				break;
-			line = content.line(--pi);
-			cp = line.length();
+			line = content.line(pi - 1);
+			if (line.isImage())
+				break;
+			pi--;
+			currentPosition = line.length();
 		}
 		po = 0;
 		return true;
@@ -118,13 +131,23 @@ public class XTextView extends SimpleTextView
 
 		nextpi = pi;
 		nextpo = po;
-		y = yoffset + fh;
+		y = yoffset + fontHeight;
 
 		UString line = null;
 		vls.clear();
 		do {
-			if (line == null)
-				line = content.line(nextpi).replaceChars(OC, NC);
+			if (line == null) {
+				ContentLine contentLine = content.line(nextpi);
+				if (contentLine.isImage()) {
+					if (nextpi == pi) {
+						drawImage(canvas, (ContentImage) contentLine);
+						nextpi++;
+						return;
+					} else
+						break;
+				} else
+					line = ((UString) contentLine).replaceChars(OC, NC);
+			}
 			int p;
 			p = calcChars(line, nextpo, line.length());
 			if (p > nextpo) {
@@ -135,9 +158,9 @@ public class XTextView extends SimpleTextView
 					int b = Math.max(hli.begin, nextpo);
 					int e = Math.min(hli.end, p);
 					int x1 = (int) (calcWidth(line, nextpo, b) + xoffset);
-					int y1 = (int) (y - fh + fd);
+					int y1 = (int) (y - fontHeight + fontDescent);
 					int x2 = (int) (x1 + calcWidth(line, b, e));
-					int y2 = (int) (y1 + fh);
+					int y2 = (int) (y1 + fontHeight);
 					Rect r = new Rect(x1, y1, x2, y2);
 					canvas.drawRect(r, paint);
 					paint.setColor(bcolor);
@@ -146,7 +169,7 @@ public class XTextView extends SimpleTextView
 				}
 			} else
 				vls.add(null);
-			y += fh;
+			y += fontHeight;
 			lc++;
 			if (p == line.length()) {
 				nextpo = 0;
@@ -154,14 +177,14 @@ public class XTextView extends SimpleTextView
 				line = null;
 			} else
 				nextpo = p;
-		} while ((nextpi < content.lineCount()) & (lc < ml));
+		} while ((nextpi < content.lineCount()) & (lc < maxLinePerPage));
 	}
 
 	@Override
 	protected FingerPosInfo calcFingerPos(float x, float y)
 	{
-		int l = (int) ((y - yoffset - fd) / fh);
-		if ((l < 0) || (l >= ml))
+		int l = (int) ((y - yoffset - fontDescent) / fontHeight);
+		if ((l < 0) || (l >= maxLinePerPage))
 			return null;
 
 		if (l >= vls.size())

@@ -860,7 +860,9 @@ public class Reader extends Activity implements View.OnTouchListener
 					case R.string.menu_copy:
 						if (book == null)
 							break;
-						UString l = book.content().line(fingerPosInfo.line);
+						if (bv.isImagePage())
+							break;
+						UString l = book.content().text(fingerPosInfo.line);
 						final EditText et = new EditText(Reader.this);
 						et.setText(l.toString());
 						new AlertDialog.Builder(Reader.this).setTitle(
@@ -1136,7 +1138,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 			public boolean onSingleTapUp(MotionEvent e)
 			{
-				if ((bv.currentPageType() == SimpleTextView.PageType.image)
+				if (bv.isImagePage()
 					&& (e.getX() > (screenWidth - SimpleTextView.zoomIconSize))
 					&& (e.getY() > (screenHeight - SimpleTextView.zoomIconSize))) {
 					Bitmap bm = bv.getImage();

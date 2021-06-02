@@ -3,6 +3,9 @@ package com.lingzeng.SimpleReader.book;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import com.lingzeng.SimpleReader.ContentImageLoader;
+import com.lingzeng.SimpleReader.ContentLine;
+import com.lingzeng.SimpleReader.UString;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jetbrains.annotations.Nullable;
@@ -10,11 +13,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.mozilla.universalchardet.UniversalDetector;
-import com.lingzeng.SimpleReader.UString;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -32,13 +33,13 @@ public class BookUtil
 	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
 
 	// put all text into lines
-	public static void HTML2Text(Element node, List<UString> lines)
+	public static void HTML2Text(Element node, List<ContentLine> lines)
 	{
 		HTML2Text(node, lines, null);
 	}
 
 	// if images != null, this function will return with all images href.
-	public static void HTML2Text(Element node, List<UString> lines, @Nullable LinkedHashSet<String> images)
+	public static void HTML2Text(Element node, List<ContentLine> lines, @Nullable ContentImageLoader imageLoader)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
@@ -47,10 +48,10 @@ public class BookUtil
 					lines.add(new UString(t));
 			} else if (child instanceof Element) {
 				final Element e = (Element) child;
-				if ((images != null) && (e.tagName().equalsIgnoreCase("img")))
-					images.add(e.attr("src"));
+				if (imageLoader != null && e.tagName().equalsIgnoreCase("img"))
+					lines.add(imageLoader.loadImage(e.attr("src")));
 				else
-					HTML2Text(e, lines, images);
+					HTML2Text(e, lines, imageLoader);
 			}
 		}
 	}

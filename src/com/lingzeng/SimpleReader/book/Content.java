@@ -1,6 +1,6 @@
 package com.lingzeng.SimpleReader.book;
 
-import android.graphics.Bitmap;
+import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.UString;
 
 /**
@@ -11,42 +11,38 @@ import com.lingzeng.SimpleReader.UString;
  */
 public interface Content
 {
-	public static class ContentPosInfo
+	class ContentPosInfo
 	{
 		public int line, offset;
 	}
 
 	// has notes?
-	public boolean hasNotes();
+	boolean hasNotes();
 
 	// return null when no note at line:offset
-	public String getNote(int line, int offset);
+	String getNote(int line, int offset);
 
 	// clear datas
-	public void clear();
+	void clear();
 
 	// search txt from cpi
-	public ContentPosInfo searchText(String txt, ContentPosInfo cpi);
+	ContentPosInfo searchText(String txt, ContentPosInfo cpi);
 
 	// get position info for <x>%
-	public ContentPosInfo getPercentPos(int percent);
-
-	// return image count
-	public int imageCount();
-
-	// return image for ImageContente
-	public Bitmap image(int index);
+	ContentPosInfo getPercentPos(int percent);
 
 	// return line at index
-	public UString line(int index);
+	ContentLine line(int index);
+
+	// return text at index
+	UString text(int index);
 
 	// return line count
-	public int lineCount();
+	int lineCount();
 
 	// return book size from line[0] to line[end - 1]
-	public int size(int end);
+	int size(int end);
 
 	// return book total size
-	public int size();
-
+	int size();
 }

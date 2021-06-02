@@ -1,6 +1,7 @@
 package com.lingzeng.SimpleReader.book.txt;
 
 import com.lingzeng.SimpleReader.Config;
+import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.UString;
 import com.lingzeng.SimpleReader.book.*;
 import com.lingzeng.SimpleReader.vfs.VFile;
@@ -34,7 +35,7 @@ public class TxtLoader implements BookLoader.Loader
 
 	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
-		List<UString> lines = new ArrayList<UString>();
+		List<ContentLine> lines = new ArrayList<>();
 		String cs;
 
 		InputStream fs = f.getInputStream();
@@ -46,6 +47,6 @@ public class TxtLoader implements BookLoader.Loader
 		String line;
 		while ((line = br.readLine()) != null)
 			lines.add(new UString(formatText(line)));
-		return new SingleChapterBook(new PlainTextContent(lines));
+		return new SingleChapterBook(new ContentBase(lines));
 	}
 }

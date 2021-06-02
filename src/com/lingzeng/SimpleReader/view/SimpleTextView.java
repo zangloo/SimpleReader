@@ -5,10 +5,13 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
+import com.lingzeng.SimpleReader.ContentImage;
+import com.lingzeng.SimpleReader.ContentLine;
+import com.lingzeng.SimpleReader.ContentLineType;
 import org.jetbrains.annotations.Nullable;
 import com.lingzeng.SimpleReader.UString;
 import com.lingzeng.SimpleReader.book.Content;
-import com.lingzeng.SimpleReader.book.PlainTextContent;
+import com.lingzeng.SimpleReader.book.ContentBase;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,11 +24,6 @@ public abstract class SimpleTextView extends View
 	public static enum FingerPosType
 	{
 		text, image, none
-	}
-
-	public static enum PageType
-	{
-		text, image
 	}
 
 	public static class FingerPosInfo
@@ -56,7 +54,7 @@ public abstract class SimpleTextView extends View
 	public static final int defaultFontSize = 26;
 	public static final int zoomIconSize = 48;
 
-	private static final Content defaultContent = new PlainTextContent();
+	private static final Content defaultContent = new ContentBase();
 	protected static Content content = defaultContent;
 	protected static int pi = 0, po = 0;
 	protected static int pos = 0;
@@ -68,10 +66,10 @@ public abstract class SimpleTextView extends View
 	protected Paint paint;
 
 	protected int nextpi, nextpo;
-	protected int ml;
+	protected int maxLinePerPage;
 
-	protected float fw, fh, fd;
-	protected int w, h;
+	protected float fontWidth, fontHeight, fontDescent;
+	protected int pageWidth, pageHeight;
 	protected float xoffset, yoffset;
 
 	private static Bitmap zoomIcon = null;
@@ -101,42 +99,40 @@ public abstract class SimpleTextView extends View
 	protected void onDraw(Canvas canvas)
 	{
 		if (reset) {
-			w = getWidth();
-			h = getHeight();
+			pageWidth = getWidth();
+			pageHeight = getHeight();
 
 			resetValues();
 			reset = false;
 		}
 
 		canvas.drawColor(bcolor);
-		if (pi < content.imageCount()) {
-			drawImage(canvas);
-			return;
-		}
 		if (pi >= content.lineCount())
 			return;
 		drawText(canvas);
 		//testDraw(canvas);
 	}
 
-	private void drawImage(Canvas canvas)
+	protected void drawImage(Canvas canvas, ContentImage image)
 	{
-		if (pi >= content.imageCount())
+		Bitmap b = image.getImage();
+		if (b == null)
 			return;
-		Bitmap b;
-		if ((b = content.image(pi)) == null)
-			return;
-		canvas.drawBitmap(b, null, new Rect(0, 0, w, h), null);
+		canvas.drawBitmap(b, null, new Rect(0, 0, pageWidth, pageHeight), null);
 		if (zoomIcon != null) {
 			canvas.drawBitmap(zoomIcon, null,
-				new Rect(w - zoomIconSize, h - zoomIconSize, w, h),
+				new Rect(pageWidth - zoomIconSize, pageHeight - zoomIconSize, pageWidth, pageHeight),
 				null);
 		}
 	}
 
 	public Bitmap getImage()
 	{
-		return content.image(pi);
+		ContentLine line = content.line(pi);
+		if (ContentLineType.image.equals(line.type()))
+			return ((ContentImage) line).getImage();
+		else
+			return null;
 	}
 
 	public static void setZoomIcon(Bitmap icon)
@@ -235,14 +231,7 @@ public abstract class SimpleTextView extends View
 
 	public boolean pageDown()
 	{
-		if (pi < content.imageCount() - 1)
-			pi++;
-		else if (pi == content.imageCount() - 1)
-			if (content.lineCount() <= content.imageCount())
-				return false;
-			else
-				pi++;
-		else if (!calcNextPos())
+		if (!calcNextPos())
 			return false;
 
 		invalidate();
@@ -254,19 +243,8 @@ public abstract class SimpleTextView extends View
 		if ((pi == 0) && (po == 0))
 			return false;
 
-		if (pi < content.imageCount())
-			if (pi > 0)
-				pi--;
-			else
-				return false;
-		else if ((pi == content.imageCount()) && (po == 0))
-			pi--;
-		else if (!calcPrevPos())
+		if (!calcPrevPos())
 			return false;
-		else if (pi < content.imageCount()) {
-			pi = content.imageCount();
-			po = 0;
-		}
 
 		invalidate();
 		return true;
@@ -285,9 +263,9 @@ public abstract class SimpleTextView extends View
 	protected void fontCalc()
 	{
 		Paint.FontMetrics fm = paint.getFontMetrics();
-		fh = fm.descent - fm.ascent;
-		fw = paint.measureText("漢", 0, 1);
-		fd = fm.descent;
+		fontHeight = fm.descent - fm.ascent;
+		fontWidth = paint.measureText("漢", 0, 1);
+		fontDescent = fm.descent;
 	}
 
 	public int getPos()
@@ -347,7 +325,7 @@ public abstract class SimpleTextView extends View
 	public FingerPosInfo getFingerPosInfo(float x, float y)
 	{
 		FingerPosInfo fpi;
-		if (pi < content.imageCount()) {
+		if (content.line(pi).isImage()) {
 			fpi = new FingerPosInfo();
 			fpi.type = FingerPosType.image;
 			fpi.line = pi;
@@ -361,7 +339,7 @@ public abstract class SimpleTextView extends View
 			return fpi;
 		}
 		fpi.type = FingerPosType.text;
-		UString l = content.line(fpi.line);
+		UString l = content.text(fpi.line);
 		if (fpi.offset >= l.length())
 			return null;
 		fpi.str = l.substring(fpi.offset);
@@ -370,7 +348,7 @@ public abstract class SimpleTextView extends View
 
 	public String getFingerPosNote(float x, float y)
 	{
-		if (pi < content.imageCount())
+		if (content.line(pi).isImage())
 			return null;
 
 		if (!content.hasNotes())
@@ -384,7 +362,7 @@ public abstract class SimpleTextView extends View
 
 	public Content.ContentPosInfo searchText(String t)
 	{
-		if (pi < content.imageCount())
+		if (content.line(pi).isImage())
 			return null;
 		if (t == null)
 			return null;
@@ -420,22 +398,11 @@ public abstract class SimpleTextView extends View
 		pi = content.lineCount();
 		po = 0;
 		calcPrevPos();
-
-		if (pi >= content.imageCount())
-			return;
-		po = 0;
-		if (content.lineCount() > content.imageCount())
-			pi = content.imageCount();
-		else
-			pi = content.imageCount() - 1;
 	}
 
-	public PageType currentPageType()
+	public boolean isImagePage()
 	{
-		if (pi < content.imageCount())
-			return PageType.image;
-		else
-			return PageType.text;
+		return ContentLineType.image.equals(content.line(pi).type());
 	}
 
 	protected abstract int calcNextLineOffset();

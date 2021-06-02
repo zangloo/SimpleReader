@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -104,7 +105,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 	private static byte[] recBuf = new byte[MAX_REC_SIZE * 2];
 	private static int recPos = 0;
 
-	private PlainTextContent content = new PlainTextContent();
+	private ContentBase content = new ContentBase();
 
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
@@ -395,7 +396,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 		if ((bookType == BookType.palmDoc) && (recPos > 0))
 			formatPalmDocDB(recBuf, recPos, (HaodooTOCR) TOC.get(0));
 		chapter = ri.chapter;
-		content.setContent(((HaodooTOCR) TOC.get(chapter)).lines);
+		content.setContent((List) ((HaodooTOCR) TOC.get(chapter)).lines);
 		return this;
 	}
 
@@ -403,7 +404,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 	protected boolean loadChapter(int index)
 	{
 		chapter = index;
-		content.setContent(((HaodooTOCR) TOC.get(index)).lines);
+		content.setContent((List) ((HaodooTOCR) TOC.get(index)).lines);
 		return true;
 	}
 

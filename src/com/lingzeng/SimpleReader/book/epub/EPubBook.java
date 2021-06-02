@@ -2,18 +2,14 @@ package com.lingzeng.SimpleReader.book.epub;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import com.lingzeng.SimpleReader.*;
+import com.lingzeng.SimpleReader.book.*;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jsoup.Jsoup;
-import com.lingzeng.SimpleReader.Config;
-import com.lingzeng.SimpleReader.UString;
-import com.lingzeng.SimpleReader.book.*;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,7 +21,7 @@ class EPubBook extends ChaptersBook
 {
 	private final ZipFile zf;
 	private final String ops_path;
-	private EPubImageContent content = new EPubImageContent();
+	private final ContentBase content = new ContentBase();
 
 	EPubBook(ZipFile file, Config.ReadingInfo ri, ArrayList<TOCRecord> nps, String ops)
 	{
@@ -43,13 +39,15 @@ class EPubBook extends ChaptersBook
 			final EPubLoader.NavPoint np = (EPubLoader.NavPoint) TOC.get(index);
 
 			ZipArchiveEntry zae;
-			ArrayList<UString> lines = new ArrayList<UString>();
-			int start = 0;
-			content.imageCount = 0;
+			ArrayList<ContentLine> lines = new ArrayList<>();
 			for (String href : np.href) {
-				String htmlPath = ops_path + href;
+				final String htmlPath = ops_path + href;
+				int pos = htmlPath.lastIndexOf('/');
+				if (pos < 0)
+					pos = 0;
+				final String path = htmlPath.substring(0, pos);
+
 				zae = zf.getEntry(htmlPath);
-				LinkedHashSet<String> imgref = new LinkedHashSet<String>();
 
 				InputStream is = zf.getInputStream(zae);
 				String cs;
@@ -57,26 +55,18 @@ class EPubBook extends ChaptersBook
 				is.close();
 
 				is = zf.getInputStream(zae);
-				BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, imgref);
-
-				content.imageCount += imgref.size();
-				if (imgref.size() > 0) {
-					int pos = htmlPath.lastIndexOf('/');
-					if (pos < 0)
-						pos = 0;
-					String path = htmlPath.substring(0, pos);
-					List<UString> realRef = new ArrayList<UString>(imgref.size());
-					for (String ref : imgref)
-						realRef.add(new UString(BookUtil.concatPath(path, ref)));
-
-					lines.addAll(start, realRef);
-					content.images.clear();
-				}
-				start += lines.size();
+				BookUtil.HTML2Text(Jsoup.parse(is, cs, "").body(), lines, new ContentImageLoader()
+				{
+					@Override
+					public ContentImage loadImage(String src)
+					{
+						return new EPubImageLine(BookUtil.concatPath(path, src));
+					}
+				});
 			}
 			content.setContent(lines);
 		} catch (Exception e) {
-			ArrayList<UString> list = new ArrayList<UString>();
+			ArrayList<ContentLine> list = new ArrayList<>();
 			list.add(new UString(e.getMessage()));
 			content.setContent(list);
 		}
@@ -94,28 +84,30 @@ class EPubBook extends ChaptersBook
 	{
 	}
 
-	private class EPubImageContent extends PlainTextContent
+	private class EPubImageLine extends ContentImage
 	{
-		HashMap<Integer, Bitmap> images = new HashMap<Integer, Bitmap>();
-		int imageCount = 0;
+		private Bitmap image;
 
-		@Override
-		public int imageCount()
+		public EPubImageLine(String ref)
 		{
-			return imageCount;
+			super(ref);
 		}
 
 		@Override
-		public Bitmap image(int index)
+		public Bitmap getImage()
 		{
-			if (images.containsKey(index))
-				return images.get(index);
-			Bitmap bm = BookUtil.loadPicFromZip(zf, line(index).toString());
-			images.put(index, bm);
+			if (image == null) {
+				image = BookUtil.loadPicFromZip(zf, ref);
+			}
+			if (image == null)
+				Log.e("EPubImageLine#getImage", "Can not load image:" + ref);
+			return image;
+		}
 
-			if (bm == null)
-				Log.e("EPubImageContent.image", "Can not load image:" + line(index));
-			return bm;
+		@Override
+		public boolean isImage()
+		{
+			return true;
 		}
 	}
 }

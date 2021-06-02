@@ -2,7 +2,6 @@ package com.lingzeng.SimpleReader.book.SimpleReader;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
 import com.lingzeng.SimpleReader.Config;
 import com.lingzeng.SimpleReader.UString;
 import com.lingzeng.SimpleReader.book.Content;
@@ -65,20 +64,20 @@ public class SimpleReaderBook extends com.lingzeng.SimpleReader.book.Book implem
 	// return count
 	private static final String configChapterCountSQL = "selectChapterCountSQL";
 
-	private SQLiteDatabase db;
+	private final SQLiteDatabase db;
 	//private int version;
-	private int indexBase;
-	private boolean hasNotes;
-	private char markChar;
-	private String lineSQL;
-	private String noteSQL;
-	private String sizeSQL;
-	private String posSQL;
-	private String searchSQL;
-	private String chapterSQL;
-	private String chapterListSQL;
-	private String countSQL;
-	private int chapterCount;
+	private final int indexBase;
+	private final boolean hasNotes;
+	private final char markChar;
+	private final String lineSQL;
+	private final String noteSQL;
+	private final String sizeSQL;
+	private final String posSQL;
+	private final String searchSQL;
+	private final String chapterSQL;
+	private final String chapterListSQL;
+	private final String countSQL;
+	private final int chapterCount;
 	private int booksize;
 	private int lineCount;
 	private int chapter;
@@ -87,21 +86,21 @@ public class SimpleReaderBook extends com.lingzeng.SimpleReader.book.Book implem
 	private static final int LINE_CACHE_SIZE = 90;
 	// fetch lines from (<index> - LINE_CACHE_PREFETCH_SIZE) to (<index> + LINE_CACHE_SIZE - 1)
 	private static final int LINE_CACHE_PREFETCH_SIZE = 10;
-	private HashMap<Integer, UString> lineCache = new HashMap<Integer, UString>();
+	private final HashMap<Integer, UString> lineCache = new HashMap<>();
 
 	SimpleReaderBook(VFile f, Config.ReadingInfo ri) throws IOException
 	{
 		db = SQLiteDatabase.openDatabase(f.getRealPath(), null,
 			SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
 
-		HashMap<String, String> map = new HashMap<String, String>();
+		HashMap<String, String> map = new HashMap<>();
 		Cursor cursor = db.query(INFO_TABLE_NAME, INFO_TABLE_COLS, null, null, null, null, null);
 		while (cursor.moveToNext())
 			map.put(cursor.getString(0), cursor.getString(1));
 		cursor.close();
 
 		//version = new Integer(map.get(configVersion));
-		indexBase = new Integer(map.get(configIndexBase));
+		indexBase = Integer.parseInt(map.get(configIndexBase));
 		hasNotes = map.get(configHasNotes).equals("true");
 		markChar = map.get(configNoteMarkChar).charAt(0);
 		lineSQL = map.get(configLineSQL);
@@ -169,7 +168,7 @@ public class SimpleReaderBook extends com.lingzeng.SimpleReader.book.Book implem
 	@Override
 	public ArrayList<TOCRecord> getTOC()
 	{
-		ArrayList<TOCRecord> l = new ArrayList<TOCRecord>(chapterCount());
+		ArrayList<TOCRecord> l = new ArrayList<>(chapterCount());
 		Cursor c = db.rawQuery(chapterListSQL, null);
 		while (c.moveToNext())
 			l.add(new TOCRecord(c.getString(0)));
@@ -256,6 +255,12 @@ public class SimpleReaderBook extends com.lingzeng.SimpleReader.book.Book implem
 		}
 		c.close();
 		return lineCache.get(index);
+	}
+
+	@Override
+	public UString text(int index)
+	{
+		return line(index);
 	}
 
 	@Override
@@ -360,10 +365,4 @@ public class SimpleReaderBook extends com.lingzeng.SimpleReader.book.Book implem
 		cpi.offset = p - (size(idx + 1) - l.length());
 		return cpi;
 	}
-
-	@Override
-	public int imageCount() { return 0; }
-
-	@Override
-	public Bitmap image(int index) { return null; }
 }

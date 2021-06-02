@@ -41,7 +41,7 @@ public class EPubLoader implements BookLoader.Loader
 
 	public com.lingzeng.SimpleReader.book.Book load(VFile file, Config.ReadingInfo ri) throws Exception
 	{
-		if (!RealFile.class.isInstance(file))
+		if (!(file instanceof RealFile))
 			throw new Exception("Cloud and zip based files are not supported, yet");
 
 		ZipFile zf = new ZipFile(file.getRealPath());
@@ -56,7 +56,7 @@ public class EPubLoader implements BookLoader.Loader
 		is = zf.getInputStream(zf.getEntry(opf_file));
 		Document opf = db.parse(is);
 
-		List<String> spines = new ArrayList<String>();
+		List<String> spines = new ArrayList<>();
 		nl = opf.getElementsByTagName("itemref");
 		for (int i = 0; i < nl.getLength(); i++) {
 			String idref = nl.item(i).getAttributes().getNamedItem("idref").getNodeValue();
@@ -65,7 +65,7 @@ public class EPubLoader implements BookLoader.Loader
 
 		nl = opf.getDocumentElement().getElementsByTagName("item");
 		String ncx_file = null;
-		Map<String, String> items = new HashMap<String, String>();
+		Map<String, String> items = new HashMap<>();
 		for (int i = 0; i < nl.getLength(); i++) {
 			NamedNodeMap attributes = nl.item(i).getAttributes();
 			String id = attributes.getNamedItem("id").getNodeValue();
@@ -76,7 +76,7 @@ public class EPubLoader implements BookLoader.Loader
 			items.put(id, attributes.getNamedItem("href").getNodeValue());
 		}
 
-		List<String> hrefs = new ArrayList<String>();
+		List<String> hrefs = new ArrayList<>();
 		for (String spine : spines)
 			hrefs.add(items.get(spine));
 
@@ -116,7 +116,7 @@ public class EPubLoader implements BookLoader.Loader
 	{
 		final int order;
 		final int level;
-		List<String> href = new ArrayList<String>();
+		List<String> href = new ArrayList<>();
 
 		NavPoint(int o, int l)
 		{

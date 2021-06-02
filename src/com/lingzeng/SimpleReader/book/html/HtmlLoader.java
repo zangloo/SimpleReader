@@ -1,10 +1,10 @@
 package com.lingzeng.SimpleReader.book.html;
 
-import org.jsoup.Jsoup;
 import com.lingzeng.SimpleReader.Config;
-import com.lingzeng.SimpleReader.UString;
+import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.book.*;
 import com.lingzeng.SimpleReader.vfs.VFile;
+import org.jsoup.Jsoup;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class HtmlLoader implements BookLoader.Loader
 
 	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
-		List<UString> lines = new ArrayList<UString>();
+		List<ContentLine> lines = new ArrayList<>();
 		String cs;
 
 		InputStream fs = f.getInputStream();
@@ -39,6 +39,6 @@ public class HtmlLoader implements BookLoader.Loader
 		fs.close();
 
 		BookUtil.HTML2Text(Jsoup.parse(f.getInputStream(), cs, "").body(), lines);
-		return new SingleChapterBook(new PlainTextContent(lines));
+		return new SingleChapterBook(new ContentBase(lines));
 	}
 }

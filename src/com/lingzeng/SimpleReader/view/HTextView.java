@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import com.lingzeng.SimpleReader.ContentImage;
+import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.UString;
 
 /**
@@ -17,7 +19,7 @@ public class HTextView extends SimpleTextView
 	public static final char[] SC = {'「', '」', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', '…', 9, '(', ')', '[', ']', '<', '>', '{', '}', '-', '—'};
 	public static final char[] TC = {'﹁', '﹂', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '⋮', '　', '︵', '︶', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '︱'};
 
-	private int mc;
+	private int maxCharPerLine;
 	private int[] fingerPosIndex;
 	private int[] fingerPosOffset;
 
@@ -30,7 +32,7 @@ public class HTextView extends SimpleTextView
 	protected void fontCalc()
 	{
 		super.fontCalc();
-		fw *= 1.15;
+		fontWidth *= 1.15;
 	}
 
 	@Override
@@ -38,21 +40,31 @@ public class HTextView extends SimpleTextView
 	{
 		int lc = 0;
 		float x, y;
-		float[] xy = new float[mc * 2 * 2];
-		char[] buf = new char[mc * 2];
+		float[] xy = new float[maxCharPerLine * 2 * 2];
+		char[] buf = new char[maxCharPerLine * 2];
 
 		nextpi = pi;
 		nextpo = po;
-		x = w - xoffset - fw;
+		x = pageWidth - xoffset - fontWidth;
 
 		UString line = null;
 		do {
-			if (line == null)
-				line = content.line(nextpi).replaceChars(SC, TC);
-			y = yoffset + fh;
+			if (line == null) {
+				ContentLine contentLine = content.line(nextpi);
+				if (contentLine.isImage()) {
+					if (nextpi == pi) {
+						drawImage(canvas, (ContentImage) contentLine);
+						nextpi++;
+						return;
+					} else
+						break;
+				} else
+					line = ((UString) contentLine).replaceChars(SC, TC);
+			}
+			y = yoffset + fontHeight;
 			int cc = line.length() - nextpo;
-			if (cc > mc)
-				cc = mc;
+			if (cc > maxCharPerLine)
+				cc = maxCharPerLine;
 			fingerPosIndex[lc] = nextpi;
 			fingerPosOffset[lc] = nextpo;
 			int len = 0;
@@ -62,7 +74,7 @@ public class HTextView extends SimpleTextView
 				count16 += Character.toChars(ch, buf, count16);
 				xy[len * 2] = x;
 				xy[len * 2 + 1] = y;
-				y += fh;
+				y += fontHeight;
 			}
 			if (cc > 0) {
 				canvas.drawPosText(buf, 0, count16, xy, paint);
@@ -74,9 +86,9 @@ public class HTextView extends SimpleTextView
 						xy[j * 2] = xy[(b - nextpo + j) * 2];
 						xy[j * 2 + 1] = xy[(b - nextpo + j) * 2 + 1];
 					}
-					Rect r = new Rect((int) xy[0], (int) (xy[1] - fh + fd),
-						(int) (xy[(e - b - 1) * 2] + fw),
-						(int) (xy[(e - b - 1) * 2 + 1] + fd));
+					Rect r = new Rect((int) xy[0], (int) (xy[1] - fontHeight + fontDescent),
+						(int) (xy[(e - b - 1) * 2] + fontWidth),
+						(int) (xy[(e - b - 1) * 2 + 1] + fontDescent));
 					canvas.drawRect(r, paint);
 					paint.setColor(bcolor);
 					canvas.drawPosText(buf, b - nextpo, line.count16(b, e), xy, paint);
@@ -84,7 +96,7 @@ public class HTextView extends SimpleTextView
 				}
 			}
 			lc++;
-			x -= fw;
+			x -= fontWidth;
 
 			nextpo += len;
 			if (nextpo == line.length()) {
@@ -92,24 +104,24 @@ public class HTextView extends SimpleTextView
 				nextpi++;
 				line = null;
 			}
-		} while ((nextpi < content.lineCount()) & (lc < ml));
-		for (int i = lc; i < ml; i++)
+		} while ((nextpi < content.lineCount()) & (lc < maxLinePerPage));
+		for (int i = lc; i < maxLinePerPage; i++)
 			fingerPosIndex[i] = -1;
 	}
 
 	@Override
 	protected FingerPosInfo calcFingerPos(float x, float y)
 	{
-		int l = (int) ((w - xoffset - x) / fw);
-		int c = (int) ((y - yoffset - fd) / fh);
+		int l = (int) ((pageWidth - xoffset - x) / fontWidth);
+		int c = (int) ((y - yoffset - fontDescent) / fontHeight);
 		if (l < 0)
 			l = 0;
-		else if (l >= ml)
-			l = ml - 1;
+		else if (l >= maxLinePerPage)
+			l = maxLinePerPage - 1;
 		if (c < 0)
 			c = 0;
-		else if (c >= mc)
-			c = mc - 1;
+		else if (c >= maxCharPerLine)
+			c = maxCharPerLine - 1;
 		if (fingerPosIndex[l] == -1)
 			return null;
 		int i = fingerPosOffset[l] + c;
@@ -128,18 +140,27 @@ public class HTextView extends SimpleTextView
 		if ((pi == 0) && (po == 0))
 			return false;
 
-		int lc = (po + mc - 1) / mc;
-
-		while ((lc < ml) && (pi > 0)) {
-			po = content.line(--pi).length();
+		int lc = (po + maxCharPerLine - 1) / maxCharPerLine;
+		boolean lineChanged = false;
+		while ((lc < maxLinePerPage) && (pi > 0)) {
+			ContentLine line = content.line(pi - 1);
+			if (line.isImage()) {
+				po = 0;
+				if (!lineChanged)
+					pi--;
+				return true;
+			}
+			lineChanged = true;
+			pi--;
+			po = line.length();
 			if (po == 0)
 				lc++;
 			else
-				lc += (po + mc - 1) / mc;
+				lc += (po + maxCharPerLine - 1) / maxCharPerLine;
 		}
-		if (lc > ml)
-			po = (lc - ml) * mc;
-		if (lc <= ml)
+		if (lc > maxLinePerPage)
+			po = (lc - maxLinePerPage) * maxCharPerLine;
+		if (lc <= maxLinePerPage)
 			po = 0;
 		return true;
 	}
@@ -147,26 +168,26 @@ public class HTextView extends SimpleTextView
 	@Override
 	protected void resetValues()
 	{
-		mc = (int) ((h - boardGAP * 2) / fh);
-		ml = (int) ((w - boardGAP * 2) / fw);
-		xoffset = (w - (fw * ml)) / 2;
-		yoffset = (h - (fh * mc)) / 2 - fd;
-		fingerPosIndex = new int[ml];
-		fingerPosOffset = new int[ml];
+		maxCharPerLine = (int) ((pageHeight - boardGAP * 2) / fontHeight);
+		maxLinePerPage = (int) ((pageWidth - boardGAP * 2) / fontWidth);
+		xoffset = (pageWidth - (fontWidth * maxLinePerPage)) / 2;
+		yoffset = (pageHeight - (fontHeight * maxCharPerLine)) / 2 - fontDescent;
+		fingerPosIndex = new int[maxLinePerPage];
+		fingerPosOffset = new int[maxLinePerPage];
 	}
 
 	@Override
 	protected int calcPosOffset(int npo)
 	{
-		if (mc == 0)
+		if (maxCharPerLine == 0)
 			return npo;
-		return (npo / mc) * mc;
+		return (npo / maxCharPerLine) * maxCharPerLine;
 	}
 
 	@Override
 	protected int calcNextLineOffset()
 	{
-		int npo = po + mc;
+		int npo = po + maxCharPerLine;
 		return (npo < content.line(pi).length()) ? npo : -1;
 	}
 

@@ -1,6 +1,6 @@
 package com.lingzeng.SimpleReader.book;
 
-import android.graphics.Bitmap;
+import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.Reader;
 import com.lingzeng.SimpleReader.UString;
 
@@ -13,26 +13,26 @@ import java.util.List;
  * Date: 11-9-6
  * Time: 下午8:32
  */
-public class PlainTextContent implements Content
+public class ContentBase implements Content
 {
-	private List<UString> lines;
+	private List<ContentLine> lines;
 	private int booksize = 0;
 
-	public PlainTextContent()
+	public ContentBase()
 	{
-		lines = new ArrayList<UString>();
-		for(String l:Reader.ReaderTip)
+		lines = new ArrayList<>();
+		for (String l : Reader.ReaderTip)
 			lines.add(new UString(l));
 		booksize = calcSize();
 	}
 
-	public PlainTextContent(List<UString> content)
+	public ContentBase(List<ContentLine> content)
 	{
 		lines = content;
 		booksize = calcSize();
 	}
 
-	public void setContent(List<UString> content)
+	public void setContent(List<ContentLine> content)
 	{
 		lines = content;
 		booksize = calcSize();
@@ -41,15 +41,21 @@ public class PlainTextContent implements Content
 	private int calcSize()
 	{
 		int s = 0;
-		for (UString l : lines)
+		for (ContentLine l : lines)
 			s += l.length();
 		return s;
 	}
 
 	@Override
-	public UString line(int index)
+	public ContentLine line(int index)
 	{
 		return lines.get(index);
+	}
+
+	@Override
+	public UString text(int index)
+	{
+		return (UString) lines.get(index);
 	}
 
 	@Override
@@ -81,7 +87,10 @@ public class PlainTextContent implements Content
 	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
 	{
 		for (int i = cpi.line; i < lineCount(); i++) {
-			int pos = line(i).indexOf(txt, cpi.offset);
+			ContentLine contentLine = line(i);
+			if (contentLine.isImage()) continue;
+			UString line = (UString) contentLine;
+			int pos = line.indexOf(txt, cpi.offset);
 			if (pos >= 0) {
 				cpi.line = i;
 				cpi.offset = pos;
@@ -113,12 +122,6 @@ public class PlainTextContent implements Content
 		}
 		return cpi;
 	}
-
-	@Override
-	public int imageCount() { return 0; }
-
-	@Override
-	public Bitmap image(int index) { return null; }
 
 	@Override
 	public boolean hasNotes() { return false; }

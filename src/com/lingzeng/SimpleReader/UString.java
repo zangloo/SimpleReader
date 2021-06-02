@@ -10,10 +10,10 @@ import com.lingzeng.SimpleReader.view.SimpleTextView;
  * <p/>
  * this class replace standard string, for some book may contain code point big then 65535
  */
-public class UString
+public class UString implements ContentLine
 {
-	private String data;
-	private boolean allBMP;
+	private final String data;
+	private final boolean allBMP;
 
 	public UString(String str)
 	{
@@ -59,6 +59,12 @@ public class UString
 		return data.codePointCount(0, data.length());
 	}
 
+	@Override
+	public boolean isImage()
+	{
+		return false;
+	}
+
 	public int charAt(int index)
 	{
 		if (allBMP)
@@ -99,5 +105,11 @@ public class UString
 	public String toString()
 	{
 		return data;
+	}
+
+	@Override
+	public ContentLineType type()
+	{
+		return ContentLineType.text;
 	}
 }
