@@ -3,8 +3,8 @@ package com.lingzeng.SimpleReader.book;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
-import com.lingzeng.SimpleReader.ContentImageLoader;
 import com.lingzeng.SimpleReader.ContentLine;
+import com.lingzeng.SimpleReader.HtmlContentNodeCallback;
 import com.lingzeng.SimpleReader.UString;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -39,19 +39,24 @@ public class BookUtil
 	}
 
 	// if images != null, this function will return with all images href.
-	public static void HTML2Text(Element node, List<ContentLine> lines, @Nullable ContentImageLoader imageLoader)
+	public static void HTML2Text(Element node, List<ContentLine> lines, @Nullable HtmlContentNodeCallback nodeCallback)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
 				String t = ((TextNode) child).text();
 				if (t.trim().length() > 0)
-					lines.add(new UString(t));
+					if (nodeCallback == null)
+						lines.add(new UString(t));
+					else
+						nodeCallback.addText(lines, t);
 			} else if (child instanceof Element) {
 				final Element e = (Element) child;
-				if (imageLoader != null && e.tagName().equalsIgnoreCase("img"))
-					lines.add(imageLoader.loadImage(e.attr("src")));
+				if (nodeCallback != null)
+					nodeCallback.process(e);
+				if (nodeCallback != null && e.tagName().equalsIgnoreCase("img"))
+					nodeCallback.addImage(lines, e.attr("src"));
 				else
-					HTML2Text(e, lines, imageLoader);
+					HTML2Text(e, lines, nodeCallback);
 			}
 		}
 	}

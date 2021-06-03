@@ -4,13 +4,6 @@ import android.graphics.Bitmap;
 
 public abstract class ContentImage implements ContentLine
 {
-	protected final String ref;
-
-	public ContentImage(String ref)
-	{
-		this.ref = ref;
-	}
-
 	@Override
 	public ContentLineType type()
 	{
@@ -20,7 +13,7 @@ public abstract class ContentImage implements ContentLine
 	@Override
 	public int length()
 	{
-		return 0;
+		return 1;
 	}
 
 	abstract public Bitmap getImage();
