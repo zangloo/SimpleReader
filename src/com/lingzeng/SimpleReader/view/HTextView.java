@@ -2,11 +2,15 @@ package com.lingzeng.SimpleReader.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import com.lingzeng.SimpleReader.ContentImage;
+import android.util.Pair;
+import com.lingzeng.SimpleReader.ImageContent;
 import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.UString;
+
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,9 +42,9 @@ public class HTextView extends SimpleTextView
 	@Override
 	protected void drawText(Canvas canvas)
 	{
-		int lc = 0;
+		int lineCount = 0;
 		float x, y;
-		float[] xy = new float[maxCharPerLine * 2 * 2];
+		float[] drawingPositions = new float[maxCharPerLine * 2 * 2];
 		char[] buf = new char[maxCharPerLine * 2];
 
 		nextpi = pi;
@@ -53,7 +57,7 @@ public class HTextView extends SimpleTextView
 				ContentLine contentLine = content.line(nextpi);
 				if (contentLine.isImage()) {
 					if (nextpi == pi) {
-						drawImage(canvas, (ContentImage) contentLine);
+						drawImage(canvas, (ImageContent) contentLine);
 						nextpi++;
 						return;
 					} else
@@ -62,40 +66,41 @@ public class HTextView extends SimpleTextView
 					line = ((UString) contentLine).replaceChars(SC, TC);
 			}
 			y = yoffset + fontHeight;
-			int cc = line.length() - nextpo;
-			if (cc > maxCharPerLine)
-				cc = maxCharPerLine;
-			fingerPosIndex[lc] = nextpi;
-			fingerPosOffset[lc] = nextpo;
+			int charCount = line.length() - nextpo;
+			if (charCount > maxCharPerLine)
+				charCount = maxCharPerLine;
+			fingerPosIndex[lineCount] = nextpi;
+			fingerPosOffset[lineCount] = nextpo;
 			int len = 0;
 			int count16 = 0;
-			for (; len < cc; len++) {
+			for (; len < charCount; len++) {
 				int ch = line.charAt(nextpo + len);
 				count16 += Character.toChars(ch, buf, count16);
-				xy[len * 2] = x;
-				xy[len * 2 + 1] = y;
+				drawingPositions[len * 2] = x;
+				drawingPositions[len * 2 + 1] = y;
 				y += fontHeight;
 			}
-			if (cc > 0) {
-				canvas.drawPosText(buf, 0, count16, xy, paint);
-				if ((hli != null) && (hli.line == nextpi) && (hli.end > nextpo) &&
-					(hli.begin < nextpo + len)) {
-					int b = Math.max(hli.begin, nextpo);
-					int e = Math.min(hli.end, nextpo + len);
+			if (charCount > 0) {
+				canvas.drawPosText(buf, 0, count16, drawingPositions, paint);
+				if ((highlightInfo != null) && (highlightInfo.line == nextpi) && (highlightInfo.end > nextpo) &&
+					(highlightInfo.begin < nextpo + len)) {
+					int b = Math.max(highlightInfo.begin, nextpo);
+					int e = Math.min(highlightInfo.end, nextpo + len);
 					for (int j = 0; j < e - b; j++) {
-						xy[j * 2] = xy[(b - nextpo + j) * 2];
-						xy[j * 2 + 1] = xy[(b - nextpo + j) * 2 + 1];
+						drawingPositions[j * 2] = drawingPositions[(b - nextpo + j) * 2];
+						drawingPositions[j * 2 + 1] = drawingPositions[(b - nextpo + j) * 2 + 1];
 					}
-					Rect r = new Rect((int) xy[0], (int) (xy[1] - fontHeight + fontDescent),
-						(int) (xy[(e - b - 1) * 2] + fontWidth),
-						(int) (xy[(e - b - 1) * 2 + 1] + fontDescent));
+					Rect r = new Rect((int) drawingPositions[0], (int) (drawingPositions[1] - fontHeight + fontDescent),
+						(int) (drawingPositions[(e - b - 1) * 2] + fontWidth),
+						(int) (drawingPositions[(e - b - 1) * 2 + 1] + fontDescent));
 					canvas.drawRect(r, paint);
 					paint.setColor(bcolor);
-					canvas.drawPosText(buf, b - nextpo, line.count16(b, e), xy, paint);
+					canvas.drawPosText(buf, b - nextpo, line.count16(b, e), drawingPositions, paint);
 					paint.setColor(color);
 				}
 			}
-			lc++;
+			lineCount++;
+			drawUnderline(line, nextpo, nextpo + len, x, yoffset, fontHeight, fontDescent, canvas, paint);
 			x -= fontWidth;
 
 			nextpo += len;
@@ -104,9 +109,44 @@ public class HTextView extends SimpleTextView
 				nextpi++;
 				line = null;
 			}
-		} while ((nextpi < content.lineCount()) & (lc < maxLinePerPage));
-		for (int i = lc; i < maxLinePerPage; i++)
+		} while ((nextpi < content.lineCount()) & (lineCount < maxLinePerPage));
+		for (int i = lineCount; i < maxLinePerPage; i++)
 			fingerPosIndex[i] = -1;
+	}
+
+	private void drawUnderline(UString line, int charFrom, int charTo, float x, float y, float fontHeight, float fontDescent, Canvas canvas, Paint paint)
+	{
+		List<Pair<Integer, Integer>> underlines = line.underlines();
+		if (underlines == null)
+			return;
+		x -= 4;
+		for (Pair<Integer, Integer> pair : underlines) {
+			boolean draw = false;
+			int drawFrom = 0, drawTo = 0;
+			if (pair.first >= charFrom && pair.first < charTo) {
+				drawFrom = pair.first;
+				if (pair.second > charTo)
+					drawTo = charTo;
+				else
+					drawTo = pair.second;
+				draw = true;
+			} else if (pair.second > charFrom && pair.second <= charTo) {
+				drawTo = pair.second;
+				if (pair.first < charFrom)
+					drawFrom = charFrom;
+				else
+					drawFrom = pair.first;
+				draw = true;
+			} else if (pair.first < charFrom && pair.second >= charTo) {
+				draw = true;
+				drawFrom = charFrom;
+				drawTo = charTo;
+			}
+			if (!draw) continue;
+			float yStart = y + fontDescent + fontHeight * (drawFrom - charFrom);
+			float yEnd = yStart - fontDescent + fontHeight * (drawTo - drawFrom);
+			canvas.drawLine(x, yStart, x, yEnd, paint);
+		}
 	}
 
 	@Override

@@ -4,8 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import com.lingzeng.SimpleReader.ContentImage;
 import com.lingzeng.SimpleReader.ContentLine;
+import com.lingzeng.SimpleReader.ImageContent;
 import com.lingzeng.SimpleReader.UString;
 
 import java.util.ArrayList;
@@ -140,7 +140,7 @@ public class XTextView extends SimpleTextView
 				ContentLine contentLine = content.line(nextpi);
 				if (contentLine.isImage()) {
 					if (nextpi == pi) {
-						drawImage(canvas, (ContentImage) contentLine);
+						drawImage(canvas, (ImageContent) contentLine);
 						nextpi++;
 						return;
 					} else
@@ -154,9 +154,9 @@ public class XTextView extends SimpleTextView
 				char[] s = line.substring(nextpo, p).toCharArray();
 				vls.add(new ViewLineInfo(nextpi, nextpo, s));
 				canvas.drawText(s, 0, s.length, xoffset, y, paint);
-				if ((hli != null) && (hli.line == nextpi) && (hli.end > nextpo) && (hli.begin < p)) {
-					int b = Math.max(hli.begin, nextpo);
-					int e = Math.min(hli.end, p);
+				if ((highlightInfo != null) && (highlightInfo.line == nextpi) && (highlightInfo.end > nextpo) && (highlightInfo.begin < p)) {
+					int b = Math.max(highlightInfo.begin, nextpo);
+					int e = Math.min(highlightInfo.end, p);
 					int x1 = (int) (calcWidth(line, nextpo, b) + xoffset);
 					int y1 = (int) (y - fontHeight + fontDescent);
 					int x2 = (int) (x1 + calcWidth(line, b, e));

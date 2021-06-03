@@ -2,7 +2,7 @@ package com.lingzeng.SimpleReader;
 
 import android.graphics.Bitmap;
 
-public abstract class ContentImage implements ContentLine
+public abstract class ImageContent implements ContentLine
 {
 	@Override
 	public ContentLineType type()

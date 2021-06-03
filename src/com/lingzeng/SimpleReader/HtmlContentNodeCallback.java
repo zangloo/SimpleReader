@@ -8,7 +8,7 @@ public interface HtmlContentNodeCallback
 {
 	void process(Element element);
 
-	void addText(List<ContentLine> lines, String text);
+	void addText(List<ContentLine> lines, UString text);
 
 	void addImage(List<ContentLine> lines, String src);
 }

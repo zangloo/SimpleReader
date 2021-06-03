@@ -2,7 +2,7 @@ package com.lingzeng.SimpleReader.book.epub;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import com.lingzeng.SimpleReader.ContentImage;
+import com.lingzeng.SimpleReader.ImageContent;
 import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.HtmlContentNodeCallback;
 import com.lingzeng.SimpleReader.UString;
@@ -50,10 +50,10 @@ public class EPubContentNodeCallback implements HtmlContentNodeCallback
 	}
 
 	@Override
-	public void addText(List<ContentLine> lines, String text)
+	public void addText(List<ContentLine> lines, UString text)
 	{
 		if (fragmentId == null || found)
-			lines.add(new UString(text));
+			lines.add(text);
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class EPubContentNodeCallback implements HtmlContentNodeCallback
 			}
 	}
 
-	private static class EPubImageLine extends ContentImage
+	private static class EPubImageLine extends ImageContent
 	{
 		private final byte[] bytes;
 		private Bitmap image;

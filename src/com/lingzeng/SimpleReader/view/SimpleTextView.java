@@ -5,7 +5,7 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
-import com.lingzeng.SimpleReader.ContentImage;
+import com.lingzeng.SimpleReader.ImageContent;
 import com.lingzeng.SimpleReader.ContentLine;
 import com.lingzeng.SimpleReader.ContentLineType;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +61,7 @@ public abstract class SimpleTextView extends View
 	protected static int boardGAP = 3;
 	protected static int bcolor, color;
 	protected static boolean reset = true;
-	protected static HighlightInfo hli = null;
+	protected static HighlightInfo highlightInfo = null;
 
 	protected Paint paint;
 
@@ -113,7 +113,7 @@ public abstract class SimpleTextView extends View
 		//testDraw(canvas);
 	}
 
-	protected void drawImage(Canvas canvas, ContentImage image)
+	protected void drawImage(Canvas canvas, ImageContent image)
 	{
 		Bitmap b = image.getImage();
 		if (b == null)
@@ -130,7 +130,7 @@ public abstract class SimpleTextView extends View
 	{
 		ContentLine line = content.line(pi);
 		if (ContentLineType.image.equals(line.type()))
-			return ((ContentImage) line).getImage();
+			return ((ImageContent) line).getImage();
 		else
 			return null;
 	}
@@ -208,6 +208,7 @@ public abstract class SimpleTextView extends View
 	private void setTextSize(Paint paint, int dip)
 	{
 		float px = dip * (metrics.densityDpi / 160f);
+		paint.setStrokeWidth(px / 15);
 		paint.setTextSize(px);
 	}
 
@@ -390,7 +391,7 @@ public abstract class SimpleTextView extends View
 
 	public void setHighlightInfo(@Nullable HighlightInfo hightlightInfo)
 	{
-		hli = hightlightInfo;
+		highlightInfo = hightlightInfo;
 	}
 
 	public void gotoEnd()

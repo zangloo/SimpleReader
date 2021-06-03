@@ -10,10 +10,10 @@ import com.lingzeng.SimpleReader.view.SimpleTextView;
  * <p/>
  * this class replace standard string, for some book may contain code point big then 65535
  */
-public class UString implements ContentLine
+public class UString extends TextContentBase
 {
-	private final String data;
-	private final boolean allBMP;
+	private String data;
+	private boolean allBMP;
 
 	public UString(String str)
 	{
@@ -25,7 +25,7 @@ public class UString implements ContentLine
 	{
 		char[] txt = data.toCharArray();
 		SimpleTextView.replaceTextChar(txt, oc, nc);
-		return new UString(String.valueOf(txt));
+		return copy(this, new UString(String.valueOf(txt)));
 	}
 
 	// index is code point based
@@ -63,6 +63,13 @@ public class UString implements ContentLine
 	public boolean isImage()
 	{
 		return false;
+	}
+
+	@Override
+	public void append(String other)
+	{
+		data = data + other;
+		allBMP = (data.length() == data.codePointCount(0, data.length()));
 	}
 
 	public int charAt(int index)

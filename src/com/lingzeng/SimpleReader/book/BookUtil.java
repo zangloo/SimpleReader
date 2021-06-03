@@ -48,17 +48,38 @@ public class BookUtil
 					if (nodeCallback == null)
 						lines.add(new UString(t));
 					else
-						nodeCallback.addText(lines, t);
+						nodeCallback.addText(lines, new UString(t));
 			} else if (child instanceof Element) {
 				final Element e = (Element) child;
 				if (nodeCallback != null)
 					nodeCallback.process(e);
 				if (nodeCallback != null && e.tagName().equalsIgnoreCase("img"))
 					nodeCallback.addImage(lines, e.attr("src"));
-				else
+				else if (e.tagName().equalsIgnoreCase("p")) {
+					UString string = new UString("");
+					buildParagraph(e, string, false);
+					if (string.length() > 0) {
+						string.paragraph();
+						if (nodeCallback == null)
+							lines.add(string);
+						else
+							nodeCallback.addText(lines, string);
+					}
+				} else
 					HTML2Text(e, lines, nodeCallback);
 			}
 		}
+	}
+
+	private static void buildParagraph(Element e, UString string, boolean underline)
+	{
+		if (e.hasClass("kindle-cn-underline"))
+			underline = true;
+		for (Node child : e.childNodes())
+			if (child instanceof TextNode)
+				string.concat(((TextNode) child).text(), underline);
+			else if (child instanceof Element)
+				buildParagraph((Element) child, string, underline);
 	}
 
 	public static String detect(InputStream is)
