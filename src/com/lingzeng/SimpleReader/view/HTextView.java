@@ -65,10 +65,16 @@ public class HTextView extends SimpleTextView
 				} else
 					line = ((UString) contentLine).replaceChars(SC, TC);
 			}
-			y = yoffset + fontHeight;
 			int charCount = line.length() - nextpo;
 			if (charCount > maxCharPerLine)
 				charCount = maxCharPerLine;
+			float yStart = yoffset;
+			if (nextpo == 0 && line.isParagraph()) {
+				charCount -= 2;
+				yStart += fontHeight * 2;
+			}
+			y = yStart + fontHeight;
+
 			fingerPosIndex[lineCount] = nextpi;
 			fingerPosOffset[lineCount] = nextpo;
 			int len = 0;
@@ -100,7 +106,7 @@ public class HTextView extends SimpleTextView
 				}
 			}
 			lineCount++;
-			drawUnderline(line, nextpo, nextpo + len, x, yoffset, fontHeight, fontDescent, canvas, paint);
+			drawUnderline(line, nextpo, nextpo + len, x, yStart, fontHeight, fontDescent, canvas, paint);
 			x -= fontWidth;
 
 			nextpo += len;
