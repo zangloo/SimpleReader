@@ -43,6 +43,8 @@ class EPubBook extends ChaptersBook
 			ArrayList<ContentLine> lines = new ArrayList<>();
 			BookUtil.HTML2Text(Jsoup.parse(resource.getInputStream(), charset, "").body(), lines,
 				new EPubContentNodeCallback(book, htmlPath, ref.getFragmentId()));
+			if (lines.size() == 0)
+				lines.add(new UString(" "));
 			content.setContent(lines);
 		} catch (Exception e) {
 			ArrayList<ContentLine> list = new ArrayList<>();
