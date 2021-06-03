@@ -70,7 +70,9 @@ public class HTextView extends SimpleTextView
 				charCount = maxCharPerLine;
 			float yStart = yoffset;
 			if (nextpo == 0 && line.isParagraph()) {
-				charCount -= 2;
+				int space = maxCharPerLine - charCount;
+				if (space < 2)
+					charCount -= 2 - space;
 				yStart += fontHeight * 2;
 			}
 			y = yStart + fontHeight;

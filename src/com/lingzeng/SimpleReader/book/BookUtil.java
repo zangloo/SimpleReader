@@ -57,7 +57,7 @@ public class BookUtil
 					nodeCallback.addImage(lines, e.attr("src"));
 				else if (e.tagName().equalsIgnoreCase("p")) {
 					UString string = new UString("");
-					buildParagraph(e, string, false);
+					buildParagraph(e, string, false, nodeCallback, lines);
 					if (string.length() > 0) {
 						string.paragraph();
 						if (nodeCallback == null)
@@ -71,15 +71,20 @@ public class BookUtil
 		}
 	}
 
-	private static void buildParagraph(Element e, UString string, boolean underline)
+	private static void buildParagraph(Element e, UString string, boolean underline, HtmlContentNodeCallback nodeCallback, List<ContentLine> lines)
 	{
 		if (e.hasClass("kindle-cn-underline"))
 			underline = true;
 		for (Node child : e.childNodes())
 			if (child instanceof TextNode)
 				string.concat(((TextNode) child).text(), underline);
-			else if (child instanceof Element)
-				buildParagraph((Element) child, string, underline);
+			else if (child instanceof Element) {
+				Element childElement = (Element) child;
+				if (nodeCallback != null && childElement.tagName().equalsIgnoreCase("img"))
+					nodeCallback.addImage(lines, childElement.attr("src"));
+				else
+					buildParagraph(childElement, string, underline, nodeCallback, lines);
+			}
 	}
 
 	public static String detect(InputStream is)
