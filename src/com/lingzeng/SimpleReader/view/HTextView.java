@@ -69,16 +69,19 @@ public class HTextView extends SimpleTextView
 			if (charCount > maxCharPerLine)
 				charCount = maxCharPerLine;
 			float yStart = yoffset;
+			fingerPosIndex[lineCount] = nextpi;
+
 			if (nextpo == 0 && line.isParagraph()) {
 				int space = maxCharPerLine - charCount;
 				if (space < 2)
 					charCount -= 2 - space;
 				yStart += fontHeight * 2;
-			}
+				fingerPosOffset[lineCount] = -2;
+			} else
+				fingerPosOffset[lineCount] = nextpo;
+
 			y = yStart + fontHeight;
 
-			fingerPosIndex[lineCount] = nextpi;
-			fingerPosOffset[lineCount] = nextpo;
 			int len = 0;
 			int count16 = 0;
 			for (; len < charCount; len++) {
@@ -160,25 +163,27 @@ public class HTextView extends SimpleTextView
 	@Override
 	protected FingerPosInfo calcFingerPos(float x, float y)
 	{
-		int l = (int) ((pageWidth - xoffset - x) / fontWidth);
-		int c = (int) ((y - yoffset - fontDescent) / fontHeight);
-		if (l < 0)
-			l = 0;
-		else if (l >= maxLinePerPage)
-			l = maxLinePerPage - 1;
-		if (c < 0)
-			c = 0;
-		else if (c >= maxCharPerLine)
-			c = maxCharPerLine - 1;
-		if (fingerPosIndex[l] == -1)
+		int lineIndex = (int) ((pageWidth - xoffset - x) / fontWidth);
+		int charIndex = (int) ((y - yoffset - fontDescent) / fontHeight);
+		if (lineIndex < 0)
+			lineIndex = 0;
+		else if (lineIndex >= maxLinePerPage)
+			lineIndex = maxLinePerPage - 1;
+		if (charIndex < 0)
+			charIndex = 0;
+		else if (charIndex >= maxCharPerLine)
+			charIndex = maxCharPerLine - 1;
+		if (fingerPosIndex[lineIndex] == -1)
 			return null;
-		int i = fingerPosOffset[l] + c;
+		int textIndex = fingerPosOffset[lineIndex] + charIndex;
 
-		if (i >= content.line(fingerPosIndex[l]).length())
+		UString line = content.text(fingerPosIndex[lineIndex]);
+		// for paragraph, fingerPosOffset of first line is -2
+		if (textIndex < 0 || textIndex >= line.length())
 			return null;
 		FingerPosInfo pi = new FingerPosInfo();
-		pi.line = fingerPosIndex[l];
-		pi.offset = i;
+		pi.line = fingerPosIndex[lineIndex];
+		pi.offset = textIndex;
 		return pi;
 	}
 
