@@ -298,9 +298,6 @@ public abstract class SimpleTextView extends View
 
 		if (posIndex >= content.lineCount()) {
 			pi = po = 0;
-		} else if (posOffset >= content.line(posIndex).length()) {
-			pi = posIndex;
-			po = 0;
 		} else {
 			pi = posIndex;
 			po = calcPosOffset(posOffset);

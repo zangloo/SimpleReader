@@ -46,8 +46,10 @@ public class XTextView extends SimpleTextView
 	{
 		if (reset)
 			return npo;
-		int o, to = 0;
 		ContentLine line = content.line(pi);
+		if (npo >= line.length())
+			return 0;
+		int o, to = 0;
 		if (line.isImage())
 			return npo;
 		do {

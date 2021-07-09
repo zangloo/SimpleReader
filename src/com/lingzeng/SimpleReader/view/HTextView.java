@@ -208,8 +208,11 @@ public class HTextView extends SimpleTextView
 			po = line.length();
 			if (po == 0)
 				lc++;
-			else
+			else {
+				if (((UString) line).isParagraph())
+					po += 2;
 				lc += (po + maxCharPerLine - 1) / maxCharPerLine;
+			}
 		}
 		if (lc > maxLinePerPage)
 			po = (lc - maxLinePerPage) * maxCharPerLine;
@@ -232,6 +235,12 @@ public class HTextView extends SimpleTextView
 	@Override
 	protected int calcPosOffset(int npo)
 	{
+		ContentLine line = content.line(pi);
+		int length = line.length();
+		if (line instanceof UString && ((UString) line).isParagraph())
+			length += 2;
+		if (npo >= length)
+			return 0;
 		if (maxCharPerLine == 0)
 			return npo;
 		return (npo / maxCharPerLine) * maxCharPerLine;
@@ -241,7 +250,11 @@ public class HTextView extends SimpleTextView
 	protected int calcNextLineOffset()
 	{
 		int npo = po + maxCharPerLine;
-		return (npo < content.line(pi).length()) ? npo : -1;
+		ContentLine line = content.line(pi);
+		int length = line.length();
+		if (line instanceof UString && ((UString) line).isParagraph())
+			length += 2;
+		return (npo < length) ? npo : -1;
 	}
 
 }
