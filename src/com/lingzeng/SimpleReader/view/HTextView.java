@@ -193,7 +193,18 @@ public class HTextView extends SimpleTextView
 		if ((pi == 0) && (po == 0))
 			return false;
 
-		int lc = (po + maxCharPerLine - 1) / maxCharPerLine;
+		boolean indent;
+		int lc;
+		if (po > 0) {
+			ContentLine line = content.line(pi);
+			indent = line instanceof UString && ((UString) line).isParagraph();
+			if (indent)
+				po += 2;
+			lc = (po + maxCharPerLine - 1) / maxCharPerLine;
+		} else {
+			indent = false;
+			lc = 0;
+		}
 		boolean lineChanged = false;
 		while ((lc < maxLinePerPage) && (pi > 0)) {
 			ContentLine line = content.line(pi - 1);
@@ -206,16 +217,21 @@ public class HTextView extends SimpleTextView
 			lineChanged = true;
 			pi--;
 			po = line.length();
-			if (po == 0)
+			if (po == 0) {
 				lc++;
-			else {
-				if (((UString) line).isParagraph())
+				indent = false;
+			} else {
+				indent = ((UString) line).isParagraph();
+				if (indent)
 					po += 2;
 				lc += (po + maxCharPerLine - 1) / maxCharPerLine;
 			}
 		}
-		if (lc > maxLinePerPage)
+		if (lc > maxLinePerPage) {
 			po = (lc - maxLinePerPage) * maxCharPerLine;
+			if (indent)
+				po -= 2;
+		}
 		if (lc <= maxLinePerPage)
 			po = 0;
 		return true;
