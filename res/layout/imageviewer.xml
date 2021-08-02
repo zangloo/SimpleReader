@@ -2,10 +2,10 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical"
               android:layout_width="fill_parent" android:layout_height="fill_parent">
-    <com.lingzeng.SimpleReader.view.TouchImageView android:id="@+id/image_view"
-                                                   android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                                   android:layout_weight="1" android:scaleType="center">
-    </com.lingzeng.SimpleReader.view.TouchImageView>
+    <net.lzrj.SimpleReader.view.TouchImageView android:id="@+id/image_view"
+                                               android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                               android:layout_weight="1" android:scaleType="center">
+    </net.lzrj.SimpleReader.view.TouchImageView>
     <LinearLayout style="@android:style/ButtonBar" android:orientation="horizontal"
                   android:layout_width="fill_parent" android:layout_height="wrap_content"
                   android:layout_alignParentBottom="true" android:background="@null">
