@@ -1049,24 +1049,28 @@ public class Reader extends Activity implements View.OnTouchListener
 					return true;
 				}
 
-				boolean next;
+				float p1, p2;
 				switch (config.getPagingDirect()) {
 					case clickUp:
-						next = y <= height1;
+						p1 = height / 2;
+						p2 = y;
 						break;
 					case clickDown:
-						next = y > height2;
+						p2 = height / 2;
+						p1 = y;
 						break;
 					case clickRight:
-						next = x <= width1;
+						p2 = width / 2;
+						p1 = x;
 						break;
 					case clickLeft:
-						next = x > width2;
+						p1 = width / 2;
+						p2 = x;
 						break;
 					default:
 						return false;
 				}
-				if (next)
+				if (p1 > p2)
 					pageDown();
 				else
 					pageUp();
