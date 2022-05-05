@@ -1,31 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	      android:orientation="vertical"
-	      android:layout_width="fill_parent"
-	      android:layout_height="fill_parent">
-	<android.support.v4.view.ViewPager android:id="@+id/file_list_pager" android:layout_weight="1"
-					   android:layout_width="fill_parent" android:layout_height="wrap_content">
-	</android.support.v4.view.ViewPager>
-	<LinearLayout style="@android:style/ButtonBar" android:orientation="horizontal"
-		      android:layout_width="fill_parent" android:layout_height="wrap_content">
-		<RadioGroup android:id="@+id/file_list_radio_group" android:orientation="horizontal"
-			    android:layout_width="wrap_content" android:layout_height="wrap_content">
-			<RadioButton android:id="@+id/button_file_list"
-				     android:layout_width="wrap_content"
-				     android:layout_height="wrap_content"
-				     android:text="@string/file_list_title"/>
-			<RadioButton android:id="@+id/button_recently_list"
-				     android:layout_width="wrap_content"
-				     android:layout_height="wrap_content"
-				     android:text="@string/recently_opened_title"/>
-			<RadioButton android:id="@+id/button_file_online_list"
-				     android:layout_width="wrap_content"
-				     android:layout_height="wrap_content"
-				     android:text="@string/file_online_list_title"/>
-		</RadioGroup>
-		<Button android:id="@+id/button_cancel" android:text="@string/button_cancel_text"
-			android:layout_width="0dip" android:layout_height="wrap_content"
-			android:layout_weight="1"/>
-	</LinearLayout>
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:background="@drawable/e_ink_background">
+<!--              android:background="@android:color/white">-->
+    <android.support.v4.view.ViewPager android:id="@+id/file_list_pager" android:layout_weight="1"
+                                       android:layout_width="fill_parent" android:layout_height="wrap_content">
+    </android.support.v4.view.ViewPager>
+    <LinearLayout style="@android:style/ButtonBar" android:orientation="horizontal"
+                  android:layout_width="fill_parent" android:layout_height="wrap_content"
+                  android:background="@android:color/white">
+        <RadioGroup android:id="@+id/file_list_radio_group" android:orientation="horizontal"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/button_file_list"
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:textColor="@android:color/black"
+                         android:text="@string/file_list_title"/>
+            <RadioButton android:id="@+id/button_recently_list"
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:textColor="@android:color/black"
+                         android:text="@string/recently_opened_title"/>
+            <RadioButton android:id="@+id/button_file_online_list"
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:textColor="@android:color/black"
+                         android:text="@string/file_online_list_title"/>
+        </RadioGroup>
+        <Button android:id="@+id/button_cancel" android:text="@string/button_cancel_text"
+                android:layout_width="0dip" android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+    </LinearLayout>
 </LinearLayout>
 

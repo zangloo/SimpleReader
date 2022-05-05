@@ -30,6 +30,10 @@ public class StatusPanel extends PopupWindow
 		void onPosChanged(Config.ReadingInfo ri);
 
 		void onColorButtonClick();
+
+		void onOrientButtonClick();
+
+		void onSettingsButtonClick();
 	}
 
 	private OnPanelClickListener pcl;
@@ -102,12 +106,30 @@ public class StatusPanel extends PopupWindow
 			}
 		});
 
+		btn = (Button) layout.findViewById(R.id.button_orient_mode);
+		btn.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View view)
+			{
+				pcl.onOrientButtonClick();
+			}
+		});
+
 		btn = (Button) layout.findViewById(R.id.button_bright_mode);
 		btn.setOnClickListener(new View.OnClickListener()
 		{
 			public void onClick(View view)
 			{
 				pcl.onColorButtonClick();
+			}
+		});
+
+		btn = (Button) layout.findViewById(R.id.button_settings);
+		btn.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View view)
+			{
+				pcl.onSettingsButtonClick();
 			}
 		});
 	}
@@ -121,7 +143,7 @@ public class StatusPanel extends PopupWindow
 		nbt.setEnabled(false);
 
 		updateReadingInfo(ri);
-		showAtLocation(layout, Gravity.TOP | Gravity.CENTER, 0, 0);
+		showAtLocation(layout, Gravity.BOTTOM | Gravity.CENTER, 0, 0);
 	}
 
 	public void hide()

@@ -36,7 +36,7 @@ import java.util.Stack;
 
 public class Reader extends Activity implements View.OnTouchListener
 {
-	public static final String ABOUT_MESSAGE = "<center>作者：<a href=\"http://weibo.com/2386922042\">zhanglu</a></center></br><center>主頁：<a href=\"http://sourceforge.net/projects/simplereader\">SimpleReader</a></center>";
+	public static final String ABOUT_MESSAGE = "<center>作者：<a href=\"https://github.com/zangloo/\">zang.loo</a></center></br><center>主頁：<a href=\"https://github.com/zangloo/SimpleReader\">SimpleReader</a></center>";
 	public static final String[] ReaderTip = {"", "", "請選取所需觀看的書本。書本須放置於SD卡中，books目錄下。", "所用字典請置于books下dict目錄中。", "如須使用其他字體替代自帶，可將字體置於books下fonts目錄中，字體可至“http://sourceforge.net/projects/vietunicode/files/hannom/hannom v2005/”下載"};
 
 	public static final String pathPrefix = Environment.getExternalStorageDirectory() + "/books";
@@ -44,18 +44,6 @@ public class Reader extends Activity implements View.OnTouchListener
 	public static final String dictSuffix = ".sqlite";
 	public static final String fontPath = pathPrefix + "/fonts/";
 	public static final String fontSuffix = ".ttf";
-
-	private static final int menuSearch = 0;
-	private static final int menuViewLock = 1;
-	private static final int menuExit = 2;
-	private static final int menuFile = 3;
-	private static final int menuOption = 4;
-	private static final int menuBookmarkMgr = 5;
-	private static final int menuChapterMgr = 6;
-	private static final int menuSeek = 7;
-	private static final int menuStatusPanel = 8;
-	private static final int menuColorBright = 9;
-	private static final int menuAbout = 10;
 
 	private static final int FILE_DIALOG_ID = 1;
 	private static final int OPTION_DIALOG_ID = 2;
@@ -85,7 +73,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private PopupMenu pm = null;
 	private TextView nt = null;
 	private FrameLayout nsv = null;
-	private Stack<Config.ReadingInfo> ris = new Stack<Config.ReadingInfo>();
+	private final Stack<Config.ReadingInfo> ris = new Stack<>();
 	private boolean loading = false;
 	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
 	private Config.ReadingInfo ri = null;
@@ -96,16 +84,16 @@ public class Reader extends Activity implements View.OnTouchListener
 	private DictManager dictManager;
 	private Typeface tf = null;
 	private int screenWidth, screenHeight;
-	private HashMap<Config.GestureDirect, GestureCallbackInterface> gdCallback = new HashMap<Config.GestureDirect, GestureCallbackInterface>();
+	private final HashMap<Config.GestureDirect, GestureCallbackInterface> gdCallback = new HashMap<>();
 
-	private GestureCallbackInterface pageDownCallback = new GestureCallbackInterface()
+	private final GestureCallbackInterface pageDownCallback = new GestureCallbackInterface()
 	{
 		public void callback()
 		{
 			pageDown();
 		}
 	};
-	private GestureCallbackInterface pageUpCallback = new GestureCallbackInterface()
+	private final GestureCallbackInterface pageUpCallback = new GestureCallbackInterface()
 	{
 		public void callback()
 		{
@@ -133,6 +121,8 @@ public class Reader extends Activity implements View.OnTouchListener
 			Util.errorMsg(this, R.string.error_open_config_file);
 		}
 
+		updateWH();
+
 		// init panels
 		initStatusPanel();
 		initSearchPanel();
@@ -142,8 +132,6 @@ public class Reader extends Activity implements View.OnTouchListener
 		initPopupMenu();
 		initNote();
 		initGesture();
-
-		updateWH();
 
 		// if external font exist, load it
 		setTypeface(config.getFontFile());
@@ -427,95 +415,6 @@ public class Reader extends Activity implements View.OnTouchListener
 		config.setColorBright(!config.isColorBright());
 		setColorAndFont();
 		bv.invalidate();
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId()) {
-			case menuFile:
-				showDialog(FILE_DIALOG_ID);
-				break;
-			case menuSearch:
-				showSearchPanel();
-				break;
-			case menuOption:
-				showDialog(OPTION_DIALOG_ID);
-				break;
-			case menuViewLock:
-				if (config.isViewLock())
-					config.unsetViewOrient();
-				else
-					config.setViewOrient(currOrient);
-				setViewLock(config.getViewOrient());
-				break;
-			case menuBookmarkMgr:
-				showBookmarkMgr(screenWidth >> 1);
-				break;
-			case menuChapterMgr:
-				showChapterList(screenWidth >> 1);
-				break;
-			case menuStatusPanel:
-				showStatusPanel();
-				break;
-			case menuExit:
-				finish();
-				break;
-			case menuSeek:
-				showSeekPanel();
-				break;
-			case menuColorBright:
-				switchColorBright();
-				break;
-			case menuAbout:
-				Util.showDialog(this, ABOUT_MESSAGE, R.string.about_title);
-				break;
-		}
-		return true;
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
-		menu.add(0, menuFile, menuFile, getString(R.string.menu_file));
-		if (config.isViewLock())
-			menu.add(0, menuViewLock, menuViewLock, getString(R.string.menu_unlock_view));
-		else
-			menu.add(0, menuViewLock, menuViewLock, getString(R.string.menu_lock_view));
-		menu.add(0, menuColorBright, menuColorBright, getResources()
-			.getString(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night));
-		menu.add(0, menuExit, menuExit, getString(R.string.menu_exit));
-		menu.add(0, menuOption, menuOption, getString(R.string.menu_option));
-		menu.add(0, menuAbout, menuAbout, getString(R.string.menu_about));
-		menu.add(0, menuSearch, menuSearch, getString(R.string.menu_search));
-		menu.add(0, menuBookmarkMgr, menuBookmarkMgr, getString(R.string.menu_bookmark_mgr));
-		menu.add(0, menuSeek, menuSeek, getString(R.string.menu_seek));
-		menu.add(0, menuChapterMgr, menuChapterMgr, getString(R.string.menu_chapter));
-		menu.add(0, menuStatusPanel, menuStatusPanel, getString(R.string.menu_status_panel));
-
-		return true;
-	}
-
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu)
-	{
-		if (config.isViewLock())
-			menu.findItem(menuViewLock).setTitle(R.string.menu_unlock_view);
-		else
-			menu.findItem(menuViewLock).setTitle(R.string.menu_lock_view);
-		menu.findItem(menuChapterMgr).setVisible((book != null) && (book.chapterCount() > 1));
-		menu.findItem(menuColorBright)
-			.setTitle(!config.isColorBright() ? R.string.color_mode_day : R.string.color_mode_night);
-
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-		return true;
-	}
-
-	@Override
-	public void onOptionsMenuClosed(Menu menu)
-	{
-		super.onOptionsMenuClosed(menu);
-		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 	}
 
 	public boolean onTouch(View view, MotionEvent e)
@@ -835,7 +734,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void initPopupMenu()
 	{
-		HashMap<Integer, String> mi = new HashMap<Integer, String>();
+		HashMap<Integer, String> mi = new HashMap<>();
 		mi.put(R.string.menu_dict, getString(R.string.menu_dict));
 		mi.put(R.string.menu_bookmark, getString(R.string.menu_bookmark));
 		mi.put(R.string.menu_copy, getString(R.string.menu_copy));
@@ -939,7 +838,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		screenWidth = getWindowManager().getDefaultDisplay().getWidth();
 		screenHeight = getWindowManager().getDefaultDisplay().getHeight();
-		PopupList.setMaxWidth(screenWidth * 3 / 4);
+		PopupList.setPopupWidth(screenWidth * 3 / 4);
 	}
 
 	private void initNote()
@@ -977,13 +876,13 @@ public class Reader extends Activity implements View.OnTouchListener
 	private void showBookmarkMgr(int x)
 	{
 		if (book != null)
-			bookmarkManager.show(ri, book, tf, bv.getTop(), x);
+			bookmarkManager.show(ri, book, tf, bv.getTop());
 	}
 
 	private void showChapterList(int x)
 	{
 		if ((book != null) && (book.chapterCount() > 1))
-			TOCList.show(book.getTOC(), book.currChapter(), tf, bv.getTop(), x);
+			TOCList.show(book.getTOC(), book.currChapter(), tf, bv.getTop());
 	}
 
 	private void showStatusPanel()
@@ -1026,6 +925,24 @@ public class Reader extends Activity implements View.OnTouchListener
 				bv.invalidate();
 				statusPanel.hide();
 			}
+
+			@Override
+			public void onOrientButtonClick()
+			{
+				if (config.isViewLock())
+					config.unsetViewOrient();
+				else
+					config.setViewOrient(currOrient);
+				setViewLock(config.getViewOrient());
+				statusPanel.hide();
+			}
+
+			@Override
+			public void onSettingsButtonClick()
+			{
+				showDialog(OPTION_DIALOG_ID);
+				statusPanel.hide();
+			}
 		});
 	}
 
@@ -1055,7 +972,7 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	enum Draging
 	{
-		statusbar, menu, bookmark, chapter, nothing, done
+		bookmark, chapter, nothing, done
 	}
 
 	Draging draging = Draging.nothing;
@@ -1064,15 +981,11 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		gs = new GestureDetector(new GestureDetector.OnGestureListener()
 		{
-			ArrayList<Integer> items = new ArrayList<Integer>();
+			ArrayList<Integer> items = new ArrayList<>();
 
 			public boolean onDown(MotionEvent e)
 			{
-				if (e.getRawY() < boardLen)
-					draging = Draging.statusbar;
-				else if (e.getRawY() > screenHeight - boardLen)
-					draging = Draging.menu;
-				else if (e.getRawX() < boardLen)
+				if (e.getRawX() < boardLen)
 					draging = Draging.chapter;
 				else if (e.getRawX() > screenWidth - boardLen)
 					draging = Draging.bookmark;
@@ -1085,43 +998,14 @@ public class Reader extends Activity implements View.OnTouchListener
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float v, float v1)
 			{
 				switch (draging) {
-					case statusbar:
-						if ((e2.getRawY() - e1.getRawY()) > boardLen) {
-							showStatusPanel();
-							draging = Draging.done;
-							return true;
-						}
-						break;
-					case menu:
-						if ((e1.getRawY() - e2.getRawY()) > boardLen) {
-							openOptionsMenu();
-							draging = Draging.done;
-							return true;
-						}
-						break;
 					case bookmark:
-						if ((e1.getRawX() - e2.getRawX()) < boardLen) {
-							if (bookmarkManager.isShowing())
-								bookmarkManager.hide();
-							break;
-						}
-						if (bookmarkManager.isShowing())
-							bookmarkManager.update((int) (screenWidth - e2.getRawX()),
-								screenHeight);
-						else
-							showBookmarkMgr((int) (screenWidth - e2.getRawX()));
+						if (!bookmarkManager.isShowing())
+							showBookmarkMgr(screenHeight * 3 / 4);
 
 						break;
 					case chapter:
-						if ((e2.getRawX() - e1.getRawX()) < boardLen) {
-							if (TOCList.isShowing())
-								TOCList.hide();
-							break;
-						}
-						if (TOCList.isShowing())
-							TOCList.update((int) e2.getRawX(), screenHeight);
-						else
-							showChapterList((int) e2.getRawX());
+						if (!TOCList.isShowing())
+							showChapterList(screenHeight * 3 / 4);
 
 						break;
 					case nothing:
@@ -1152,31 +1036,48 @@ public class Reader extends Activity implements View.OnTouchListener
 					return true;
 				}
 
-				float p1, p2;
+				float size;
+				float pos;
+				boolean forward;
 				switch (config.getPagingDirect()) {
 					case clickUp:
-						p1 = bv.getHeight() / 2;
-						p2 = e.getY();
-						break;
-					case clickDown:
-						p2 = bv.getHeight() / 2;
-						p1 = e.getY();
-						break;
-					case clickRight:
-						p2 = bv.getWidth() / 2;
-						p1 = e.getX();
-						break;
-					case clickLeft:
-						p1 = bv.getWidth() / 2;
-						p2 = e.getX();
+						size = bv.getHeight();
+						pos = e.getY();
+						forward = false;
 						break;
 					default:
-						return false;
+					case clickDown:
+						size = bv.getHeight();
+						pos = e.getY();
+						forward = true;
+						break;
+					case clickLeft:
+						size = bv.getWidth();
+						pos = e.getX();
+						forward = false;
+						break;
+					case clickRight:
+						size = bv.getWidth();
+						pos = e.getX();
+						forward = true;
+						break;
 				}
-				if (p1 > p2)
+				boolean next;
+				float block = size / 3;
+				if (pos < block)
+					next = !forward;
+				else if (pos > (block * 2))
+					next = forward;
+				else {
+					showStatusPanel();
+					return true;
+				}
+				if (next)
 					pageDown();
 				else
 					pageUp();
+
+
 				return true;
 			}
 

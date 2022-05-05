@@ -44,7 +44,7 @@ public class RealFile extends VFile
 		if ((list = rf.list()) == null)
 			return ps;
 		for (String n : list) {
-			if (n.equals(Config.configDB))
+			if (n.startsWith(Config.configDB))
 				continue;
 			if (n.endsWith(Reader.dictSuffix))
 				continue;

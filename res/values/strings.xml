@@ -69,7 +69,9 @@
 	<string name="default_font_label">缺省字體</string>
 
 	<string name="pos_label">位置：</string>
+	<string name="button_switch_orient_label">切換方向</string>
 	<string name="button_switch_bright_label">切換顔色</string>
+	<string name="button_settings_label">設置</string>
 	<string name="button_prev_pos_label">←</string>
 	<string name="button_next_pos_label">→</string>
 

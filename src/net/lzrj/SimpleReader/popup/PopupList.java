@@ -15,9 +15,9 @@ import net.lzrj.SimpleReader.R;
  */
 public class PopupList extends PopupWindow
 {
-	private ListView lv;
-	private TextView tv;
-	static private int mw = 0;
+	private final ListView lv;
+	private final TextView tv;
+	static private int popupWidth = 0;
 
 	public PopupList(Context context)
 	{
@@ -29,6 +29,7 @@ public class PopupList extends PopupWindow
 		setFocusable(true);
 		tv = (TextView) layout.findViewById(R.id.popup_list_label);
 		lv = (ListView) layout.findViewById(R.id.popup_list);
+		setWidth(popupWidth);
 	}
 
 	public void setOnItemClickListener(AdapterView.OnItemClickListener onItemClickListener)
@@ -61,16 +62,14 @@ public class PopupList extends PopupWindow
 		tv.setTypeface(tf);
 	}
 
-	static public void setMaxWidth(int width)
+	static public void setPopupWidth(int width)
 	{
-		mw = width;
+		popupWidth = width;
 	}
 
 	@Override
 	public void update(int width, int height)
 	{
-		if (mw != 0)
-			width = Math.min(mw, width);
-		super.update(width, height);
+		super.update(popupWidth, height);
 	}
 }

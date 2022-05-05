@@ -37,7 +37,10 @@ public class BookmarkManager extends PopupList
 		public long bookid;
 		private long id;
 
-		public long getID() {return id;}
+		public long getID()
+		{
+			return id;
+		}
 	}
 
 	DialogInterface.OnClickListener addListener = new DialogInterface.OnClickListener()
@@ -88,10 +91,10 @@ public class BookmarkManager extends PopupList
 
 		setTitle(context.getString(R.string.bookmark_title));
 		config = conf;
-		bls = new ArrayList<HashMap<String, Object>>();
+		bls = new ArrayList<>();
 		sa = new SimpleAdapter(context, bls, android.R.layout.two_line_list_item,
-			new String[] {BOOKMARK_LIST_TITLE_DESC, BOOKMARK_LIST_TITLE_POS},
-			new int[] {android.R.id.text1, android.R.id.text2})
+			new String[]{BOOKMARK_LIST_TITLE_DESC, BOOKMARK_LIST_TITLE_POS},
+			new int[]{android.R.id.text1, android.R.id.text2})
 		{
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
@@ -131,7 +134,7 @@ public class BookmarkManager extends PopupList
 		bml = config.getBookmarkList(readingInfo);
 		if (bml != null)
 			for (BookmarkManager.Bookmark b : bml) {
-				HashMap<String, Object> map = new HashMap<String, Object>();
+				HashMap<String, Object> map = new HashMap<>();
 				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
 				if (book.chapterCount() > 1)
 					map.put(BOOKMARK_LIST_TITLE_POS,
@@ -144,12 +147,11 @@ public class BookmarkManager extends PopupList
 		sa.notifyDataSetChanged();
 	}
 
-	public void show(Config.ReadingInfo ri, Book b, Typeface typeface, int top, int width)
+	public void show(Config.ReadingInfo ri, Book b, Typeface typeface, int top)
 	{
 		readingInfo = ri;
 		tf = typeface;
 		book = b;
-		setWidth(width);
 		updateBookmarkList();
 		showAtLocation(getContentView(), Gravity.RIGHT | Gravity.CENTER, 0, top);
 	}

@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class FileDialog extends Dialog
 {
-	public static interface OnFilePickedListener
+	public interface OnFilePickedListener
 	{
 		void onFilePicked(String filename);
 	}
@@ -42,7 +42,7 @@ public class FileDialog extends Dialog
 	private SimpleAdapter saf;
 	private SimpleAdapter saof;
 	private SimpleAdapter sarf;
-	private ListView[] lv = new ListView[3];
+	private final ListView[] lv = new ListView[3];
 	private ViewPager vp;
 	private PagerAdapter pa;
 	private RadioGroup rg;
@@ -67,7 +67,7 @@ public class FileDialog extends Dialog
 		fpl = listener;
 		// setup recently files list
 		lv[1] = new ListView(getContext());
-		rfns = new ArrayList<HashMap<String, Object>>();
+		rfns = new ArrayList<>();
 		sarf = new SimpleAdapter(getContext(), rfns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID)
 		{
 			@Override
@@ -92,7 +92,7 @@ public class FileDialog extends Dialog
 		});
 
 		// setup file list
-		fns = new ArrayList<HashMap<String, Object>>();
+		fns = new ArrayList<>();
 		saf = new SimpleAdapter(getContext(), fns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
 		lv[0] = new ListView(getContext());
 		lv[0].setAdapter(saf);
@@ -111,7 +111,7 @@ public class FileDialog extends Dialog
 		});
 
 		// setup online file list
-		ofns = new ArrayList<HashMap<String, Object>>();
+		ofns = new ArrayList<>();
 		saof = new SimpleAdapter(getContext(), ofns, R.layout.filelist, LIST_HEAD_NAMES, LIST_HEAD_ID);
 		lv[2] = new ListView(getContext());
 		lv[2].setAdapter(saof);
@@ -283,7 +283,7 @@ public class FileDialog extends Dialog
 	{
 		rfns.clear();
 		for (Config.ReadingInfo ri : recentFileList) {
-			HashMap<String, Object> m = new HashMap<String, Object>();
+			HashMap<String, Object> m = new HashMap<>();
 			m.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
 			m.put(LIST_HEAD_NAMES[1], ri.name);
 			m.put(LIST_HEAD_NAMES[2], ri.ctitle);
@@ -297,7 +297,7 @@ public class FileDialog extends Dialog
 	private int updateList(@Nullable String filename)
 	{
 		fns.clear();
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<>();
 
 		VFile f = VFile.create(pwd);
 		List<VFile.Property> ps = f.listProperty();
@@ -320,7 +320,7 @@ public class FileDialog extends Dialog
 			return 0;
 		for (int i = 0; i < ps.size(); i++) {
 			VFile.Property p = ps.get(i);
-			map = new HashMap<String, Object>();
+			map = new HashMap<>();
 			if (p.isFile) {
 				map.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
 				map.put(LIST_HEAD_NAMES[3], "" + p.size / 1024 + " K");
@@ -344,7 +344,7 @@ public class FileDialog extends Dialog
 	private int updateOnlineList(@Nullable String filename)
 	{
 		ofns.clear();
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<>();
 
 		VFile f = VFile.create(opwd);
 		List<VFile.Property> ps = f.listProperty();
@@ -366,7 +366,7 @@ public class FileDialog extends Dialog
 
 			for (int i = 0; i < ps.size(); i++) {
 				VFile.Property p = ps.get(i);
-				map = new HashMap<String, Object>();
+				map = new HashMap<>();
 				if (p.isFile) {
 					map.put(LIST_HEAD_NAMES[0], R.drawable.icon_file);
 					map.put(LIST_HEAD_NAMES[3], "" + p.size / 1024 + " K");
@@ -392,15 +392,15 @@ public class FileDialog extends Dialog
 		switch (index) {
 			case 0:
 				setTitle(getContext().getString(R.string.dialog_file_title) +
-						 ((pwd.length() == 0) ? "/" : pwd));
+					((pwd.length() == 0) ? "/" : pwd));
 				break;
 			case 1:
 				setTitle(getContext().getString(R.string.dialog_file_title));
 				break;
 			case 2:
 				setTitle(getContext().getString(R.string.dialog_file_title) +
-						 (opwd.equals(VFile.CLOUD_FILE_PREFIX) ?
-							 VFile.CLOUD_FILE_PREFIX + "/" : opwd));
+					(opwd.equals(VFile.CLOUD_FILE_PREFIX) ?
+						VFile.CLOUD_FILE_PREFIX + "/" : opwd));
 				break;
 		}
 	}

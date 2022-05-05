@@ -53,7 +53,7 @@ public class TOCList extends PopupList
 		setHeight(WindowManager.LayoutParams.FILL_PARENT);
 	}
 
-	public void show(ArrayList<TOCRecord> cs, int index, Typeface typeface, int top, int width)
+	public void show(ArrayList<TOCRecord> cs, int index, Typeface typeface, int top)
 	{
 		aa.clear();
 		for (TOCRecord c : cs)
@@ -65,7 +65,6 @@ public class TOCList extends PopupList
 		aa.notifyDataSetChanged();
 
 		tf = typeface;
-		setWidth(width);
 		showAtLocation(getContentView(), Gravity.LEFT | Gravity.CENTER, 0, top);
 		setSelection(chapter = index);
 	}
