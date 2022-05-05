@@ -1036,47 +1036,40 @@ public class Reader extends Activity implements View.OnTouchListener
 					return true;
 				}
 
-				float size;
-				float pos;
-				boolean forward;
-				switch (config.getPagingDirect()) {
-					case clickUp:
-						size = bv.getHeight();
-						pos = e.getY();
-						forward = false;
-						break;
-					default:
-					case clickDown:
-						size = bv.getHeight();
-						pos = e.getY();
-						forward = true;
-						break;
-					case clickLeft:
-						size = bv.getWidth();
-						pos = e.getX();
-						forward = false;
-						break;
-					case clickRight:
-						size = bv.getWidth();
-						pos = e.getX();
-						forward = true;
-						break;
-				}
-				boolean next;
-				float block = size / 3;
-				if (pos < block)
-					next = !forward;
-				else if (pos > (block * 2))
-					next = forward;
-				else {
+				int height = bv.getHeight();
+				int height1 = height / 3;
+				int height2 = height1 * 2;
+				int width = bv.getWidth();
+				int width1 = width / 3;
+				int width2 = width1 * 2;
+				float x = e.getX();
+				float y = e.getY();
+				if (x > width1 && x <= width2 && y > height1 && y <= height2) {
 					showStatusPanel();
 					return true;
+				}
+
+				boolean next;
+				switch (config.getPagingDirect()) {
+					case clickUp:
+						next = y <= height1;
+						break;
+					case clickDown:
+						next = y > height2;
+						break;
+					case clickRight:
+						next = x <= width1;
+						break;
+					case clickLeft:
+						next = x > width2;
+						break;
+					default:
+						return false;
 				}
 				if (next)
 					pageDown();
 				else
 					pageUp();
-
 
 				return true;
 			}
