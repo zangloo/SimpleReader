@@ -194,7 +194,7 @@ public abstract class SimpleTextView extends View
 		 */
 	public void setColorAndFont(int aColor, int aBcolor, int fontSize, Typeface typeface)
 	{
-		boardGAP = fontSize / 3;
+		boardGAP = fontSize / 2;
 		bcolor = aBcolor;
 		color = aColor;
 		paint.setColor(color);

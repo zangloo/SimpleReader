@@ -112,7 +112,7 @@ public class HTextView extends SimpleTextView
 			}
 			lineCount++;
 			drawUnderline(line, nextpo, nextpo + len, x, yStart, fontHeight, fontDescent, canvas, paint);
-			x -= fontWidth;
+			x -= (fontWidth / 2 * 3);
 
 			nextpo += len;
 			if (nextpo == line.length()) {
@@ -163,7 +163,7 @@ public class HTextView extends SimpleTextView
 	@Override
 	protected FingerPosInfo calcFingerPos(float x, float y)
 	{
-		int lineIndex = (int) ((pageWidth - xoffset - x) / fontWidth);
+		int lineIndex = (int) ((pageWidth - xoffset - x) / (fontWidth / 2 * 3));
 		int charIndex = (int) ((y - yoffset - fontDescent) / fontHeight);
 		if (lineIndex < 0)
 			lineIndex = 0;
@@ -241,8 +241,8 @@ public class HTextView extends SimpleTextView
 	protected void resetValues()
 	{
 		maxCharPerLine = (int) ((pageHeight - boardGAP * 2) / fontHeight);
-		maxLinePerPage = (int) ((pageWidth - boardGAP * 2) / fontWidth);
-		xoffset = (pageWidth - (fontWidth * maxLinePerPage)) / 2;
+		maxLinePerPage = (int) ((pageWidth - boardGAP * 2 - fontWidth) / (fontWidth / 2 * 3)) + 1;
+		xoffset = boardGAP;
 		yoffset = (pageHeight - (fontHeight * maxCharPerLine)) / 2 - fontDescent;
 		fingerPosIndex = new int[maxLinePerPage];
 		fingerPosOffset = new int[maxLinePerPage];
