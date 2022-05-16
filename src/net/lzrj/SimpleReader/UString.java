@@ -2,6 +2,8 @@ package net.lzrj.SimpleReader;
 
 import net.lzrj.SimpleReader.view.SimpleTextView;
 
+import java.util.Vector;
+
 /**
  * Created with IntelliJ IDEA.
  * User: zhanglu
@@ -14,18 +16,30 @@ public class UString extends TextContentBase
 {
 	private String data;
 	private boolean allBMP;
+	private final Vector<int[]> fontSizeDeltas = new Vector<>();
 
 	public UString(String str)
 	{
-		data = str;
+		this(str, 0);
+	}
+
+	public UString(String str, int fontSizeDelta)
+	{
+		data = str.trim();
 		allBMP = (data.length() == data.codePointCount(0, data.length()));
+		int length = this.length();
+		if (length > 0)
+			fontSizeDeltas.add(new int[]{length, fontSizeDelta});
 	}
 
 	public UString replaceChars(char[] oc, char[] nc)
 	{
 		char[] txt = data.toCharArray();
 		SimpleTextView.replaceTextChar(txt, oc, nc);
-		return copy(this, new UString(String.valueOf(txt)));
+		UString ret = copy(this, new UString(String.valueOf(txt)));
+		ret.fontSizeDeltas.clear();
+		ret.fontSizeDeltas.addAll(this.fontSizeDeltas);
+		return ret;
 	}
 
 	// index is code point based
@@ -66,10 +80,20 @@ public class UString extends TextContentBase
 	}
 
 	@Override
-	public void append(String other)
+	public void append(String other, int fontSizeDelta)
 	{
+		other = other.trim();
+		int length = other.codePointCount(0, other.length());
+		if (length == 0)
+			return;
+		if (fontSizeDeltas.size() > 0 && fontSizeDeltas.lastElement()[1] == fontSizeDelta)
+			fontSizeDeltas.lastElement()[0] += length;
+		else {
+			int currentLen = this.length();
+			fontSizeDeltas.add(new int[]{currentLen + length, fontSizeDelta});
+		}
 		data = data + other;
-		allBMP = (data.length() == data.codePointCount(0, data.length()));
+		allBMP = allBMP && (other.length() == length);
 	}
 
 	public int charAt(int index)
@@ -77,6 +101,15 @@ public class UString extends TextContentBase
 		if (allBMP)
 			return data.charAt(index);
 		return data.codePointAt(index16(index));
+	}
+
+	public int charSizeDeltaAt(int index)
+	{
+		for (int[] range : fontSizeDeltas) {
+			if (range[0] > index)
+				return range[1];
+		}
+		return 0;
 	}
 
 	public int indexOf(String str)
@@ -108,8 +141,7 @@ public class UString extends TextContentBase
 		return data.substring(index16(from));
 	}
 
-	@Override
-	public String toString()
+	public String text()
 	{
 		return data;
 	}

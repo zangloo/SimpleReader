@@ -11,9 +11,20 @@ import net.lzrj.SimpleReader.UString;
  */
 public interface Content
 {
-	class ContentPosInfo
+	class Position
 	{
 		public int line, offset;
+
+		public Position()
+		{
+			line = offset = 0;
+		}
+
+		public Position(int line, int offset)
+		{
+			this.line = line;
+			this.offset = offset;
+		}
 	}
 
 	// has notes?
@@ -26,10 +37,10 @@ public interface Content
 	void clear();
 
 	// search txt from cpi
-	ContentPosInfo searchText(String txt, ContentPosInfo cpi);
+	Position searchText(String txt, Position cpi);
 
 	// get position info for <x>%
-	ContentPosInfo getPercentPos(int percent);
+	Position getPercentPos(int percent);
 
 	// return line at index
 	ContentLine line(int index);

@@ -5,13 +5,15 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
-import net.lzrj.SimpleReader.ImageContent;
 import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.ContentLineType;
-import org.jetbrains.annotations.Nullable;
+import net.lzrj.SimpleReader.ImageContent;
 import net.lzrj.SimpleReader.UString;
 import net.lzrj.SimpleReader.book.Content;
 import net.lzrj.SimpleReader.book.ContentBase;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,17 +23,24 @@ import net.lzrj.SimpleReader.book.ContentBase;
  */
 public abstract class SimpleTextView extends View
 {
-	public static enum FingerPosType
+	public enum TapTargetType
 	{
 		text, image, none
 	}
 
-	public static class FingerPosInfo
+	public static class TapTarget
 	{
-		public int line, offset;
+		public final int line, offset;
 		public String str;
-		public FingerPosType type;
+		public TapTargetType type;
 		public int x, y;
+
+		public TapTarget(int line, int offset)
+		{
+			this.line = line;
+			this.offset = offset;
+			this.type = TapTargetType.text;
+		}
 	}
 
 	public static class HighlightInfo
@@ -47,6 +56,42 @@ public abstract class SimpleTextView extends View
 		}
 	}
 
+	protected static class FontMeasure
+	{
+		protected float width;
+		protected float height;
+		protected float descent;
+	}
+
+	protected static class DrawChar
+	{
+		int offset;
+		int fontSize;
+		Rect rect;
+
+		public DrawChar(int offset, int fontSize, Rect rect)
+		{
+			this.offset = offset;
+			this.fontSize = fontSize;
+			this.rect = rect;
+		}
+	}
+
+	protected static class DrawLine
+	{
+		final int line;
+		float drawSize;
+		float space;
+		final List<DrawChar> chars = new ArrayList<>();
+
+		public DrawLine(int line, float drawSize, float space)
+		{
+			this.line = line;
+			this.drawSize = drawSize;
+			this.space = space;
+		}
+	}
+
 	public static final int defaultTextColor = Color.BLACK;
 	public static final int defaultBackgroundColor = Color.WHITE;
 	public static final int defaultNightTextColor = Color.WHITE;
@@ -56,21 +101,21 @@ public abstract class SimpleTextView extends View
 
 	private static final Content defaultContent = new ContentBase();
 	protected static Content content = defaultContent;
-	protected static int pi = 0, po = 0;
-	protected static int pos = 0;
-	protected static int boardGAP = 3;
-	protected static int bcolor, color;
+	protected static int percent = 0;
+	protected static int viewMargin = 3;
+	protected static int backgroundColor, color;
 	protected static boolean reset = true;
 	protected static HighlightInfo highlightInfo = null;
 
 	protected Paint paint;
 
-	protected int nextpi, nextpo;
-	protected int maxLinePerPage;
+	protected static Content.Position current = new Content.Position(0, 0);
+	protected Content.Position next;
 
-	protected float fontWidth, fontHeight, fontDescent;
+	private final Map<Integer, FontMeasure> fontMeasureMap = new Hashtable<>();
+	protected final List<DrawLine> drawLines = new ArrayList<>();
+	protected int fontSize;
 	protected int pageWidth, pageHeight;
-	protected float xoffset, yoffset;
 
 	private static Bitmap zoomIcon = null;
 	DisplayMetrics metrics;
@@ -83,9 +128,8 @@ public abstract class SimpleTextView extends View
 		paint.setColor(defaultTextColor);
 		paint.setAntiAlias(true);
 		setTextSize(paint, defaultFontSize);
-		bcolor = defaultBackgroundColor;
+		backgroundColor = defaultBackgroundColor;
 		color = defaultTextColor;
-		fontCalc();
 	}
 
 	@Override
@@ -101,13 +145,11 @@ public abstract class SimpleTextView extends View
 		if (reset) {
 			pageWidth = getWidth();
 			pageHeight = getHeight();
-
-			resetValues();
 			reset = false;
 		}
 
-		canvas.drawColor(bcolor);
-		if (pi >= content.lineCount())
+		canvas.drawColor(backgroundColor);
+		if (current.line >= content.lineCount())
 			return;
 		drawText(canvas);
 		//testDraw(canvas);
@@ -128,7 +170,7 @@ public abstract class SimpleTextView extends View
 
 	public Bitmap getImage()
 	{
-		ContentLine line = content.line(pi);
+		ContentLine line = content.line(current.line);
 		if (ContentLineType.image.equals(line.type()))
 			return ((ImageContent) line).getImage();
 		else
@@ -194,18 +236,19 @@ public abstract class SimpleTextView extends View
 		 */
 	public void setColorAndFont(int aColor, int aBcolor, int fontSize, Typeface typeface)
 	{
-		boardGAP = fontSize / 2;
-		bcolor = aBcolor;
+		this.fontSize = fontSize;
+		backgroundColor = aBcolor;
 		color = aColor;
 		paint.setColor(color);
-		setTextSize(paint, fontSize);
 		paint.setTypeface(typeface);
-		fontCalc();
+		setTextSize(paint, fontSize);
+		FontMeasure fontMeasure = fontMeasure(fontSize);
+		viewMargin = (int) (fontMeasure.height / 2);
 		reset = true;
 		//invalidate();
 	}
 
-	private void setTextSize(Paint paint, int dip)
+	protected void setTextSize(Paint paint, int dip)
 	{
 		float px = dip * (metrics.densityDpi / 160f);
 		paint.setStrokeWidth(px / 15);
@@ -222,17 +265,17 @@ public abstract class SimpleTextView extends View
 
 	public int getPosIndex()
 	{
-		return pi;
+		return current.line;
 	}
 
 	public int getPosOffset()
 	{
-		return po;
+		return current.offset;
 	}
 
 	public boolean pageDown()
 	{
-		if (!calcNextPos())
+		if (!nextPage())
 			return false;
 
 		invalidate();
@@ -241,102 +284,117 @@ public abstract class SimpleTextView extends View
 
 	public boolean pageUp()
 	{
-		if ((pi == 0) && (po == 0))
+		if ((current.line == 0) && (current.offset == 0))
 			return false;
 
-		if (!calcPrevPos())
+		if (!gotoPrevPage())
 			return false;
 
 		invalidate();
 		return true;
 	}
 
-	protected boolean calcNextPos()
+	protected boolean nextPage()
 	{
-		if (nextpi >= content.lineCount())
+		if (next == null)
 			return false;
-		pi = nextpi;
-		po = nextpo;
-
+		current = next;
 		return true;
 	}
 
-	protected void fontCalc()
+	protected FontMeasure fontCalc()
 	{
 		Paint.FontMetrics fm = paint.getFontMetrics();
-		fontHeight = fm.descent - fm.ascent;
-		fontWidth = paint.measureText("漢", 0, 1);
-		fontDescent = fm.descent;
+		FontMeasure fontMeasure = new FontMeasure();
+		fontMeasure.height = fm.descent - fm.ascent;
+		fontMeasure.width = paint.measureText("漢", 0, 1);
+		fontMeasure.descent = fm.descent;
+		return fontMeasure;
 	}
 
-	public int getPos()
+	public int getPercent()
 	{
-		calcPos();
-		return pos;
+		updatePercent();
+		return percent;
 	}
 
-	public void setPos(int np)
-	{
-		if (content.size() == 0)
-			return;
-
-		setPos(content.getPercentPos(np));
-		pos = np;
-	}
-
-	public void setPos(Content.ContentPosInfo cpi)
-	{
-		setPos(cpi.line, cpi.offset);
-	}
-
-	public void setPos(int posIndex, int posOffset)
+	public void setPercent(int targetPercent)
 	{
 		if (content.size() == 0)
 			return;
 
-		pos = 0;
+		setPercent(content.getPercentPos(targetPercent));
+		percent = targetPercent;
+	}
+
+	public void setPercent(Content.Position cpi)
+	{
+		setPercent(cpi.line, cpi.offset);
+	}
+
+	public void setPercent(int posIndex, int posOffset)
+	{
+		percent = 0;
+		if (content.size() == 0) {
+			current.line = current.offset = 0;
+			return;
+		}
 
 		if (posIndex >= content.lineCount()) {
-			pi = po = 0;
+			current.line = current.offset = 0;
 		} else {
-			pi = posIndex;
-			po = calcPosOffset(posOffset);
+			int offset = calcPercentOffset(posIndex, posOffset);
+			current.line = posIndex;
+			current.offset = offset;
 		}
 	}
 
-	protected boolean calcPos()
+	private int calcPercentOffset(int line, int offset)
+	{
+		ContentLine contentLine = content.line(line);
+		int length = contentLine.length();
+		if (contentLine instanceof UString && ((UString) contentLine).isParagraph())
+			length += 2;
+		if (!(contentLine instanceof UString) || offset >= length)
+			return 0;
+		List<DrawLine> wrapLines = wrapLine(line, (UString) contentLine, 0, contentLine.length(), createDrawContext());
+		for (DrawLine wrapLine : wrapLines) {
+			List<DrawChar> chars = wrapLine.chars;
+			int charCount = chars.size();
+			if (charCount == 0)
+				return 0;
+			if (offset < chars.get(charCount - 1).offset)
+				return chars.get(0).offset;
+		}
+		return 0;
+	}
+
+	protected void updatePercent()
 	{
 		int s = content.size();
 		if (s == 0)
-			return false;
+			return;
 
-		int p = content.size(pi) + po;
-
-		int np = p * 100 / s;
-		if (pos != np) {
-			pos = np;
-			return true;
-		}
-		return false;
+		int p = content.size(current.line) + current.offset;
+		percent = p * 100 / s;
 	}
 
-	public FingerPosInfo getFingerPosInfo(float x, float y)
+	public TapTarget getTapTarget(float x, float y)
 	{
-		FingerPosInfo fpi;
-		if (content.line(pi).isImage()) {
-			fpi = new FingerPosInfo();
-			fpi.type = FingerPosType.image;
-			fpi.line = pi;
+		TapTarget fpi;
+		if (content.line(current.line).isImage()) {
+			fpi = new TapTarget(current.line, 0);
+			fpi.type = TapTargetType.image;
 			return fpi;
 		}
 
-		fpi = calcFingerPos(x, y);
+		fpi = calcTapTarget(x, y);
 		if (fpi == null) {
-			fpi = new FingerPosInfo();
-			fpi.type = FingerPosType.none;
+			fpi = new TapTarget(0, 0);
+			fpi.type = TapTargetType.none;
 			return fpi;
 		}
-		fpi.type = FingerPosType.text;
+		fpi.type = TapTargetType.text;
 		UString l = content.text(fpi.line);
 		if (fpi.offset >= l.length())
 			return null;
@@ -344,38 +402,41 @@ public abstract class SimpleTextView extends View
 		return fpi;
 	}
 
-	public String getFingerPosNote(float x, float y)
+	public String getTapTargetNote(float x, float y)
 	{
-		if (content.line(pi).isImage())
+		if (content.line(current.line).isImage())
 			return null;
 
 		if (!content.hasNotes())
 			return null;
-		FingerPosInfo pi = calcFingerPos(x, y);
+		TapTarget pi = calcTapTarget(x, y);
 		if (pi == null)
 			return null;
 
 		return content.getNote(pi.line, pi.offset);
 	}
 
-	public Content.ContentPosInfo searchText(String t)
+	public Content.Position searchText(String t)
 	{
-		if (content.line(pi).isImage())
+		ContentLine contentLine = content.line(current.line);
+		if (contentLine.isImage())
 			return null;
 		if (t == null)
 			return null;
 		if (t.length() == 0)
 			return null;
 
-		Content.ContentPosInfo sr = new Content.ContentPosInfo();
-		sr.offset = calcNextLineOffset();
-		sr.line = getPosIndex();
-		if (sr.offset == -1) {
-			sr.line++;
-			sr.offset = 0;
+		List<DrawLine> wrapLines = wrapLine(current.line, (UString) contentLine, current.offset, contentLine.length(), createDrawContext());
+		Content.Position position = new Content.Position();
+		if (wrapLines.size() <= 1) {
+			position.line = current.line + 1;
+			position.offset = 0;
+		} else {
+			position.line = current.line;
+			List<DrawChar> chars = wrapLines.get(1).chars;
+			position.offset = chars.get(0).offset;
 		}
-
-		return content.searchText(t, sr);
+		return content.searchText(t, position);
 	}
 
 	public static void replaceTextChar(char[] txt, char[] oc, char[] nc)
@@ -393,25 +454,199 @@ public abstract class SimpleTextView extends View
 
 	public void gotoEnd()
 	{
-		pi = content.lineCount();
-		po = 0;
-		calcPrevPos();
+		current.line = content.lineCount();
+		current.offset = 0;
+		gotoPrevPage();
 	}
 
 	public boolean isImagePage()
 	{
-		return ContentLineType.image.equals(content.line(pi).type());
+		return ContentLineType.image.equals(content.line(current.line).type());
 	}
 
-	protected abstract int calcNextLineOffset();
+	protected static class DrawContext
+	{
+		final int maxDrawSize;
+		final int maxLineSize;
+		int baseline;
 
-	protected abstract int calcPosOffset(int npo);
+		public DrawContext(int maxDrawSize, int maxLineSize, int baseline)
+		{
+			this.maxDrawSize = maxDrawSize;
+			this.maxLineSize = maxLineSize;
+			this.baseline = baseline;
+		}
+	}
 
-	protected abstract void resetValues();
+	protected void drawText(Canvas canvas)
+	{
+		int lineCount = content.lineCount();
+		drawLines.clear();
+		float drawnSize = 0;
+		int offset = current.offset;
+		DrawContext drawContext = createDrawContext();
+		next = null;
+		Map<Integer, UString> preparedLines = new HashMap<>();
 
-	protected abstract boolean calcPrevPos();
+		OUTER:
+		for (int i = current.line; i < lineCount; i++) {
+			ContentLine contentLine = content.line(i);
+			if (contentLine.isImage()) {
+				if (current.line == i) {
+					drawImage(canvas, (ImageContent) contentLine);
+					int nextLine = i + 1;
+					if (nextLine < lineCount)
+						next = new Content.Position(nextLine, 0);
+					return;
+				} else {
+					next = new Content.Position(i, 0);
+					break;
+				}
+			}
 
-	protected abstract void drawText(Canvas canvas);
+			UString line = prepareLineForDraw((UString) contentLine);
+			preparedLines.put(i, line);
+			List<DrawLine> wrapLines = wrapLine(i, line, offset, line.length(), drawContext);
+			offset = 0;
+			for (DrawLine wrapLine : wrapLines) {
+				float newSize = drawnSize + wrapLine.drawSize;
+				if (newSize > drawContext.maxDrawSize) {
+					List<DrawChar> chars = wrapLine.chars;
+					next = new Content.Position(wrapLine.line, chars.size() == 0 ? 0 : chars.get(0).offset);
+					break OUTER;
+				}
+				drawLines.add(wrapLine);
+				drawnSize = newSize + wrapLine.space;
+			}
+		}
+		char[] buf = new char[2];
+		int fontSize = 0;
+		FontMeasure fontMeasure = null;
+		for (DrawLine drawLine : drawLines) {
+			int line = drawLine.line;
+			UString text = preparedLines.get(line);
+			for (DrawChar drawChar : drawLine.chars) {
+				offset = drawChar.offset;
+				boolean highlight = ((highlightInfo != null) && (highlightInfo.line == line) && (highlightInfo.end > offset) && (highlightInfo.begin <= offset));
+				Rect rect = drawChar.rect;
+				if (highlight) {
+					canvas.drawRect(rect, paint);
+					paint.setColor(backgroundColor);
+				}
+				int ch = text.charAt(offset);
+				int charWidth = Character.toChars(ch, buf, 0);
+				if (fontMeasure == null || fontSize != drawChar.fontSize) {
+					fontSize = drawChar.fontSize;
+					setTextSize(paint, fontSize);
+					fontMeasure = fontMeasure(fontSize);
+				}
+//				canvas.drawLine(rect.left, rect.top, rect.right, rect.top, paint);
+//				canvas.drawLine(rect.left, rect.top, rect.left, rect.bottom, paint);
+//				canvas.drawLine(rect.right, rect.bottom, rect.right, rect.top, paint);
+//				canvas.drawLine(rect.right, rect.bottom, rect.left, rect.bottom, paint);
+				canvas.drawText(buf, 0, charWidth, rect.left, rect.bottom - fontMeasure.descent, paint);
+				if (highlight)
+					paint.setColor(color);
+			}
+		}
+	}
 
-	protected abstract FingerPosInfo calcFingerPos(float x, float y);
+	protected TapTarget calcTapTarget(float x, float y)
+	{
+		for (DrawLine drawLine : drawLines)
+			for (DrawChar drawChar : drawLine.chars)
+				if (drawChar.rect.contains((int) x, (int) y))
+					return new TapTarget(drawLine.line, drawChar.offset);
+		return null;
+	}
+
+	protected boolean gotoPrevPage()
+	{
+		int i, offset;
+		ContentLine contentLine;
+		if (current.offset == 0) {
+			if (current.line == 0)
+				return false;
+			i = current.line - 1;
+			contentLine = content.line(i);
+			offset = contentLine.length();
+		} else {
+			i = current.line;
+			contentLine = content.line(i);
+			offset = current.offset;
+		}
+		DrawContext drawContext = createDrawContext();
+		float totalSize = 0;
+		while (true) {
+			if (contentLine.isImage()) {
+				if (totalSize == 0)
+					current.line = i;
+				else
+					current.line = i + 1;
+				return true;
+			}
+			List<DrawLine> wrapLines = wrapLine(i, (UString) contentLine, 0, offset, drawContext);
+			int wrappedLines = wrapLines.size() - 1;
+			for (int wi = wrappedLines; wi >= 0; wi--) {
+				DrawLine wrapLine = wrapLines.get(wi);
+				float newTotalSize;
+				if (totalSize == 0)
+					newTotalSize = wrapLine.drawSize;
+				else
+					newTotalSize = totalSize + wrapLine.drawSize + wrapLine.space;
+				if (newTotalSize > drawContext.maxDrawSize) {
+					if (wi == wrappedLines) {
+						current.line = wrapLine.line + 1;
+						current.offset = 0;
+					} else {
+						current.line = wrapLine.line;
+						List<DrawChar> chars = wrapLine.chars;
+						int charCount = chars.size();
+						current.offset = charCount == 0 ? 0 : chars.get(charCount - 1).offset + 1;
+					}
+					return true;
+				}
+				totalSize = newTotalSize;
+			}
+			if (i <= 0)
+				break;
+			i--;
+			contentLine = content.line(i);
+			offset = contentLine.length();
+		}
+		current.line = 0;
+		current.offset = 0;
+		return true;
+	}
+
+	protected FontMeasure fontMeasure(int fontSize)
+	{
+		FontMeasure measure = fontMeasureMap.get(fontSize);
+		if (measure != null)
+			return measure;
+		setTextSize(paint, fontSize);
+		measure = fontCalc();
+		fontMeasureMap.put(fontSize, measure);
+		return measure;
+	}
+
+	protected float measureChar(int ch)
+	{
+		char[] buf = new char[2];
+		int charWidth = Character.toChars(ch, buf, 0);
+		return paint.measureText(buf, 0, charWidth);
+	}
+
+	protected int scaleFontSize(int sizeDelta)
+	{
+		return this.fontSize + (sizeDelta * 6);
+	}
+
+	protected abstract DrawContext createDrawContext();
+
+	protected abstract UString prepareLineForDraw(UString line);
+
+	protected abstract List<DrawLine> wrapLine(int line, UString text, int begin, int end, DrawContext drawContext);
+
+	protected abstract void drawUnderline(UString line, int charFrom, int charTo, float x, float y, float fontHeight, float fontDescent, Canvas canvas, Paint paint);
 }

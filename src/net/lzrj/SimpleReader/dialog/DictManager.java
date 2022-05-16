@@ -174,17 +174,17 @@ public class DictManager
 		}
 	}
 
-	public void showDict(SimpleTextView.FingerPosInfo fingerPosInfo)
+	public void showDict(SimpleTextView.TapTarget tapTarget)
 	{
 		if (dictHasWord) {
-			dictList = getDictList(fingerPosInfo.str);
+			dictList = getDictList(tapTarget.str);
 			if (dictList != null)
 				if (dictList.length > 1)
 					dictListDlg(dictList);
 				else
 					showDictDlg(dictList[0]);
 		} else
-			showDictDlg(fingerPosInfo.str.substring(0, 1));
+			showDictDlg(tapTarget.str.substring(0, 1));
 	}
 
 	private void dictListDlg(String[] list)

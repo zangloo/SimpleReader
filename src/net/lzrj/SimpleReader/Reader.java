@@ -75,7 +75,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private FrameLayout nsv = null;
 	private final Stack<Config.ReadingInfo> ris = new Stack<>();
 	private boolean loading = false;
-	private SimpleTextView.FingerPosInfo fingerPosInfo = null;
+	private SimpleTextView.TapTarget tapTarget = null;
 	private Config.ReadingInfo ri = null;
 	private BookmarkManager bookmarkManager = null;
 	private TOCList TOCList = null;
@@ -190,7 +190,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		rri.chapter = book.currChapter();
 		rri.ctitle = book.chapterTitle();
 		rri.name = ri.name;
-		rri.percent = bv.getPos();
+		rri.percent = bv.getPercent();
 		ris.push(rri);
 	}
 
@@ -200,7 +200,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			book.gotoChapter(rri.chapter);
 			bv.setContent(book.content());
 		}
-		bv.setPos(rri.line, rri.offset);
+		bv.setPercent(rri.line, rri.offset);
 	}
 
 	private boolean popReadingInfo()
@@ -245,7 +245,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		super.onDestroy();
 		bv.setContent(null);
-		bv.setPos(0, 0);
+		bv.setPercent(0, 0);
 		if (book != null) {
 			book.close();
 			book = null;
@@ -378,7 +378,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		pushReadingInfo();
 		skp.setVisibility(View.VISIBLE);
 		skp.setEnabled(true);
-		int pos = bv.getPos();
+		int pos = bv.getPercent();
 		sb.setProgress(pos);
 		TextView tv = (TextView) findViewById(R.id.seek_percent_text);
 		tv.setText(pos + "%");
@@ -542,7 +542,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		ri.ctitle = book.chapterTitle();
 		ri.line = bv.getPosIndex();
 		ri.offset = bv.getPosOffset();
-		ri.percent = bv.getPos();
+		ri.percent = bv.getPercent();
 		config.setReadingInfo(ri);
 	}
 
@@ -564,7 +564,7 @@ public class Reader extends Activity implements View.OnTouchListener
 					book.gotoChapter(ri.chapter);
 					bv.setContent(book.content());
 				}
-				bv.setPos(ri.line, ri.offset);
+				bv.setPercent(ri.line, ri.offset);
 				hidePanels();
 				bv.invalidate();
 			}
@@ -630,9 +630,9 @@ public class Reader extends Activity implements View.OnTouchListener
 			public void onClick(View v)
 			{
 				String s = et.getText().toString();
-				Content.ContentPosInfo sr = bv.searchText(s);
+				Content.Position sr = bv.searchText(s);
 				if (sr != null) {
-					bv.setPos(sr.line, sr.offset);
+					bv.setPercent(sr.line, sr.offset);
 					bv.setHighlightInfo(new SimpleTextView.HighlightInfo(sr.line, sr.offset,
 						sr.offset + s.length()));
 					bv.invalidate();
@@ -670,7 +670,7 @@ public class Reader extends Activity implements View.OnTouchListener
 				if ((!b) || (book == null))
 					return;
 				updateSeekBarPanelText(i);
-				bv.setPos(i);
+				bv.setPercent(i);
 				bv.invalidate();
 			}
 
@@ -713,7 +713,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		if (!isSeekPanelOn())
 			return;
-		int pos = bv.getPos();
+		int pos = bv.getPercent();
 		sb.setProgress(pos);
 		updateSeekBarPanelText(pos);
 	}
@@ -746,24 +746,24 @@ public class Reader extends Activity implements View.OnTouchListener
 			{
 				switch ((int) id) {
 					case R.string.menu_dict:
-						if (dictManager.getDictMaxWordLen() < fingerPosInfo.str.length())
-							fingerPosInfo.str = fingerPosInfo.str
+						if (dictManager.getDictMaxWordLen() < tapTarget.str.length())
+							tapTarget.str = tapTarget.str
 								.substring(0, dictManager.getDictMaxWordLen());
-						dictManager.showDict(fingerPosInfo);
+						dictManager.showDict(tapTarget);
 						break;
 					case R.string.menu_bookmark:
 						if (ri != null)
 							bookmarkManager.addDialog(
-								BookmarkManager.createBookmark(fingerPosInfo, ri));
+								BookmarkManager.createBookmark(tapTarget, ri));
 						break;
 					case R.string.menu_copy:
 						if (book == null)
 							break;
 						if (bv.isImagePage())
 							break;
-						UString l = book.content().text(fingerPosInfo.line);
+						UString l = book.content().text(tapTarget.line);
 						final EditText et = new EditText(Reader.this);
-						et.setText(l.toString());
+						et.setText(l.text());
 						new AlertDialog.Builder(Reader.this).setTitle(
 							R.string.menu_copy).setView(et)
 							.setPositiveButton(R.string.button_copy_text,
@@ -802,7 +802,7 @@ public class Reader extends Activity implements View.OnTouchListener
 					book.gotoChapter(bm.chapter);
 					switchChapterUpdate(bm.line, bm.offset);
 				} else {
-					bv.setPos(bm.line, bm.offset);
+					bv.setPercent(bm.line, bm.offset);
 					bv.invalidate();
 				}
 			}
@@ -864,7 +864,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		bv.setContent(book.content());
 		if (line >= 0)
-			bv.setPos(line, offset);
+			bv.setPercent(line, offset);
 		else
 			bv.gotoEnd();
 		ri.chapter = book.currChapter();
@@ -890,7 +890,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		if ((ri != null) && (book != null)) {
 			ri.chapter = book.currChapter();
 			ri.ctitle = book.chapterTitle();
-			ri.percent = bv.getPos();
+			ri.percent = bv.getPercent();
 			ri.line = bv.getPosIndex();
 			ri.offset = bv.getPosOffset();
 		}
@@ -904,6 +904,13 @@ public class Reader extends Activity implements View.OnTouchListener
 			public void onFilenameClick()
 			{
 				showDialog(FILE_DIALOG_ID);
+				statusPanel.hide();
+			}
+
+			@Override
+			public void onSearchClick()
+			{
+				showSearchPanel();
 				statusPanel.hide();
 			}
 
@@ -1030,7 +1037,7 @@ public class Reader extends Activity implements View.OnTouchListener
 						imageViewer.show(bm);
 					return true;
 				}
-				String note = bv.getFingerPosNote(e.getX(), e.getY());
+				String note = bv.getTapTargetNote(e.getX(), e.getY());
 				if (note != null) {
 					showNote(note, e);
 					return true;
@@ -1083,15 +1090,15 @@ public class Reader extends Activity implements View.OnTouchListener
 				if (book == null)
 					return;
 
-				fingerPosInfo = bv.getFingerPosInfo(e.getX(), e.getY());
+				tapTarget = bv.getTapTarget(e.getX(), e.getY());
 
-				fingerPosInfo.x = (int) e.getX();
-				fingerPosInfo.y = (int) e.getY();
+				tapTarget.x = (int) e.getX();
+				tapTarget.y = (int) e.getY();
 				String title = null;
 				items.clear();
-				switch (fingerPosInfo.type) {
+				switch (tapTarget.type) {
 					case text:
-						title = fingerPosInfo.str;
+						title = tapTarget.str;
 						items.add(R.string.menu_bookmark);
 						if (config.isDictEnabled())
 							items.add(R.string.menu_dict);

@@ -31,15 +31,21 @@ public class BookUtil
 
 	public static final int detectFileReadBlockSize = 2048;
 	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
+	public static int DEFAULT_CONTENT_FONT_SIZE = 3;
 
 	// put all text into lines
 	public static void HTML2Text(Element node, List<ContentLine> lines)
 	{
-		HTML2Text(node, lines, null);
+		HTML2Text(node, lines, DEFAULT_CONTENT_FONT_SIZE, null);
+	}
+
+	public static void HTML2Text(Element node, List<ContentLine> lines, @Nullable HtmlContentNodeCallback nodeCallback)
+	{
+		HTML2Text(node, lines, DEFAULT_CONTENT_FONT_SIZE, nodeCallback);
 	}
 
 	// if images != null, this function will return with all images href.
-	public static void HTML2Text(Element node, List<ContentLine> lines, @Nullable HtmlContentNodeCallback nodeCallback)
+	private static void HTML2Text(Element node, List<ContentLine> lines, int fontSize, @Nullable HtmlContentNodeCallback nodeCallback)
 	{
 		for (Node child : node.childNodes()) {
 			if (child instanceof TextNode) {
@@ -53,11 +59,14 @@ public class BookUtil
 				final Element e = (Element) child;
 				if (nodeCallback != null)
 					nodeCallback.process(e);
-				if (nodeCallback != null && e.tagName().equalsIgnoreCase("img"))
+				String tagName = e.tagName();
+				if (nodeCallback != null && tagName.equalsIgnoreCase("img"))
 					nodeCallback.addImage(lines, e.attr("src"));
-				else if (e.tagName().equalsIgnoreCase("p")) {
+				else if (nodeCallback != null && tagName.equalsIgnoreCase("image"))
+					nodeCallback.addImage(lines, e.attr("xlink:href"));
+				else if (tagName.equalsIgnoreCase("p")) {
 					UString string = new UString("");
-					buildParagraph(e, string, false, nodeCallback, lines);
+					buildParagraph(e, string, false, nodeCallback, lines, DEFAULT_CONTENT_FONT_SIZE);
 					if (string.length() > 0) {
 						string.paragraph();
 						if (nodeCallback == null)
@@ -66,24 +75,39 @@ public class BookUtil
 							nodeCallback.addText(lines, string);
 					}
 				} else
-					HTML2Text(e, lines, nodeCallback);
+					HTML2Text(e, lines, fontSize, nodeCallback);
 			}
 		}
 	}
 
-	private static void buildParagraph(Element e, UString string, boolean underline, HtmlContentNodeCallback nodeCallback, List<ContentLine> lines)
+	private static void buildParagraph(Element e, UString string, boolean underline, HtmlContentNodeCallback nodeCallback, List<ContentLine> lines, int fontSize)
 	{
 		if (e.hasClass("kindle-cn-underline"))
 			underline = true;
 		for (Node child : e.childNodes())
-			if (child instanceof TextNode)
-				string.concat(((TextNode) child).text(), underline);
-			else if (child instanceof Element) {
+			if (child instanceof TextNode) {
+				String text = ((TextNode) child).text().trim();
+				if (text.length() > 0)
+					string.concat(text, underline, fontSize - DEFAULT_CONTENT_FONT_SIZE);
+			} else if (child instanceof Element) {
 				Element childElement = (Element) child;
-				if (nodeCallback != null && childElement.tagName().equalsIgnoreCase("img"))
+				String childTag = childElement.tagName();
+				if (nodeCallback != null && childTag.equalsIgnoreCase("img"))
 					nodeCallback.addImage(lines, childElement.attr("src"));
-				else
-					buildParagraph(childElement, string, underline, nodeCallback, lines);
+				else if (nodeCallback != null && childTag.equalsIgnoreCase("image"))
+					nodeCallback.addImage(lines, childElement.attr("xlink:href"));
+				else if (childTag.equalsIgnoreCase("font")) {
+					String childFontSizeText = childElement.attr("size");
+					if (childFontSizeText == null)
+						buildParagraph(childElement, string, underline, nodeCallback, lines, fontSize);
+					else try {
+						int childFontSize = Integer.parseInt(childFontSizeText);
+						buildParagraph(childElement, string, underline, nodeCallback, lines, childFontSize);
+					} catch (NumberFormatException ignore) {
+						buildParagraph(childElement, string, underline, nodeCallback, lines, fontSize);
+					}
+				} else
+					buildParagraph(childElement, string, underline, nodeCallback, lines, fontSize);
 			}
 	}
 

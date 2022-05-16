@@ -25,6 +25,8 @@ public class StatusPanel extends PopupWindow
 	{
 		void onFilenameClick();
 
+		void onSearchClick();
+
 		void onPosClick();
 
 		void onPosChanged(Config.ReadingInfo ri);
@@ -94,6 +96,15 @@ public class StatusPanel extends PopupWindow
 			public void onClick(View view)
 			{
 				pcl.onFilenameClick();
+			}
+		});
+
+		btn = (Button) layout.findViewById(R.id.button_search);
+		btn.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View view)
+			{
+				pcl.onSearchClick();
 			}
 		});
 

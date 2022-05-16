@@ -90,9 +90,9 @@ public class SRBOnlineLoader implements BookLoader.Loader
 
 	private static class SRBOnlineBook extends ChaptersBook
 	{
-		private CloudFile cf = null;
-		private CloudFile.OnlineProperty op = null;
-		private SRBOnlineContent content;
+		private CloudFile cf;
+		private CloudFile.OnlineProperty op;
+		private final SRBOnlineContent content;
 
 		private SRBOnlineBook(VFile file, Config.ReadingInfo ri) throws IOException, URISyntaxException
 		{
@@ -155,7 +155,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 
 	public boolean isBelong(VFile f)
 	{
-		return (CloudFile.class.isInstance(f)) &&
+		return (f instanceof CloudFile) &&
 			(f.getPath().toLowerCase().endsWith("." + SimpleReaderLoader.suffix));
 	}
 

@@ -84,7 +84,7 @@ public class ContentBase implements Content
 	}
 
 	@Override
-	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
+	public Position searchText(String txt, Position cpi)
 	{
 		for (int i = cpi.line; i < lineCount(); i++) {
 			ContentLine contentLine = line(i);
@@ -102,7 +102,7 @@ public class ContentBase implements Content
 	}
 
 	@Override
-	public ContentPosInfo getPercentPos(int percent)
+	public Position getPercentPos(int percent)
 	{
 		int p = size() * percent / 100;
 		int c = 0, i;
@@ -112,7 +112,7 @@ public class ContentBase implements Content
 			if (c > p)
 				break;
 		}
-		ContentPosInfo cpi = new ContentPosInfo();
+		Position cpi = new Position();
 		if (c > p) {
 			cpi.line = i;
 			cpi.offset = line(i).length() - (c - p);

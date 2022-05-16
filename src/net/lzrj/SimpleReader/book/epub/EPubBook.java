@@ -47,8 +47,12 @@ class EPubBook extends ChaptersBook
 				lines.add(new UString(" "));
 			content.setContent(lines);
 		} catch (Exception e) {
+			e.printStackTrace();
 			ArrayList<ContentLine> list = new ArrayList<>();
-			list.add(new UString(e.getMessage()));
+			String message = e.getMessage();
+			if (message == null)
+				message = e.toString();
+			list.add(new UString(message));
 			content.setContent(list);
 		}
 		return true;

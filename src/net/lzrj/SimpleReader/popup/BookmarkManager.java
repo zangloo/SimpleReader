@@ -196,7 +196,7 @@ public class BookmarkManager extends PopupList
 			.setNegativeButton(R.string.button_cancel_text, null).setView(et).show();
 	}
 
-	public static Bookmark createBookmark(SimpleTextView.FingerPosInfo pi, Config.ReadingInfo ri)
+	public static Bookmark createBookmark(SimpleTextView.TapTarget pi, Config.ReadingInfo ri)
 	{
 		return createBookmark(pi.str, ri.chapter, pi.line, pi.offset, 0, ri);
 	}

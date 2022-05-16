@@ -317,7 +317,7 @@ public class SimpleReaderBook extends net.lzrj.SimpleReader.book.Book implements
 	public void clear() {}
 
 	@Override
-	public ContentPosInfo searchText(String txt, ContentPosInfo cpi)
+	public Position searchText(String txt, Position cpi)
 	{
 		if (cpi.offset > 0) {
 			if ((cpi.offset = line(cpi.line).indexOf(txt, cpi.offset)) >= 0)
@@ -343,10 +343,10 @@ public class SimpleReaderBook extends net.lzrj.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public ContentPosInfo getPercentPos(int percent)
+	public Position getPercentPos(int percent)
 	{
 		int p = booksize * percent / 100;
-		ContentPosInfo cpi = new ContentPosInfo();
+		Position cpi = new Position();
 
 		int idx = indexBase - 1;
 		Cursor c = db.rawQuery(posSQL, new String[]{String.valueOf(chapter), String.valueOf(p)});
