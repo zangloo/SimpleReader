@@ -60,7 +60,7 @@ public class PopupMenu extends PopupList
 			{
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
-				tv.setTextColor(Color.WHITE);
+				tv.setTextColor(Color.BLACK);
 				return v;
 			}
 		};

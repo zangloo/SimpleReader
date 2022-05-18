@@ -103,9 +103,9 @@ public class BookmarkManager extends PopupList
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTextSize(20);
 				tv.setTypeface(tf);
-				tv.setTextColor(Color.WHITE);
+				tv.setTextColor(Color.BLACK);
 				tv = (TextView) v.findViewById(android.R.id.text2);
-				tv.setTextColor(Color.WHITE);
+				tv.setTextColor(Color.BLACK);
 				return v;
 			}
 		};

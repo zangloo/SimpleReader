@@ -41,9 +41,9 @@ public class TOCList extends PopupList
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTypeface(tf);
 				if (position == chapter)
-					tv.setTextColor(Color.rgb(0, 250, 250));
+					tv.setTextColor(Color.rgb(0, 150, 150));
 				else
-					tv.setTextColor(Color.WHITE);
+					tv.setTextColor(Color.BLACK);
 				return v;
 			}
 		};
@@ -56,12 +56,18 @@ public class TOCList extends PopupList
 	public void show(ArrayList<TOCRecord> cs, int index, Typeface typeface, int top)
 	{
 		aa.clear();
-		for (TOCRecord c : cs)
-			if (c.level() == 0)
-				aa.add("●" + c.title());
-			else
-				aa.add(c.title());
-
+		for (int i = 0; i < cs.size(); i++) {
+			TOCRecord c = cs.get(i);
+			String text;
+			if (c.level() == 0) {
+				text = "●" + c.title();
+			} else {
+				text = c.title();
+			}
+			if (i == index)
+				text = "> " + text;
+			aa.add(text);
+		}
 		aa.notifyDataSetChanged();
 
 		tf = typeface;
