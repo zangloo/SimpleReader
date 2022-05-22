@@ -583,6 +583,7 @@ public abstract class SimpleTextView extends View
 					current.line = i;
 				else
 					current.line = i + 1;
+				current.offset = 0;
 				return true;
 			}
 			List<DrawLine> wrapLines = wrapLine(i, (UString) contentLine, 0, offset, drawContext);
