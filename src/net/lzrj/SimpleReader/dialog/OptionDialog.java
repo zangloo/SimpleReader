@@ -32,7 +32,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		void onOptionAccept(Config cfg);
 	}
 
-	private static final String[] fontSizeStringList = new String[]{"20", "22", "24", "26", "28", "30", "32", "34", "36", "38", "40", "42", "44", "46", "48", "50"};
+	public static final Integer[] fontSizes = new Integer[]{20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50};
 	private static final String colorFormatString = "%03d";
 	private static final String[] zipEncodeList = new String[]{"GBK", "BIG5", "UTF8"};
 	private static String[] colorModeList;
@@ -63,12 +63,11 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		tp = (TextView) findViewById(R.id.text_preview);
 
 		// font size list
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
-			android.R.layout.simple_spinner_item,
-			fontSizeStringList);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<Integer> fontAdapter = new ArrayAdapter<>(getContext(),
+			android.R.layout.simple_spinner_item, fontSizes);
+		fontAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		Spinner spinner = (Spinner) findViewById(R.id.font_size);
-		spinner.setAdapter(adapter);
+		spinner.setAdapter(fontAdapter);
 		spinner.setOnItemSelectedListener(this);
 
 		Button btn = (Button) findViewById(R.id.button_cancel);
@@ -83,7 +82,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		btn.setOnClickListener(this);
 
 		// zip encode list
-		adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, zipEncodeList);
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, zipEncodeList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.zip_encode);
 		spinner.setAdapter(adapter);
@@ -165,8 +164,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		loadColor(isBright);
 
 		spinner = (Spinner) findViewById(R.id.font_size);
-		for (int i = 0; i < fontSizeStringList.length; i++)
-			if (Integer.parseInt(fontSizeStringList[i]) == fs) {
+		for (int i = 0; i < fontSizes.length; i++)
+			if (fontSizes[i] == fs) {
 				spinner.setSelection(i, true);
 				break;
 			}
@@ -272,7 +271,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		Spinner s = (Spinner) adapterView;
 		switch (s.getId()) {
 			case R.id.font_size:
-				fs = Integer.parseInt(fontSizeStringList[s.getSelectedItemPosition()]);
+				fs = fontSizes[s.getSelectedItemPosition()];
 				tp.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fs);
 				break;
 			case R.id.color_mode:
