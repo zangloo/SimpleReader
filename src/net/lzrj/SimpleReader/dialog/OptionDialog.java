@@ -11,9 +11,13 @@ import android.widget.*;
 import net.lzrj.SimpleReader.Config;
 import net.lzrj.SimpleReader.R;
 import net.lzrj.SimpleReader.Reader;
+import net.lzrj.SimpleReader.dict.Dictionary;
+import net.lzrj.SimpleReader.dict.DictManager;
+import net.lzrj.SimpleReader.dict.DictionaryInfo;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,8 +25,10 @@ import java.io.FilenameFilter;
  * Date: 10-12-9
  * Time: 下午8:38
  */
-public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener {
-	public static interface OnOptionAcceptListener {
+public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, CompoundButton.OnCheckedChangeListener
+{
+	public interface OnOptionAcceptListener
+	{
 		void onOptionAccept(Config cfg);
 	}
 
@@ -33,21 +39,23 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 	private TextView tp;
 	private OnOptionAcceptListener oal;
 
+	private final Config.GestureDirect[] pds = Config.GestureDirect.values();
 	private int r, g, b;
 	private int br, bg, bb;
 	int color, bcolor, ncolor, nbcolor;
 	int fs;
 	boolean isBright;
 	private Config conf;
-	private Config.GestureDirect[] pds = Config.GestureDirect.values();
 	private String[] fnl = null;
 
-	public OptionDialog(Context context) {
+	public OptionDialog(Context context)
+	{
 		super(context);
 	}
 
 
-	public void init(OnOptionAcceptListener listener) {
+	public void init(OnOptionAcceptListener listener)
+	{
 		oal = listener;
 		setContentView(R.layout.optdlg);
 		setTitle(getContext().getString(R.string.dialog_option_title));
@@ -55,7 +63,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		tp = (TextView) findViewById(R.id.text_preview);
 
 		// font size list
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
 			android.R.layout.simple_spinner_item,
 			fontSizeStringList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -64,8 +72,10 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		spinner.setOnItemSelectedListener(this);
 
 		Button btn = (Button) findViewById(R.id.button_cancel);
-		btn.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
+		btn.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View v)
+			{
 				dismiss();
 			}
 		});
@@ -73,7 +83,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		btn.setOnClickListener(this);
 
 		// zip encode list
-		adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, zipEncodeList);
+		adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, zipEncodeList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.zip_encode);
 		spinner.setAdapter(adapter);
@@ -87,7 +97,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		  }
   */
 
-		ArrayAdapter<Config.GestureDirect> aa = new ArrayAdapter<Config.GestureDirect>(getContext(),
+		ArrayAdapter<Config.GestureDirect> aa = new ArrayAdapter<>(getContext(),
 			android.R.layout.simple_spinner_item,
 			pds);
 		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -98,7 +108,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		if (colorModeList == null)
 			colorModeList = new String[]{getContext().getString(R.string.color_mode_day), getContext()
 				.getString(R.string.color_mode_night)};
-		adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, colorModeList);
+		adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, colorModeList);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner = (Spinner) findViewById(R.id.color_mode);
 		spinner.setAdapter(adapter);
@@ -106,7 +116,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 	}
 
-	public void update(Config config) {
+	public void update(Config config)
+	{
 		conf = config;
 		color = conf.getColor();
 		bcolor = conf.getBColor();
@@ -115,8 +126,10 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		fs = conf.getFontSize();
 
 		// font list
-		String[] fl = (new File(Reader.fontPath)).list(new FilenameFilter() {
-			public boolean accept(File file, String s) {
+		String[] fl = (new File(Reader.fontPath)).list(new FilenameFilter()
+		{
+			public boolean accept(File file, String s)
+			{
 				return s.endsWith(Reader.fontSuffix);
 			}
 		});
@@ -128,7 +141,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 			fnl[0] = getContext().getString(R.string.default_font_label);
 			for (int i = 0; i < fl.length; i++)
 				fnl[i + 1] = fl[i].substring(0, fl[i].length() - Reader.fontSuffix.length());
-			adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, fnl);
+			adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, fnl);
 			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spinner.setAdapter(adapter);
 
@@ -186,24 +199,20 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		cb.setChecked(conf.isDictEnabled());
 
 		spinner = (Spinner) findViewById(R.id.dict_file);
-		fl = (new File(Reader.dictPath)).list(new FilenameFilter() {
-			public boolean accept(File file, String s) {
-				return s.endsWith(Reader.dictSuffix);
-			}
-		});
-		if ((fl != null) && (fl.length > 0)) {
-			for (int i = 0; i < fl.length; i++)
-				fl[i] = fl[i].substring(0, fl[i].length() - Reader.dictSuffix.length());
-			adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, fl);
-			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			spinner.setAdapter(adapter);
+		List<DictionaryInfo> dicts = DictManager.detectDictionaries(Reader.dictPath);
+		if (dicts.size() > 0) {
+			ArrayAdapter<DictionaryInfo> dictAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, dicts);
+			dictAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			spinner.setAdapter(dictAdapter);
 
-			if (conf.getDictFile() != null)
-				for (int i = 0; i < fl.length; i++)
-					if (fl[i].equals(conf.getDictFile())) {
-						spinner.setSelection(i, false);
-						break;
-					}
+			String dictFile = conf.getDictFile();
+			if (dictFile != null)
+				dictFile = Reader.dictPath + "/" + dictFile;
+			for (int i = 0; i < dicts.size(); i++)
+				if (dicts.get(i).path().equals(dictFile)) {
+					spinner.setSelection(i, false);
+					break;
+				}
 			cb.setOnCheckedChangeListener(this);
 		} else
 			cb.setOnCheckedChangeListener(null);
@@ -213,7 +222,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		sv.scrollTo(0, 0);
 	}
 
-	public void onClick(View view) {
+	public void onClick(View view)
+	{
 		saveColor(isBright);
 
 		conf.setFontSize(fs);
@@ -228,8 +238,11 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		conf.setDictEnabled(((CheckBox) findViewById(R.id.dict_enabled)).isChecked());
 		conf.setOnlineEnabled(((CheckBox) findViewById(R.id.online_enabled)).isChecked());
 
-		Object df = ((Spinner) findViewById(R.id.dict_file)).getSelectedItem();
-		conf.setDictFile((String) df);
+		Dictionary df = (Dictionary) ((Spinner) findViewById(R.id.dict_file)).getSelectedItem();
+		if (df == null)
+			conf.setDictFile(null);
+		else
+			conf.setDictFile(df.path().substring(Reader.dictPath.length() + 1));
 
 		Object fn = ((Spinner) findViewById(R.id.font_name)).getSelectedItem();
 		if (getContext().getString(R.string.default_font_label).equals(fn))
@@ -244,7 +257,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		dismiss();
 	}
 
-	private Typeface getTypeface(String name) {
+	private Typeface getTypeface(String name)
+	{
 		String fn = Reader.fontPath + name + Reader.fontSuffix;
 		File ff = new File(fn);
 		if (ff.exists())
@@ -253,7 +267,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 			return null;
 	}
 
-	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+	public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+	{
 		Spinner s = (Spinner) adapterView;
 		switch (s.getId()) {
 			case R.id.font_size:
@@ -276,10 +291,12 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		}
 	}
 
-	public void onNothingSelected(AdapterView<?> adapterView) {
+	public void onNothingSelected(AdapterView<?> adapterView)
+	{
 	}
 
-	public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
+	public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser)
+	{
 		TextView v;
 
 		switch (seekBar.getId()) {
@@ -317,13 +334,16 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		tp.setBackgroundColor(Color.rgb(br, bg, bb));
 	}
 
-	public void onStartTrackingTouch(SeekBar seekBar) {
+	public void onStartTrackingTouch(SeekBar seekBar)
+	{
 	}
 
-	public void onStopTrackingTouch(SeekBar seekBar) {
+	public void onStopTrackingTouch(SeekBar seekBar)
+	{
 	}
 
-	private void saveColor(boolean bright) {
+	private void saveColor(boolean bright)
+	{
 		if (bright) {
 			color = Color.rgb(r, g, b);
 			bcolor = Color.rgb(br, bg, bb);
@@ -334,7 +354,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 
 	}
 
-	private void loadColor(boolean bright) {
+	private void loadColor(boolean bright)
+	{
 		tp = (TextView) findViewById(R.id.text_preview);
 		if (bright) {
 			r = Color.red(color);
@@ -394,7 +415,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		v.setText(String.format(colorFormatString, bb));
 	}
 
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+	{
 		View df = findViewById(R.id.dict_file);
 		df.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
 	}

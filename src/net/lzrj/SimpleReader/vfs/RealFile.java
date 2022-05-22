@@ -37,7 +37,7 @@ public class RealFile extends VFile
 	{
 		String[] list;
 		Property p;
-		List<Property> ps = new ArrayList<Property>();
+		List<Property> ps = new ArrayList<>();
 
 		if (!rf.exists())
 			return null;
@@ -45,8 +45,6 @@ public class RealFile extends VFile
 			return ps;
 		for (String n : list) {
 			if (n.startsWith(Config.configDB))
-				continue;
-			if (n.endsWith(Reader.dictSuffix))
 				continue;
 			if (n.endsWith(Reader.fontSuffix))
 				continue;

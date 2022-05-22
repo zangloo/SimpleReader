@@ -20,7 +20,7 @@ import android.widget.*;
 import net.lzrj.SimpleReader.book.Book;
 import net.lzrj.SimpleReader.book.BookLoader;
 import net.lzrj.SimpleReader.book.Content;
-import net.lzrj.SimpleReader.dialog.DictManager;
+import net.lzrj.SimpleReader.dict.DictManager;
 import net.lzrj.SimpleReader.dialog.FileDialog;
 import net.lzrj.SimpleReader.dialog.OptionDialog;
 import net.lzrj.SimpleReader.popup.*;
@@ -40,8 +40,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	public static final String[] ReaderTip = {"", "", "請選取所需觀看的書本。書本須放置於SD卡中，books目錄下。", "所用字典請置于books下dict目錄中。", "如須使用其他字體替代自帶，可將字體置於books下fonts目錄中，字體可至“http://sourceforge.net/projects/vietunicode/files/hannom/hannom v2005/”下載"};
 
 	public static final String pathPrefix = Environment.getExternalStorageDirectory() + "/books";
-	public static final String dictPath = pathPrefix + "/dict/";
-	public static final String dictSuffix = ".sqlite";
+	public static final String dictPath = pathPrefix + "/dict";
 	public static final String fontPath = pathPrefix + "/fonts/";
 	public static final String fontSuffix = ".ttf";
 
@@ -75,6 +74,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private FrameLayout nsv = null;
 	private final Stack<Config.ReadingInfo> ris = new Stack<>();
 	private boolean loading = false;
+	private boolean startup = true;
 	private SimpleTextView.TapTarget tapTarget = null;
 	private Config.ReadingInfo ri = null;
 	private BookmarkManager bookmarkManager = null;
@@ -145,7 +145,6 @@ public class Reader extends Activity implements View.OnTouchListener
 		SimpleTextView.setZoomIcon(bd.getBitmap());
 
 		dictManager = new DictManager(this);
-		setDictEnable(config.isDictEnabled());
 		VFile.setDefaultEncode(config.getZipEncode());
 		setColorAndFont();
 		setViewLock(config.getViewOrient());
@@ -251,7 +250,6 @@ public class Reader extends Activity implements View.OnTouchListener
 			book = null;
 		}
 		config.close();
-		dictManager.unloadDict();
 	}
 
 	@Override
@@ -344,7 +342,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	private void setDictEnable(boolean de)
 	{
 		if (de)
-			dictManager.loadDict(dictPath + config.getDictFile() + dictSuffix, config.getDictFile());
+			dictManager.loadDictionary(dictPath + "/" + config.getDictFile());
 		else
 			dictManager.unloadDict();
 	}
@@ -597,6 +595,10 @@ public class Reader extends Activity implements View.OnTouchListener
 					bv.setContent(book.content());
 					ri = nri;
 					msg.arg1 = 1;
+					if (startup) {
+						setDictEnable(config.isDictEnabled());
+						startup = false;
+					}
 				} catch (Exception e) {
 					Bundle b = new Bundle();
 					b.putString("err", fp + "\n" + e.toString());
@@ -1100,7 +1102,7 @@ public class Reader extends Activity implements View.OnTouchListener
 					case text:
 						title = tapTarget.str;
 						items.add(R.string.menu_bookmark);
-						if (config.isDictEnabled())
+						if (dictManager.loaded())
 							items.add(R.string.menu_dict);
 						items.add(R.string.menu_copy);
 						break;
