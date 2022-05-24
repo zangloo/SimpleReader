@@ -172,12 +172,12 @@ public class Reader extends Activity implements View.OnTouchListener
 		currOrient = newConfig.orientation;
 		updateWH();
 		if (bookmarkManager.isShowing())
-			bookmarkManager.update(bookmarkManager.getWidth(), WindowManager.LayoutParams.FILL_PARENT);
+			bookmarkManager.update(bookmarkManager.getWidth(), WindowManager.LayoutParams.MATCH_PARENT);
 		if (TOCList.isShowing())
-			TOCList.update(TOCList.getWidth(), WindowManager.LayoutParams.FILL_PARENT);
+			TOCList.update(TOCList.getWidth(), WindowManager.LayoutParams.MATCH_PARENT);
 		if (imageViewer.isShowing())
-			imageViewer.update(WindowManager.LayoutParams.FILL_PARENT,
-				WindowManager.LayoutParams.FILL_PARENT);
+			imageViewer.update(WindowManager.LayoutParams.MATCH_PARENT,
+				WindowManager.LayoutParams.MATCH_PARENT);
 		super.onConfigurationChanged(newConfig);
 	}
 
@@ -187,7 +187,7 @@ public class Reader extends Activity implements View.OnTouchListener
 		rri.line = bv.getPosIndex();
 		rri.offset = bv.getPosOffset();
 		rri.chapter = book.currChapter();
-		rri.ctitle = book.chapterTitle();
+		rri.ctitle = book.readingTitle(rri.chapter, rri.line, rri.offset);
 		rri.name = ri.name;
 		rri.percent = bv.getPercent();
 		ris.push(rri);
@@ -537,10 +537,10 @@ public class Reader extends Activity implements View.OnTouchListener
 		if (ri == null)
 			return;
 		ri.chapter = book.currChapter();
-		ri.ctitle = book.chapterTitle();
 		ri.line = bv.getPosIndex();
 		ri.offset = bv.getPosOffset();
 		ri.percent = bv.getPercent();
+		ri.ctitle = book.readingTitle(ri.chapter, ri.line, ri.offset);
 		config.setReadingInfo(ri);
 	}
 
@@ -724,12 +724,13 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		TOCList = new TOCList(this, new AdapterView.OnItemClickListener()
 		{
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+			public void onItemClick(AdapterView<?> parent, View view, int index, long id)
 			{
 				pushReadingInfo();
 				TOCList.hide();
-				book.gotoChapter(position);
-				switchChapterUpdate(0, 0);
+				Content.Position position = book.gotoToc(index);
+				if (position != null)
+					switchChapterUpdate(position.line, position.offset);
 			}
 		});
 	}
@@ -875,26 +876,26 @@ public class Reader extends Activity implements View.OnTouchListener
 		bv.invalidate();
 	}
 
-	private void showBookmarkMgr(int x)
+	private void showBookmarkMgr()
 	{
 		if (book != null)
 			bookmarkManager.show(ri, book, tf, bv.getTop());
 	}
 
-	private void showChapterList(int x)
+	private void showChapterList()
 	{
 		if ((book != null) && (book.chapterCount() > 1))
-			TOCList.show(book.getTOC(), book.currChapter(), tf, bv.getTop());
+			TOCList.show(book.getTOC(), book.tocIndex(ri.chapter, bv.getPosIndex(), bv.getPosOffset()), tf, bv.getTop());
 	}
 
 	private void showStatusPanel()
 	{
 		if ((ri != null) && (book != null)) {
 			ri.chapter = book.currChapter();
-			ri.ctitle = book.chapterTitle();
 			ri.percent = bv.getPercent();
 			ri.line = bv.getPosIndex();
 			ri.offset = bv.getPosOffset();
+			ri.ctitle = book.readingTitle(ri.chapter, ri.line, ri.offset);
 		}
 		statusPanel.show(ris, ri);
 	}
@@ -1009,12 +1010,12 @@ public class Reader extends Activity implements View.OnTouchListener
 				switch (draging) {
 					case bookmark:
 						if (!bookmarkManager.isShowing())
-							showBookmarkMgr(screenHeight * 3 / 4);
+							showBookmarkMgr();
 
 						break;
 					case chapter:
 						if (!TOCList.isShowing())
-							showChapterList(screenHeight * 3 / 4);
+							showChapterList();
 
 						break;
 					case nothing:

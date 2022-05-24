@@ -6,10 +6,11 @@ import net.lzrj.SimpleReader.UString;
 import net.lzrj.SimpleReader.book.*;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;
+import nl.siegmann.epublib.domain.SpineReference;
 import nl.siegmann.epublib.domain.TOCReference;
 import org.jsoup.Jsoup;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 class EPubBook extends ChaptersBook
 {
 	private final Book book;
-	private final ContentBase content = new ContentBase();
+	private final Map<Integer, EPubChapter> chapters = new HashMap<>();
 
 	EPubBook(Book book, Config.ReadingInfo ri, ArrayList<TOCRecord> toc)
 	{
@@ -32,20 +33,21 @@ class EPubBook extends ChaptersBook
 	@Override
 	protected boolean loadChapter(int index)
 	{
+		this.chapter = index;
+		if (chapters.get(index) != null)
+			return true;
+		EPubChapter chapter;
 		try {
-			chapter = index;
-			TOCReference ref = ((EPubLoader.EPubTOC) TOC.get(index)).ref;
-			Resource resource = ref.getResource();
+			Resource resource = book.getSpine().getSpineReferences().get(index).getResource();
 
 			String charset = BookUtil.detect(resource.getInputStream());
 
 			final String htmlPath = resource.getHref();
-			ArrayList<ContentLine> lines = new ArrayList<>();
-			BookUtil.HTML2Text(Jsoup.parse(resource.getInputStream(), charset, "").body(), lines,
-				new EPubContentNodeCallback(book, htmlPath, ref.getFragmentId()));
+			BookUtil.HtmlContent htmlContent = BookUtil.HTML2Text(Jsoup.parse(resource.getInputStream(), charset, "").body(), new EPubContentNodeCallback(book, htmlPath));
+			List<ContentLine> lines = htmlContent.lines;
 			if (lines.size() == 0)
 				lines.add(new UString(" "));
-			content.setContent(lines);
+			chapter = new EPubChapter(htmlPath, new ContentBase(lines), htmlContent.fragmentMap.size() == 0 ? null : htmlContent.fragmentMap);
 		} catch (Exception e) {
 			e.printStackTrace();
 			ArrayList<ContentLine> list = new ArrayList<>();
@@ -53,20 +55,77 @@ class EPubBook extends ChaptersBook
 			if (message == null)
 				message = e.toString();
 			list.add(new UString(message));
-			content.setContent(list);
+			chapter = new EPubChapter("_" + index, new ContentBase(list), null);
 		}
+		chapters.put(index, chapter);
 		return true;
 	}
 
 	@Override
 	public Content content(int index)
 	{
-		return content;
+		return chapters.get(index).content;
 	}
 
 	@Override
-	public void close()
+	public int chapterCount()
 	{
+		return book.getSpine().size();
+	}
+
+	@Override
+	public String readingTitle(int chapter, int line, int offset)
+	{
+		int tocIndex = tocIndex(chapter, line, offset);
+		return book.getTableOfContents().getTocReferences().get(tocIndex).getTitle();
+	}
+
+	@Override
+	public int tocIndex(int chapterIndex, int line, int offset)
+	{
+		loadChapter(chapterIndex);
+		EPubChapter chapter = chapters.get(chapterIndex);
+		LinkedHashMap<String, Content.Position> fragmentMap = chapter.fragmentMap;
+		Map.Entry<String, Content.Position> last = null;
+		if (fragmentMap != null)
+			for (Map.Entry<String, Content.Position> next : fragmentMap.entrySet()) {
+				Content.Position position = next.getValue();
+				if (line < position.line || (line == position.line && offset < position.offset))
+					break;
+				last = next;
+			}
+		SpineReference spineReference = book.getSpine().getSpineReferences().get(chapterIndex);
+		List<TOCReference> tocReferences = book.getTableOfContents().getTocReferences();
+		for (int i = 0; i < tocReferences.size(); i++) {
+			TOCReference tocReference = tocReferences.get(i);
+			if (spineReference.getResourceId().equals(tocReference.getResourceId())) {
+				if (last == null)
+					return i;
+				else if (last.getKey().equals(tocReference.getFragmentId()))
+					return i;
+			}
+		}
+		// should never happen
+		return chapterIndex;
+	}
+
+	@Override
+	public Content.Position gotoToc(int tocIndex)
+	{
+		TOCReference tocReference = book.getTableOfContents().getTocReferences().get(tocIndex);
+		String resourceId = tocReference.getResourceId();
+		List<SpineReference> spineReferences = book.getSpine().getSpineReferences();
+		for (int i = 0; i < spineReferences.size(); i++)
+			if (resourceId.equals(spineReferences.get(i).getResourceId())) {
+				loadChapter(i);
+				EPubChapter chapter = chapters.get(i);
+				Content.Position position = chapter.fragmentMap.get(tocReference.getFragmentId());
+				if (position == null)
+					return new Content.Position(0, 0);
+				else
+					return position;
+			}
+		return null;
 	}
 }
 

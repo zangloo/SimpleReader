@@ -24,15 +24,15 @@ import java.util.ArrayList;
 public class TOCList extends PopupList
 {
 	private Typeface tf = null;
-	private ArrayAdapter<String> aa;
-	private int chapter;
+	private ArrayAdapter<String> tocAdapter;
+	private int tocIndexOfChapter;
 
 	public TOCList(Context context, final AdapterView.OnItemClickListener onItemClickListener)
 	{
 		super(context);
 
 		setTitle(context.getString(R.string.menu_chapter));
-		aa = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
+		tocAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
 		{
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent)
@@ -40,14 +40,14 @@ public class TOCList extends PopupList
 				View v = super.getView(position, convertView, parent);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setTypeface(tf);
-				if (position == chapter)
+				if (position == tocIndexOfChapter)
 					tv.setTextColor(Color.rgb(0, 150, 150));
 				else
 					tv.setTextColor(Color.BLACK);
 				return v;
 			}
 		};
-		setAdapter(aa);
+		setAdapter(tocAdapter);
 		setOnItemClickListener(onItemClickListener);
 
 		setHeight(WindowManager.LayoutParams.FILL_PARENT);
@@ -55,7 +55,7 @@ public class TOCList extends PopupList
 
 	public void show(ArrayList<TOCRecord> cs, int index, Typeface typeface, int top)
 	{
-		aa.clear();
+		tocAdapter.clear();
 		for (int i = 0; i < cs.size(); i++) {
 			TOCRecord c = cs.get(i);
 			String text;
@@ -66,13 +66,13 @@ public class TOCList extends PopupList
 			}
 			if (i == index)
 				text = "> " + text;
-			aa.add(text);
+			tocAdapter.add(text);
 		}
-		aa.notifyDataSetChanged();
+		tocAdapter.notifyDataSetChanged();
 
 		tf = typeface;
 		showAtLocation(getContentView(), Gravity.LEFT | Gravity.CENTER, 0, top);
-		setSelection(chapter = index);
+		setSelection(tocIndexOfChapter = index);
 	}
 
 	public void hide()

@@ -1,14 +1,11 @@
 package net.lzrj.SimpleReader.book.html;
 
 import net.lzrj.SimpleReader.Config;
-import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.book.*;
 import net.lzrj.SimpleReader.vfs.VFile;
 import org.jsoup.Jsoup;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,14 +28,13 @@ public class HtmlLoader implements BookLoader.Loader
 
 	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
-		List<ContentLine> lines = new ArrayList<>();
 		String cs;
 
 		InputStream fs = f.getInputStream();
 		cs = BookUtil.detect(fs);
 		fs.close();
 
-		BookUtil.HTML2Text(Jsoup.parse(f.getInputStream(), cs, "").body(), lines);
-		return new SingleChapterBook(new ContentBase(lines));
+		BookUtil.HtmlContent htmlContent = BookUtil.HTML2Text(Jsoup.parse(f.getInputStream(), cs, "").body());
+		return new SingleChapterBook(new ContentBase(htmlContent.lines));
 	}
 }

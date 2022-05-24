@@ -146,15 +146,9 @@ public class SimpleReaderBook extends net.lzrj.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public String chapterTitle()
+	public String readingTitle(int chapter, int line, int offset)
 	{
-		return chapterTitle(currChapter());
-	}
-
-	@Override
-	public String chapterTitle(int index)
-	{
-		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(index + indexBase)});
+		Cursor c = db.rawQuery(chapterSQL, new String[]{String.valueOf(chapter + indexBase)});
 		if (!c.moveToFirst()) {
 			c.close();
 			return "";
@@ -314,7 +308,9 @@ public class SimpleReaderBook extends net.lzrj.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public void clear() {}
+	public void clear()
+	{
+	}
 
 	@Override
 	public Position searchText(String txt, Position cpi)

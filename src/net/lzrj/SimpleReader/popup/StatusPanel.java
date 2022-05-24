@@ -55,7 +55,7 @@ public class StatusPanel extends PopupWindow
 		setContentView(layout);
 		setFocusable(true);
 		setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
-		setWidth(WindowManager.LayoutParams.FILL_PARENT);
+		setWidth(WindowManager.LayoutParams.MATCH_PARENT);
 
 		pcl = onPanelClickListener;
 

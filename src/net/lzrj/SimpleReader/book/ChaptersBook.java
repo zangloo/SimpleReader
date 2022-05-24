@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public abstract class ChaptersBook extends Book
 {
-	protected ArrayList<TOCRecord> TOC = new ArrayList<TOCRecord>();
+	protected ArrayList<TOCRecord> TOC = new ArrayList<>();
 	protected int chapter;
 
 	// return chapter count
@@ -20,9 +20,9 @@ public abstract class ChaptersBook extends Book
 	}
 
 	// return chapter title at index
-	public String chapterTitle(int index)
+	public String readingTitle(int chapter, int line, int offset)
 	{
-		return TOC.get(index).title;
+		return TOC.get(tocIndex(chapter, line, offset)).title;
 	}
 
 	// return all chapter title
@@ -35,12 +35,6 @@ public abstract class ChaptersBook extends Book
 	public int currChapter()
 	{
 		return chapter;
-	}
-
-	public boolean gotoChapter(int index)
-	{
-		return !((index < 0) || (index >= chapterCount()) || (index == currChapter())) &&
-			loadChapter(index);
 	}
 
 	protected abstract boolean loadChapter(int index);

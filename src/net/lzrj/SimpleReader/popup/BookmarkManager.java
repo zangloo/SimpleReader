@@ -73,12 +73,12 @@ public class BookmarkManager extends PopupList
 	private static final String BOOKMARK_LIST_TITLE_DESC = "desc";
 	private static final String BOOKMARK_LIST_TITLE_POS = "pos";
 
-	private ArrayList<HashMap<String, Object>> bls;
+	private final ArrayList<HashMap<String, Object>> bls;
 	private ArrayList<BookmarkManager.Bookmark> bml;
-	private SimpleAdapter sa;
+	private final SimpleAdapter sa;
 	private Typeface tf = null;
 
-	private Config config = null;
+	private Config config;
 	private Config.ReadingInfo readingInfo = null;
 	private Book book = null;
 
@@ -120,7 +120,7 @@ public class BookmarkManager extends PopupList
 			}
 		});
 
-		setHeight(WindowManager.LayoutParams.FILL_PARENT);
+		setHeight(WindowManager.LayoutParams.MATCH_PARENT);
 	}
 
 	public Bookmark getBookmark(int index)
@@ -138,8 +138,7 @@ public class BookmarkManager extends PopupList
 				map.put(BOOKMARK_LIST_TITLE_DESC, b.desc);
 				if (book.chapterCount() > 1)
 					map.put(BOOKMARK_LIST_TITLE_POS,
-						book.chapterTitle(b.chapter) + "(" + b.line + " : " + b.offset +
-							")");
+						book.readingTitle(b.chapter, b.line, b.offset) + "(" + b.line + " : " + b.offset + ")");
 				else
 					map.put(BOOKMARK_LIST_TITLE_POS, "(" + b.line + " : " + b.offset + ")");
 				bls.add(map);

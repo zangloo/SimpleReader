@@ -13,17 +13,27 @@ public abstract class Book
 	// return chapter count
 	public abstract int chapterCount();
 
-	// return current chapter title at index
-	public String chapterTitle()
-	{
-		return chapterTitle(currChapter());
-	}
-
 	// return chapter title at index
-	public abstract String chapterTitle(int index);
+	public String readingTitle(int chapter, int line, int offset)
+	{
+		return null;
+	}
 
 	// return all chapter title
 	public abstract ArrayList<TOCRecord> getTOC();
+
+	// toc index of current chapter
+	public int tocIndex(int chapter, int line, int offset)
+	{
+		return chapter;
+	}
+
+	// goto position of toc[index]
+	public Content.Position gotoToc(int tocIndex)
+	{
+		gotoChapter(tocIndex);
+		return new Content.Position(0, 0);
+	}
 
 	// get current chapter index
 	public abstract int currChapter();
@@ -48,5 +58,7 @@ public abstract class Book
 	}
 
 	// close book
-	public abstract void close();
+	public void close()
+	{
+	}
 }

@@ -8,7 +8,6 @@ import net.lzrj.SimpleReader.HtmlContentNodeCallback;
 import net.lzrj.SimpleReader.UString;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -16,7 +15,7 @@ import org.mozilla.universalchardet.UniversalDetector;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,81 +32,160 @@ public class BookUtil
 	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
 	public static int DEFAULT_CONTENT_FONT_SIZE = 3;
 
-	// put all text into lines
-	public static void HTML2Text(Element node, List<ContentLine> lines)
-	{
-		HTML2Text(node, lines, DEFAULT_CONTENT_FONT_SIZE, null);
-	}
+	private static final String[] NEWLINE_CLASSES = new String[]{"contents", "toc", "mulu"};
 
-	public static void HTML2Text(Element node, List<ContentLine> lines, @Nullable HtmlContentNodeCallback nodeCallback)
+	public static class HtmlContent
 	{
-		HTML2Text(node, lines, DEFAULT_CONTENT_FONT_SIZE, nodeCallback);
-	}
+		public final List<ContentLine> lines;
+		public final LinkedHashMap<String, Content.Position> fragmentMap;
 
-	// if images != null, this function will return with all images href.
-	private static void HTML2Text(Element node, List<ContentLine> lines, int fontSize, @Nullable HtmlContentNodeCallback nodeCallback)
-	{
-		for (Node child : node.childNodes()) {
-			if (child instanceof TextNode) {
-				String t = ((TextNode) child).text();
-				if (t.trim().length() > 0)
-					if (nodeCallback == null)
-						lines.add(new UString(t));
-					else
-						nodeCallback.addText(lines, new UString(t));
-			} else if (child instanceof Element) {
-				final Element e = (Element) child;
-				if (nodeCallback != null)
-					nodeCallback.process(e);
-				String tagName = e.tagName();
-				if (nodeCallback != null && tagName.equalsIgnoreCase("img"))
-					nodeCallback.addImage(lines, e.attr("src"));
-				else if (nodeCallback != null && tagName.equalsIgnoreCase("image"))
-					nodeCallback.addImage(lines, e.attr("xlink:href"));
-				else if (tagName.equalsIgnoreCase("p")) {
-					UString string = new UString("");
-					buildParagraph(e, string, false, nodeCallback, lines, DEFAULT_CONTENT_FONT_SIZE);
-					if (string.length() > 0) {
-						string.paragraph();
-						if (nodeCallback == null)
-							lines.add(string);
-						else
-							nodeCallback.addText(lines, string);
-					}
-				} else
-					HTML2Text(e, lines, fontSize, nodeCallback);
-			}
+		public HtmlContent(List<ContentLine> lines, LinkedHashMap<String, Content.Position> fragmentMap)
+		{
+			this.lines = lines;
+			this.fragmentMap = fragmentMap;
 		}
 	}
 
-	private static void buildParagraph(Element e, UString string, boolean underline, HtmlContentNodeCallback nodeCallback, List<ContentLine> lines, int fontSize)
+	public static class ParseContext
 	{
-		if (e.hasClass("kindle-cn-underline"))
-			underline = true;
-		for (Node child : e.childNodes())
+		final List<ContentLine> lines = new ArrayList<>();
+		final LinkedHashMap<String, Content.Position> fragmentMap = new LinkedHashMap<>();
+		UString buf = new UString("");
+		HtmlContentNodeCallback nodeCallback;
+
+		public ParseContext(HtmlContentNodeCallback nodeCallback)
+		{
+			this.nodeCallback = nodeCallback;
+		}
+	}
+
+	// put all text into lines
+	public static HtmlContent HTML2Text(Element node)
+	{
+		return HTML2Text(node, null);
+	}
+
+	public static HtmlContent HTML2Text(Element node, HtmlContentNodeCallback nodeCallback)
+	{
+		ParseContext context = new ParseContext(nodeCallback);
+		HTML2Text(node, DEFAULT_CONTENT_FONT_SIZE, context, false);
+		return new HtmlContent(context.lines, context.fragmentMap);
+	}
+
+	private static String strip(String text)
+	{
+		int length = text.length();
+		int start = 0;
+		for (; start < length; start++)
+			if (!Character.isWhitespace(text.charAt(start)))
+				break;
+		int end = length - 1;
+		for (; end >= start; end--)
+			if (!Character.isWhitespace(text.charAt(end)))
+				break;
+		if (start == 0 && end == length - 1)
+			return text;
+		if (start > end)
+			return "";
+		return text.substring(start, end);
+	}
+
+	private static void pushBuf(ParseContext context)
+	{
+		// ignore empty line if prev line is empty too.
+		if (context.buf.length() == 0) {
+			int lineCount = context.lines.size();
+			if (lineCount == 0 || context.lines.get(lineCount - 1).length() == 0)
+				return;
+		}
+		context.lines.add(context.buf);
+		context.buf = new UString("");
+	}
+
+	private static void newlineForClass(Set<String> classes, ParseContext context)
+	{
+		if (context.buf.length() > 0)
+			for (String newlineClass : NEWLINE_CLASSES)
+				if (classes.contains(newlineClass)) {
+					pushBuf(context);
+					return;
+				}
+	}
+
+	// if images != null, this function will return with all images href.
+	private static void HTML2Text(Element node, int fontSize, ParseContext context, boolean underline)
+	{
+		for (Node child : node.childNodes())
 			if (child instanceof TextNode) {
-				String text = ((TextNode) child).text().trim();
-				if (text.length() > 0)
-					string.concat(text, underline, fontSize - DEFAULT_CONTENT_FONT_SIZE);
+				String text = strip(((TextNode) child).text());
+				if (text.length() > 0) {
+					if (context.buf.length() > 0)
+						context.buf.concat(" ", false, fontSize - DEFAULT_CONTENT_FONT_SIZE);
+					context.buf.concat(text, underline, fontSize - DEFAULT_CONTENT_FONT_SIZE);
+				}
 			} else if (child instanceof Element) {
-				Element childElement = (Element) child;
-				String childTag = childElement.tagName();
-				if (nodeCallback != null && childTag.equalsIgnoreCase("img"))
-					nodeCallback.addImage(lines, childElement.attr("src"));
-				else if (nodeCallback != null && childTag.equalsIgnoreCase("image"))
-					nodeCallback.addImage(lines, childElement.attr("xlink:href"));
-				else if (childTag.equalsIgnoreCase("font")) {
-					String childFontSizeText = childElement.attr("size");
-					if (childFontSizeText == null)
-						buildParagraph(childElement, string, underline, nodeCallback, lines, fontSize);
-					else try {
-						int childFontSize = Integer.parseInt(childFontSizeText);
-						buildParagraph(childElement, string, underline, nodeCallback, lines, childFontSize);
-					} catch (NumberFormatException ignore) {
-						buildParagraph(childElement, string, underline, nodeCallback, lines, fontSize);
-					}
-				} else
-					buildParagraph(childElement, string, underline, nodeCallback, lines, fontSize);
+				final Element element = (Element) child;
+				String elementId = element.id();
+				if (elementId.length() > 0)
+					context.fragmentMap.put(elementId, new Content.Position(context.lines.size(), context.buf.length()));
+				String tagName = element.tagName();
+				Set<String> classes = element.classNames();
+				if (classes.contains("kindle-cn-underline"))
+					underline = true;
+				switch (tagName.toLowerCase()) {
+					case "div":
+					case "dt":
+						newlineForClass(classes, context);
+						HTML2Text(element, fontSize, context, underline);
+						newlineForClass(classes, context);
+						break;
+					case "blockquote":
+					case "p":
+					case "h1":
+					case "h2":
+					case "h3":
+					case "h4":
+					case "li":
+						if (context.buf.length() > 0)
+							pushBuf(context);
+						context.buf.paragraph();
+						HTML2Text(element, fontSize, context, underline);
+						if (context.buf.length() > 0) {
+							context.buf.paragraph();
+							pushBuf(context);
+						}
+						break;
+					case "br":
+						if (context.buf.length() > 0)
+							pushBuf(context);
+						HTML2Text(element, fontSize, context, underline);
+						break;
+					case "img":
+						if (context.nodeCallback != null)
+							context.lines.add(context.nodeCallback.createImage(context.lines, element.attr("src")));
+						break;
+					case "image":
+						if (context.nodeCallback != null)
+							context.lines.add(context.nodeCallback.createImage(context.lines, element.attr("xlink:href")));
+						break;
+					case "font":
+						String childFontSizeText = element.attr("size");
+						if (childFontSizeText == null)
+							HTML2Text(element, fontSize, context, underline);
+						else try {
+							int childFontSize = Integer.parseInt(childFontSizeText);
+							HTML2Text(element, childFontSize, context, underline);
+						} catch (NumberFormatException ignore) {
+							HTML2Text(element, fontSize, context, underline);
+						}
+						break;
+					case "a":
+						HTML2Text(element, fontSize, context, true);
+						break;
+					default:
+						HTML2Text(element, fontSize, context, underline);
+						break;
+				}
 			}
 	}
 

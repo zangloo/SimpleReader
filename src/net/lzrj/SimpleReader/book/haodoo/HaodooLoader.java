@@ -91,7 +91,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 		HaodooTOCR(String t)
 		{
 			super(t);
-			lines = new ArrayList<UString>();
+			lines = new ArrayList<>();
 		}
 	}
 
@@ -105,7 +105,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 	private static byte[] recBuf = new byte[MAX_REC_SIZE * 2];
 	private static int recPos = 0;
 
-	private ContentBase content = new ContentBase();
+	private final ContentBase content = new ContentBase();
 
 	protected static String PDBEncode = "BIG5";
 	protected static String UPDBEncode = "UTF-16LE";
@@ -198,29 +198,34 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 		if (is.read(header) != HEADER_LENGTH)
 			throw new IOException("readHeader: failed to read header");
 
-		String id = "";
+		StringBuilder id = new StringBuilder();
 		// check book type "MTIT" or "MTIU"
 		for (int i = 0; i < ID_LENGTH; i++)
-			id += (char) header[ID_OFFSET + i];
+			id.append((char) header[ID_OFFSET + i]);
 
-		if (id.equals(PDB_ID)) {
-			encode = PDBEncode;
-			bookType = BookType.pdb;
-		} else if (id.equals(UPDB_ID)) {
-			encode = UPDBEncode;
-			bookType = BookType.updb;
-		} else if (id.equals(PALMDOC_ID)) {
-			encode = null;
-			bookType = BookType.palmDoc;
-		} else
-			throw new Exception("readHeader: Unrecognized type id:" + id);
+		switch (id.toString()) {
+			case PDB_ID:
+				encode = PDBEncode;
+				bookType = BookType.pdb;
+				break;
+			case UPDB_ID:
+				encode = UPDBEncode;
+				bookType = BookType.updb;
+				break;
+			case PALMDOC_ID:
+				encode = null;
+				bookType = BookType.palmDoc;
+				break;
+			default:
+				throw new Exception("readHeader: Unrecognized type id:" + id);
+		}
 
 
 		//line records count
 		recordCount = fromUInt16(header, RECODES_COUNT_OFFSET);
 
 		//read all records offset
-		recordOffsets = new Vector<Long>(recordCount);
+		recordOffsets = new Vector<>(recordCount);
 
 		byte[] recordBuffer = new byte[8 * recordCount];
 		if (is.read(recordBuffer) != recordBuffer.length)
@@ -229,14 +234,14 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 			recordOffsets.add(fromUInt32(recordBuffer, i * 8));
 	}
 
-	public static int fromUInt16(byte buf[], int i)
+	public static int fromUInt16(byte[] buf, int i)
 	{
 		int b1 = (0x000000FF & (int) buf[i]);
 		int b2 = (0x000000FF & (int) buf[i + 1]);
 		return (((b1 << 8) | b2));
 	}
 
-	public static long fromUInt32(byte buf[], int i)
+	public static long fromUInt32(byte[] buf, int i)
 	{
 		int b1 = (0x000000FF & (int) buf[i]);
 		int b2 = (0x000000FF & (int) buf[i + 1]);

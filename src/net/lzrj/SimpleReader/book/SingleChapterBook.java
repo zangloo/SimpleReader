@@ -24,12 +24,6 @@ public class SingleChapterBook extends Book
 	}
 
 	@Override
-	public String chapterTitle(int index)
-	{
-		return null;
-	}
-
-	@Override
 	public ArrayList<TOCRecord> getTOC()
 	{
 		return null;
