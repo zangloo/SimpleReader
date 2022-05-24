@@ -83,9 +83,10 @@ public class BookUtil
 		for (; end >= start; end--)
 			if (!Character.isWhitespace(text.charAt(end)))
 				break;
-		if (start == 0 && end == length - 1)
+		end++;
+		if (start == 0 && end == length)
 			return text;
-		if (start > end)
+		if (start >= end)
 			return "";
 		return text.substring(start, end);
 	}
