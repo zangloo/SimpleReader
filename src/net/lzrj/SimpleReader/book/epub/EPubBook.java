@@ -79,7 +79,7 @@ class EPubBook extends ChaptersBook
 	public String readingTitle(int chapter, int line, int offset)
 	{
 		int tocIndex = tocIndex(chapter, line, offset);
-		return book.getTableOfContents().getTocReferences().get(tocIndex).getTitle();
+		return TOC.get(tocIndex).title;
 	}
 
 	@Override
@@ -97,9 +97,9 @@ class EPubBook extends ChaptersBook
 				last = next;
 			}
 		SpineReference spineReference = book.getSpine().getSpineReferences().get(chapterIndex);
-		List<TOCReference> tocReferences = book.getTableOfContents().getTocReferences();
-		for (int i = 0; i < tocReferences.size(); i++) {
-			TOCReference tocReference = tocReferences.get(i);
+		int matchedChapter = chapterIndex;
+		for (int i = 0; i < TOC.size(); i++) {
+			TOCReference tocReference = ((EPubLoader.EPubTOC) TOC.get(i)).ref;
 			String resourceId = tocReference.getResourceId();
 			if (resourceId == null) {
 				if (i == chapterIndex)
@@ -109,16 +109,16 @@ class EPubBook extends ChaptersBook
 					return i;
 				else if (last.getKey().equals(tocReference.getFragmentId()))
 					return i;
+				matchedChapter = i;
 			}
 		}
-		// should never happen
-		return chapterIndex;
+		return matchedChapter;
 	}
 
 	@Override
 	public Content.Position gotoToc(int tocIndex)
 	{
-		TOCReference tocReference = book.getTableOfContents().getTocReferences().get(tocIndex);
+		TOCReference tocReference = ((EPubLoader.EPubTOC) TOC.get(tocIndex)).ref;
 		String resourceId = tocReference.getResourceId();
 		if (resourceId == null) {
 			loadChapter(tocIndex);

@@ -215,6 +215,9 @@ public class BookUtil
 
 	private static void HTML2Text(Element node, int fontSize, ParseContext context, TextStyleType textStyleType)
 	{
+		String elementId = node.id();
+		if (elementId.length() > 0)
+			context.fragmentMap.put(elementId, new Content.Position(context.lines.size(), context.buf.length()));
 		for (Node child : node.childNodes())
 			if (child instanceof TextNode) {
 				String text = strip(((TextNode) child).text());
@@ -227,9 +230,6 @@ public class BookUtil
 				}
 			} else if (child instanceof Element) {
 				final Element element = (Element) child;
-				String elementId = element.id();
-				if (elementId.length() > 0)
-					context.fragmentMap.put(elementId, new Content.Position(context.lines.size(), context.buf.length()));
 				String tagName = element.tagName();
 				Set<String> classes = element.classNames();
 				int childFontSize = context.styleFontSize(element, fontSize);

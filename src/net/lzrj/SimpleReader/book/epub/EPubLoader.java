@@ -49,7 +49,7 @@ public class EPubLoader implements BookLoader.Loader
 			book = reader.readEpub(is);
 		}
 
-		if (ri.chapter >= book.getTableOfContents().size())
+		if (ri.chapter >= book.getSpine().size())
 			throw new Exception(
 				String.format("Error open chapter %d @ \"%s\"", ri.chapter, file.getPath()));
 
