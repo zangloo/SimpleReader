@@ -100,7 +100,11 @@ class EPubBook extends ChaptersBook
 		List<TOCReference> tocReferences = book.getTableOfContents().getTocReferences();
 		for (int i = 0; i < tocReferences.size(); i++) {
 			TOCReference tocReference = tocReferences.get(i);
-			if (spineReference.getResourceId().equals(tocReference.getResourceId())) {
+			String resourceId = tocReference.getResourceId();
+			if (resourceId == null) {
+				if (i == chapterIndex)
+					return i;
+			} else if (spineReference.getResourceId().equals(resourceId)) {
 				if (last == null)
 					return i;
 				else if (last.getKey().equals(tocReference.getFragmentId()))
@@ -116,6 +120,10 @@ class EPubBook extends ChaptersBook
 	{
 		TOCReference tocReference = book.getTableOfContents().getTocReferences().get(tocIndex);
 		String resourceId = tocReference.getResourceId();
+		if (resourceId == null) {
+			loadChapter(tocIndex);
+			return new Content.Position(0, 0);
+		}
 		List<SpineReference> spineReferences = book.getSpine().getSpineReferences();
 		for (int i = 0; i < spineReferences.size(); i++)
 			if (resourceId.equals(spineReferences.get(i).getResourceId())) {
