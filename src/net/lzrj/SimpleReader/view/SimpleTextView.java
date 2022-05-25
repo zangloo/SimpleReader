@@ -638,9 +638,12 @@ public abstract class SimpleTextView extends View
 		return paint.measureText(buf, 0, charWidth);
 	}
 
-	protected int scaleFontSize(int sizeDelta)
+	protected int scaleFontSize(int fontSize)
 	{
-		return this.fontSize + (sizeDelta * 6);
+		if (fontSize == 100)
+			return this.fontSize;
+		else
+			return this.fontSize * fontSize / 100;
 	}
 
 	protected abstract DrawContext createDrawContext();

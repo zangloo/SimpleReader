@@ -61,7 +61,7 @@ public class HTextView extends SimpleTextView
 
 		int usingFontSize = 0;
 		for (int i = begin; i < end; i++) {
-			int fontSize = scaleFontSize(text.charSizeDeltaAt(i));
+			int fontSize = scaleFontSize(text.charSizeAt(i));
 			if (usingFontSize != fontSize) {
 				usingFontSize = fontSize;
 				setTextSize(paint, usingFontSize);

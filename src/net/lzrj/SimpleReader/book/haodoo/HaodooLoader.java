@@ -351,7 +351,7 @@ public class HaodooLoader extends ChaptersBook implements BookLoader.Loader
 	private static int formatPalmDocDB(byte[] buf, int size, HaodooTOCR ci) throws Exception
 	{
 		if (encode == null)
-			encode = BookUtil.detect(new ByteArrayInputStream(buf, 0, size));
+			encode = BookUtil.detectCharset(new ByteArrayInputStream(buf, 0, size));
 
 		int p = 0, np;
 		while ((np = searchByte(buf, p, size, (byte) '\n')) >= 0) {

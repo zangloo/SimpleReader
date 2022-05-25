@@ -31,10 +31,10 @@ public class HtmlLoader implements BookLoader.Loader
 		String cs;
 
 		InputStream fs = f.getInputStream();
-		cs = BookUtil.detect(fs);
+		cs = BookUtil.detectCharset(fs);
 		fs.close();
 
-		BookUtil.HtmlContent htmlContent = BookUtil.HTML2Text(Jsoup.parse(f.getInputStream(), cs, "").body());
+		BookUtil.HtmlContent htmlContent = BookUtil.HTML2Text(Jsoup.parse(f.getInputStream(), cs, ""));
 		return new SingleChapterBook(new ContentBase(htmlContent.lines));
 	}
 }

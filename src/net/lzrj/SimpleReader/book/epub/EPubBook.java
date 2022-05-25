@@ -9,6 +9,7 @@ import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.SpineReference;
 import nl.siegmann.epublib.domain.TOCReference;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.util.*;
 
@@ -40,10 +41,11 @@ class EPubBook extends ChaptersBook
 		try {
 			Resource resource = book.getSpine().getSpineReferences().get(index).getResource();
 
-			String charset = BookUtil.detect(resource.getInputStream());
+			String charset = BookUtil.detectCharset(resource.getInputStream());
 
 			final String htmlPath = resource.getHref();
-			BookUtil.HtmlContent htmlContent = BookUtil.HTML2Text(Jsoup.parse(resource.getInputStream(), charset, "").body(), new EPubContentNodeCallback(book, htmlPath));
+			Document document = Jsoup.parse(resource.getInputStream(), charset, "");
+			BookUtil.HtmlContent htmlContent = BookUtil.HTML2Text(document, new EPubContentNodeCallback(book, htmlPath));
 			List<ContentLine> lines = htmlContent.lines;
 			if (lines.size() == 0)
 				lines.add(new UString(" "));

@@ -5,11 +5,14 @@ import android.graphics.BitmapFactory;
 import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.HtmlContentNodeCallback;
 import net.lzrj.SimpleReader.ImageContent;
+import net.lzrj.SimpleReader.book.BookUtil;
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Resource;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 
 public class EPubContentNodeCallback implements HtmlContentNodeCallback
@@ -36,6 +39,17 @@ public class EPubContentNodeCallback implements HtmlContentNodeCallback
 		} catch (IOException e) {
 			return new EPubImageLine(null);
 		}
+	}
+
+	@Override
+	public String getCss(String href) throws IOException
+	{
+		String absoluteHref = BookUtil.concatPath(basePath, href);
+		Resource resource = book.getResources().getByHref(absoluteHref);
+		if (resource == null)
+			return null;
+		Reader reader = resource.getReader();
+		return IOUtils.toString(reader);
 	}
 
 	private static class EPubImageLine extends ImageContent

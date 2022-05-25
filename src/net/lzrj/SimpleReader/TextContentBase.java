@@ -15,10 +15,10 @@ public abstract class TextContentBase implements ContentLine
 		return underlines;
 	}
 
-	public void concat(String string, boolean underline, int fontSizeDelta)
+	public void concat(String string, boolean underline, int fontSize)
 	{
 		int from = length();
-		append(string, fontSizeDelta);
+		append(string, fontSize);
 		if (underline) {
 			int to = length();
 			if (underlines == null)
@@ -49,7 +49,7 @@ public abstract class TextContentBase implements ContentLine
 		return false;
 	}
 
-	abstract protected void append(String other, int fontSizeDelta);
+	abstract protected void append(String other, int fontSize);
 
 	protected <T extends TextContentBase> T copy(T orig, T newOne)
 	{

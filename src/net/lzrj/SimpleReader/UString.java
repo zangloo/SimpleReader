@@ -16,20 +16,20 @@ public class UString extends TextContentBase
 {
 	private String data;
 	private boolean allBMP;
-	private final Vector<int[]> fontSizeDeltas = new Vector<>();
+	private final Vector<int[]> fontSizes = new Vector<>();
 
 	public UString(String str)
 	{
-		this(str, 0);
+		this(str, 100);
 	}
 
-	public UString(String str, int fontSizeDelta)
+	public UString(String str, int fontSize)
 	{
 		data = str.trim();
 		allBMP = (data.length() == data.codePointCount(0, data.length()));
 		int length = this.length();
 		if (length > 0)
-			fontSizeDeltas.add(new int[]{length, fontSizeDelta});
+			fontSizes.add(new int[]{length, fontSize});
 	}
 
 	public UString replaceChars(char[] oc, char[] nc)
@@ -37,8 +37,8 @@ public class UString extends TextContentBase
 		char[] txt = data.toCharArray();
 		SimpleTextView.replaceTextChar(txt, oc, nc);
 		UString ret = copy(this, new UString(String.valueOf(txt)));
-		ret.fontSizeDeltas.clear();
-		ret.fontSizeDeltas.addAll(this.fontSizeDeltas);
+		ret.fontSizes.clear();
+		ret.fontSizes.addAll(this.fontSizes);
 		return ret;
 	}
 
@@ -80,17 +80,16 @@ public class UString extends TextContentBase
 	}
 
 	@Override
-	public void append(String other, int fontSizeDelta)
+	public void append(String other, int fontSize)
 	{
-		other = other.trim();
 		int length = other.codePointCount(0, other.length());
 		if (length == 0)
 			return;
-		if (fontSizeDeltas.size() > 0 && fontSizeDeltas.lastElement()[1] == fontSizeDelta)
-			fontSizeDeltas.lastElement()[0] += length;
+		if (fontSizes.size() > 0 && fontSizes.lastElement()[1] == fontSize)
+			fontSizes.lastElement()[0] += length;
 		else {
 			int currentLen = this.length();
-			fontSizeDeltas.add(new int[]{currentLen + length, fontSizeDelta});
+			fontSizes.add(new int[]{currentLen + length, fontSize});
 		}
 		data = data + other;
 		allBMP = allBMP && (other.length() == length);
@@ -103,9 +102,9 @@ public class UString extends TextContentBase
 		return data.codePointAt(index16(index));
 	}
 
-	public int charSizeDeltaAt(int index)
+	public int charSizeAt(int index)
 	{
-		for (int[] range : fontSizeDeltas) {
+		for (int[] range : fontSizes) {
 			if (range[0] > index)
 				return range[1];
 		}

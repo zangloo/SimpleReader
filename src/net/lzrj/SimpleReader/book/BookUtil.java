@@ -3,19 +3,27 @@ package net.lzrj.SimpleReader.book;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import cz.vutbr.web.css.*;
 import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.HtmlContentNodeCallback;
 import net.lzrj.SimpleReader.UString;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Selector;
 import org.mozilla.universalchardet.UniversalDetector;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,8 +37,10 @@ public class BookUtil
 	public static final String cnEncodePrefix = "GB";
 
 	public static final int detectFileReadBlockSize = 2048;
-	public static byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
-	public static int DEFAULT_CONTENT_FONT_SIZE = 3;
+	public static final byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
+	public static final int DEFAULT_CONTENT_FONT_LEVEL = 3;
+	public static final int CONTENT_FONT_SIZE_DELTA_STEP = 20;
+	public static final String CONTENT_FONT_SIZE_FOR_STYLE_KEY = "data-simple-reader-font-size";
 
 	private static final String[] NEWLINE_CLASSES = new String[]{"contents", "toc", "mulu"};
 
@@ -46,29 +56,84 @@ public class BookUtil
 		}
 	}
 
-	public static class ParseContext
+	private static class ParseContext
 	{
 		final List<ContentLine> lines = new ArrayList<>();
 		final LinkedHashMap<String, Content.Position> fragmentMap = new LinkedHashMap<>();
 		UString buf = new UString("");
 		HtmlContentNodeCallback nodeCallback;
 
-		public ParseContext(HtmlContentNodeCallback nodeCallback)
+		private ParseContext(HtmlContentNodeCallback nodeCallback)
 		{
 			this.nodeCallback = nodeCallback;
 		}
+
+		Integer styleFontSize(Element element, int parentFontSize)
+		{
+			String fontSize = element.attr(CONTENT_FONT_SIZE_FOR_STYLE_KEY);
+			if (fontSize.length() > 0)
+				try {
+					return Integer.parseInt(fontSize);
+				} catch (NumberFormatException ignore) {
+				}
+			return parentFontSize;
+		}
 	}
 
-	// put all text into lines
-	public static HtmlContent HTML2Text(Element node)
+	public static HtmlContent HTML2Text(Document document)
 	{
-		return HTML2Text(node, null);
+		return HTML2Text(document, null);
 	}
 
-	public static HtmlContent HTML2Text(Element node, HtmlContentNodeCallback nodeCallback)
+	public static HtmlContent HTML2Text(Document document, HtmlContentNodeCallback nodeCallback)
 	{
+		if (nodeCallback != null)
+			for (Element element : document.select("link")) {
+				String href = element.attr("href");
+				if (href.toLowerCase().endsWith(".css"))
+					try {
+						String css = nodeCallback.getCss(href);
+						if (css != null) {
+							StyleSheet sheet = CSSFactory.parseString(css, null, new NetworkProcessor()
+							{   // no importing from network, no networking permission needed, for now
+								@Override
+								public InputStream fetch(URL url)
+								{
+									return new ByteArrayInputStream(new byte[0]);
+								}
+							});
+							for (RuleBlock<?> rule : sheet)
+								if (rule instanceof RuleSet)
+									for (Declaration declaration : (RuleSet) rule)
+										if ("font-size".equals(declaration.getProperty())) {
+											int fontSize;
+											Term<?> term = declaration.get(0);
+											if (term instanceof TermPercent)
+												fontSize = ((TermPercent) term).getValue().intValue();
+											else if (term instanceof TermLength) {
+												TermLength length = (TermLength) term;
+												if (TermNumeric.Unit.em.equals(length.getUnit()))
+													fontSize = (int) (length.getValue() * 100);
+												else // ignore px unit
+													break;
+											} else
+												break;
+											for (CombinedSelector selector : ((RuleSet) rule).getSelectors())
+												try {
+													for (Element e : document.select(selector.toString()))
+														e.attr(CONTENT_FONT_SIZE_FOR_STYLE_KEY, Integer.toString(fontSize));
+												} catch (Selector.SelectorParseException ignore) {
+												}
+											break;
+										}
+						}
+					} catch (IOException | CSSException e) {
+						e.printStackTrace();
+					}
+			}
+
 		ParseContext context = new ParseContext(nodeCallback);
-		HTML2Text(node, DEFAULT_CONTENT_FONT_SIZE, context, false);
+		HTML2Text(document.body(), 100, context, false);
 		return new HtmlContent(context.lines, context.fragmentMap);
 	}
 
@@ -113,16 +178,17 @@ public class BookUtil
 				}
 	}
 
-	// if images != null, this function will return with all images href.
 	private static void HTML2Text(Element node, int fontSize, ParseContext context, boolean underline)
 	{
 		for (Node child : node.childNodes())
 			if (child instanceof TextNode) {
 				String text = strip(((TextNode) child).text());
 				if (text.length() > 0) {
-					if (context.buf.length() > 0)
-						context.buf.concat(" ", false, fontSize - DEFAULT_CONTENT_FONT_SIZE);
-					context.buf.concat(text, underline, fontSize - DEFAULT_CONTENT_FONT_SIZE);
+					if (context.buf.length() > 0
+						&& !Character.isLetterOrDigit(context.buf.charAt(context.buf.length() - 1))
+						&& !Character.isLetterOrDigit(text.charAt(0)))
+						context.buf.concat(" ", false, fontSize);
+					context.buf.concat(text, underline, fontSize);
 				}
 			} else if (child instanceof Element) {
 				final Element element = (Element) child;
@@ -131,13 +197,12 @@ public class BookUtil
 					context.fragmentMap.put(elementId, new Content.Position(context.lines.size(), context.buf.length()));
 				String tagName = element.tagName();
 				Set<String> classes = element.classNames();
-				if (classes.contains("kindle-cn-underline"))
-					underline = true;
+				int childFontSize = context.styleFontSize(element, fontSize);
 				switch (tagName.toLowerCase()) {
 					case "div":
 					case "dt":
 						newlineForClass(classes, context);
-						HTML2Text(element, fontSize, context, underline);
+						HTML2Text(element, childFontSize, context, underline);
 						newlineForClass(classes, context);
 						break;
 					case "blockquote":
@@ -146,11 +211,12 @@ public class BookUtil
 					case "h2":
 					case "h3":
 					case "h4":
+					case "h5":
 					case "li":
 						if (context.buf.length() > 0)
 							pushBuf(context);
 						context.buf.paragraph();
-						HTML2Text(element, fontSize, context, underline);
+						HTML2Text(element, childFontSize, context, underline);
 						if (context.buf.length() > 0) {
 							context.buf.paragraph();
 							pushBuf(context);
@@ -159,7 +225,7 @@ public class BookUtil
 					case "br":
 						if (context.buf.length() > 0)
 							pushBuf(context);
-						HTML2Text(element, fontSize, context, underline);
+						HTML2Text(element, childFontSize, context, underline);
 						break;
 					case "img":
 						if (context.nodeCallback != null)
@@ -170,27 +236,28 @@ public class BookUtil
 							context.lines.add(context.nodeCallback.createImage(context.lines, element.attr("xlink:href")));
 						break;
 					case "font":
-						String childFontSizeText = element.attr("size");
-						if (childFontSizeText == null)
-							HTML2Text(element, fontSize, context, underline);
+						String childFontLevelText = element.attr("size");
+						if (childFontLevelText == null)
+							HTML2Text(element, childFontSize, context, underline);
 						else try {
-							int childFontSize = Integer.parseInt(childFontSizeText);
+							int childFontLLevel = Integer.parseInt(childFontLevelText);
+							childFontSize = 100 + (childFontLLevel - DEFAULT_CONTENT_FONT_LEVEL) * CONTENT_FONT_SIZE_DELTA_STEP;
 							HTML2Text(element, childFontSize, context, underline);
 						} catch (NumberFormatException ignore) {
-							HTML2Text(element, fontSize, context, underline);
+							HTML2Text(element, childFontSize, context, underline);
 						}
 						break;
 					case "a":
-						HTML2Text(element, fontSize, context, true);
+						HTML2Text(element, childFontSize, context, true);
 						break;
 					default:
-						HTML2Text(element, fontSize, context, underline);
+						HTML2Text(element, childFontSize, context, underline);
 						break;
 				}
 			}
 	}
 
-	public static String detect(InputStream is)
+	public static String detectCharset(InputStream is)
 	{
 		UniversalDetector detector = new UniversalDetector(null);
 
@@ -229,7 +296,10 @@ public class BookUtil
 			else
 				prefix = prefix.substring(0, index);
 		}
-		return prefix + "/" + path;
+		if (prefix.length() == 0)
+			return path;
+		else
+			return prefix + "/" + path;
 	}
 
 	static public Bitmap loadPicFromZip(ZipFile zip, String picName)
