@@ -5,12 +5,10 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
-import net.lzrj.SimpleReader.ContentLine;
-import net.lzrj.SimpleReader.ContentLineType;
-import net.lzrj.SimpleReader.ImageContent;
-import net.lzrj.SimpleReader.UString;
+import net.lzrj.SimpleReader.*;
 import net.lzrj.SimpleReader.book.Content;
 import net.lzrj.SimpleReader.book.ContentBase;
+import net.lzrj.SimpleReader.book.TextStyleType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -65,15 +63,17 @@ public abstract class SimpleTextView extends View
 
 	protected static class DrawChar
 	{
-		int offset;
-		int fontSize;
-		Rect rect;
+		final int offset;
+		final int fontSize;
+		final Rect rect;
+		final Point drawOffset;
 
-		public DrawChar(int offset, int fontSize, Rect rect)
+		public DrawChar(int offset, int fontSize, Rect rect, Point drawOffset)
 		{
 			this.offset = offset;
 			this.fontSize = fontSize;
 			this.rect = rect;
+			this.drawOffset = drawOffset;
 		}
 	}
 
@@ -152,7 +152,6 @@ public abstract class SimpleTextView extends View
 		if (current.line >= content.lineCount())
 			return;
 		drawText(canvas);
-		//testDraw(canvas);
 	}
 
 	protected void drawImage(Canvas canvas, ImageContent image)
@@ -544,10 +543,18 @@ public abstract class SimpleTextView extends View
 //				canvas.drawLine(rect.left, rect.top, rect.left, rect.bottom, paint);
 //				canvas.drawLine(rect.right, rect.bottom, rect.right, rect.top, paint);
 //				canvas.drawLine(rect.right, rect.bottom, rect.left, rect.bottom, paint);
-				canvas.drawText(buf, 0, charWidth, rect.left, rect.bottom - fontMeasure.descent, paint);
+				int left = rect.left;
+				int bottom = rect.bottom;
+				Point drawOffset = drawChar.drawOffset;
+				if (drawOffset != null) {
+					left += drawOffset.x;
+					bottom -= drawOffset.y;
+				}
+				canvas.drawText(buf, 0, charWidth, left, bottom - fontMeasure.descent, paint);
 				if (highlight)
 					paint.setColor(color);
 			}
+			drawStyles(text, drawLine, canvas, paint);
 		}
 	}
 
@@ -646,11 +653,60 @@ public abstract class SimpleTextView extends View
 			return this.fontSize * fontSize / 100;
 	}
 
+	protected void drawStyles(UString text, DrawLine drawText, Canvas canvas, Paint paint)
+	{
+		List<DrawChar> chars = drawText.chars;
+		if (chars.size() == 0)
+			return;
+		List<TextContentBase.TextStyle> styles = text.styles();
+		if (styles == null)
+			return;
+		int drawTextFrom = chars.get(0).offset;
+		int drawTextTo = chars.get(chars.size() - 1).offset + 1;
+		for (TextContentBase.TextStyle style : styles) {
+			int from = style.from;
+			int to = style.to;
+			// style draw from -> to
+			int styleFrom, styleTo;
+			// is style fully draw
+			boolean fromStart, toEnd;
+			if (from >= drawTextFrom && from < drawTextTo) {
+				styleFrom = from;
+				fromStart = true;
+				if (to > drawTextTo) {
+					styleTo = drawTextTo;
+					toEnd = false;
+				} else {
+					styleTo = to;
+					toEnd = true;
+				}
+			} else if (to > drawTextFrom && to <= drawTextTo) {
+				styleTo = to;
+				toEnd = true;
+				if (from < drawTextFrom) {
+					styleFrom = drawTextFrom;
+					fromStart = false;
+				} else {
+					styleFrom = from;
+					fromStart = true;
+				}
+			} else if (from < drawTextFrom && to > drawTextTo) {
+				styleFrom = drawTextFrom;
+				styleTo = drawTextTo;
+				fromStart = false;
+				toEnd = false;
+			} else
+				continue;
+
+			drawStyle(style.type, chars, styleFrom - drawTextFrom, styleTo - drawTextFrom, fromStart, toEnd, canvas, paint);
+		}
+	}
+
 	protected abstract DrawContext createDrawContext();
 
 	protected abstract UString prepareLineForDraw(UString line);
 
 	protected abstract List<DrawLine> wrapLine(int line, UString text, int begin, int end, DrawContext drawContext);
 
-	protected abstract void drawUnderline(UString line, int charFrom, int charTo, float x, float y, float fontHeight, float fontDescent, Canvas canvas, Paint paint);
+	protected abstract void drawStyle(TextStyleType type, List<DrawChar> chars, int from, int to, boolean fromStart, boolean toEnd, Canvas canvas, Paint paint);
 }

@@ -3,10 +3,12 @@ package net.lzrj.SimpleReader.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Pair;
+import net.lzrj.SimpleReader.TextContentBase;
 import net.lzrj.SimpleReader.UString;
+import net.lzrj.SimpleReader.book.TextStyleType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +71,24 @@ public class HTextView extends SimpleTextView
 			FontMeasure fontMeasure = fontMeasure(fontSize);
 			if (i == 0 && text.isParagraph())
 				top += 2 * defaultFontMeasure.height;
-			if (top + fontMeasure.height > max) {
+			// calc char draw height, include border margin
+			float drawHeight = fontMeasure.height;
+			List<TextContentBase.TextStyle> styles = text.styles();
+			Point drawOffset = null;
+			if (styles != null)
+				for (TextContentBase.TextStyle style : styles)
+					if (TextStyleType.border.equals(style.type))
+						if (style.from == i) {
+							drawHeight += (int) fontMeasure.height >> 2;
+							break;
+						} else if (style.to - 1 == i) {
+							int margin = (int) fontMeasure.height >> 2;
+							drawOffset = new Point(0, margin);
+							drawHeight += margin;
+							break;
+						}
+
+			if (top + drawHeight > max) {
 				drawContext.baseline -= drawLine.drawSize + drawLine.space;
 				drawLine = createDrawLine(line, fontMeasure);
 				lines.add(drawLine);
@@ -80,46 +99,58 @@ public class HTextView extends SimpleTextView
 				drawLine.space = fontMeasure.width / 2;
 			}
 			float charWidth = measureChar(text.charAt(i));
-			Rect rect = new Rect(drawContext.baseline - (int) charWidth, (int) top, drawContext.baseline, (int) (top + fontMeasure.height));
-			drawLine.chars.add(new DrawChar(i, fontSize, rect));
-			top += fontMeasure.height;
+			float bottom = top + drawHeight;
+			Rect rect = new Rect(drawContext.baseline - (int) charWidth, (int) top, drawContext.baseline, (int) bottom);
+			drawLine.chars.add(new DrawChar(i, fontSize, rect, drawOffset));
+			top = bottom;
 		}
 		drawContext.baseline -= drawLine.drawSize + drawLine.space;
 		return lines;
 	}
 
-	protected void drawUnderline(UString line, int charFrom, int charTo, float x, float y, float fontHeight, float fontDescent, Canvas canvas, Paint paint)
+	@Override
+	protected void drawStyle(TextStyleType type, List<DrawChar> chars, int from, int to, boolean fromStart, boolean toEnd, Canvas canvas, Paint paint)
 	{
-		List<Pair<Integer, Integer>> underlines = line.underlines();
-		if (underlines == null)
+		int maxWidth = 0;
+		for (int i = from; i < to; i++) {
+			DrawChar dc = chars.get(i);
+			Rect rect = dc.rect;
+			int width = rect.right - rect.left;
+			if (maxWidth < width)
+				maxWidth = width;
+		}
+		// should never happen
+		if (maxWidth == 0)
 			return;
-		x -= 4;
-		for (Pair<Integer, Integer> pair : underlines) {
-			boolean draw = false;
-			int drawFrom = 0, drawTo = 0;
-			if (pair.first >= charFrom && pair.first < charTo) {
-				drawFrom = pair.first;
-				if (pair.second > charTo)
-					drawTo = charTo;
-				else
-					drawTo = pair.second;
-				draw = true;
-			} else if (pair.second > charFrom && pair.second <= charTo) {
-				drawTo = pair.second;
-				if (pair.first < charFrom)
-					drawFrom = charFrom;
-				else
-					drawFrom = pair.first;
-				draw = true;
-			} else if (pair.first < charFrom && pair.second >= charTo) {
-				draw = true;
-				drawFrom = charFrom;
-				drawTo = charTo;
-			}
-			if (!draw) continue;
-			float yStart = y + fontDescent + fontHeight * (drawFrom - charFrom);
-			float yEnd = yStart - fontDescent + fontHeight * (drawTo - drawFrom);
-			canvas.drawLine(x, yStart, x, yEnd, paint);
+		DrawChar dc = chars.get(from);
+		Rect rect = dc.rect;
+		int right = rect.right;
+		int left = right - maxWidth;
+		int top = rect.top;
+		dc = chars.get(to - 1);
+		int bottom = dc.rect.bottom;
+		int margin = maxWidth >> 3;
+		switch (type) {
+			case underline:
+				if (fromStart)
+					top += margin;
+				if (toEnd)
+					bottom -= margin;
+				left -= margin;
+				canvas.drawLine(left, top, left, bottom, paint);
+				break;
+			case border:
+				top += margin;
+				bottom -= margin;
+				left -= margin;
+				right += margin;
+				canvas.drawLine(left, top, left, bottom, paint);
+				canvas.drawLine(right, top, right, bottom, paint);
+				if (fromStart)
+					canvas.drawLine(left, top, right, top, paint);
+				if (toEnd)
+					canvas.drawLine(left, bottom, right, bottom, paint);
+				break;
 		}
 	}
 }

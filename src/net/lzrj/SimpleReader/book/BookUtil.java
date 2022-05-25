@@ -41,6 +41,8 @@ public class BookUtil
 	public static final int DEFAULT_CONTENT_FONT_LEVEL = 3;
 	public static final int CONTENT_FONT_SIZE_DELTA_STEP = 20;
 	public static final String CONTENT_FONT_SIZE_FOR_STYLE_KEY = "data-simple-reader-font-size";
+	public static final String CONTENT_TEXT_BORDER_FOR_STYLE_KEY = "data-simple-reader-text-border";
+	public static final String CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY = "data-simple-reader-text-underline";
 
 	private static final String[] NEWLINE_CLASSES = new String[]{"contents", "toc", "mulu"};
 
@@ -78,6 +80,15 @@ public class BookUtil
 				}
 			return parentFontSize;
 		}
+
+		TextStyleType styleText(Element element, TextStyleType parentTextStyleType)
+		{
+			if (element.hasAttr(CONTENT_TEXT_BORDER_FOR_STYLE_KEY))
+				return TextStyleType.border;
+			if (element.hasAttr(CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY))
+				return TextStyleType.underline;
+			return parentTextStyleType;
+		}
 	}
 
 	public static HtmlContent HTML2Text(Document document)
@@ -103,10 +114,12 @@ public class BookUtil
 								}
 							});
 							for (RuleBlock<?> rule : sheet)
-								if (rule instanceof RuleSet)
-									for (Declaration declaration : (RuleSet) rule)
-										if ("font-size".equals(declaration.getProperty())) {
-											int fontSize;
+								if (rule instanceof RuleSet) {
+									Integer fontSize = null;
+									TextStyleType textStyleType = null;
+									for (Declaration declaration : (RuleSet) rule) {
+										String property = declaration.getProperty();
+										if ("font-size".equals(property)) {
 											Term<?> term = declaration.get(0);
 											if (term instanceof TermPercent)
 												fontSize = ((TermPercent) term).getValue().intValue();
@@ -114,18 +127,40 @@ public class BookUtil
 												TermLength length = (TermLength) term;
 												if (TermNumeric.Unit.em.equals(length.getUnit()))
 													fontSize = (int) (length.getValue() * 100);
-												else // ignore px unit
-													break;
-											} else
-												break;
-											for (CombinedSelector selector : ((RuleSet) rule).getSelectors())
-												try {
-													for (Element e : document.select(selector.toString()))
-														e.attr(CONTENT_FONT_SIZE_FOR_STYLE_KEY, Integer.toString(fontSize));
-												} catch (Selector.SelectorParseException ignore) {
-												}
-											break;
+											}
 										}
+										if ("border-width".equals(property))
+											for (Term<?> term : declaration)
+												if (term instanceof TermLength && ((TermLength) term).getValue() > 0)
+													textStyleType = TextStyleType.border;
+										if ("border".equals(property))
+											for (Term<?> term : declaration)
+												if (term instanceof TermLength && ((TermLength) term).getValue() > 0)
+													textStyleType = TextStyleType.border;
+										if ("text-decoration-line".equals(property))
+											for (Term<?> term : declaration)
+												if (term instanceof TermIdent && "underline".equals(((TermIdent) term).getValue()))
+													textStyleType = TextStyleType.underline;
+									}
+									if (fontSize != null || textStyleType != null)
+										for (CombinedSelector selector : ((RuleSet) rule).getSelectors())
+											try {
+												for (Element e : document.select(selector.toString())) {
+													if (fontSize != null)
+														e.attr(CONTENT_FONT_SIZE_FOR_STYLE_KEY, Integer.toString(fontSize));
+													if (textStyleType != null)
+														switch (textStyleType) {
+															case border:
+																e.attr(CONTENT_TEXT_BORDER_FOR_STYLE_KEY, true);
+																break;
+															case underline:
+																e.attr(CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY, true);
+																break;
+														}
+												}
+											} catch (Selector.SelectorParseException ignore) {
+											}
+								}
 						}
 					} catch (IOException | CSSException e) {
 						e.printStackTrace();
@@ -133,7 +168,7 @@ public class BookUtil
 			}
 
 		ParseContext context = new ParseContext(nodeCallback);
-		HTML2Text(document.body(), 100, context, false);
+		HTML2Text(document.body(), 100, context, null);
 		return new HtmlContent(context.lines, context.fragmentMap);
 	}
 
@@ -178,7 +213,7 @@ public class BookUtil
 				}
 	}
 
-	private static void HTML2Text(Element node, int fontSize, ParseContext context, boolean underline)
+	private static void HTML2Text(Element node, int fontSize, ParseContext context, TextStyleType textStyleType)
 	{
 		for (Node child : node.childNodes())
 			if (child instanceof TextNode) {
@@ -187,8 +222,8 @@ public class BookUtil
 					if (context.buf.length() > 0
 						&& !Character.isLetterOrDigit(context.buf.charAt(context.buf.length() - 1))
 						&& !Character.isLetterOrDigit(text.charAt(0)))
-						context.buf.concat(" ", false, fontSize);
-					context.buf.concat(text, underline, fontSize);
+						context.buf.concat(" ", textStyleType, fontSize);
+					context.buf.concat(text, textStyleType, fontSize);
 				}
 			} else if (child instanceof Element) {
 				final Element element = (Element) child;
@@ -198,11 +233,12 @@ public class BookUtil
 				String tagName = element.tagName();
 				Set<String> classes = element.classNames();
 				int childFontSize = context.styleFontSize(element, fontSize);
+				TextStyleType childTextStyleType = context.styleText(element, textStyleType);
 				switch (tagName.toLowerCase()) {
 					case "div":
 					case "dt":
 						newlineForClass(classes, context);
-						HTML2Text(element, childFontSize, context, underline);
+						HTML2Text(element, childFontSize, context, childTextStyleType);
 						newlineForClass(classes, context);
 						break;
 					case "blockquote":
@@ -216,7 +252,7 @@ public class BookUtil
 						if (context.buf.length() > 0)
 							pushBuf(context);
 						context.buf.paragraph();
-						HTML2Text(element, childFontSize, context, underline);
+						HTML2Text(element, childFontSize, context, childTextStyleType);
 						if (context.buf.length() > 0) {
 							context.buf.paragraph();
 							pushBuf(context);
@@ -225,7 +261,7 @@ public class BookUtil
 					case "br":
 						if (context.buf.length() > 0)
 							pushBuf(context);
-						HTML2Text(element, childFontSize, context, underline);
+						HTML2Text(element, childFontSize, context, childTextStyleType);
 						break;
 					case "img":
 						if (context.nodeCallback != null)
@@ -238,20 +274,20 @@ public class BookUtil
 					case "font":
 						String childFontLevelText = element.attr("size");
 						if (childFontLevelText == null)
-							HTML2Text(element, childFontSize, context, underline);
+							HTML2Text(element, childFontSize, context, childTextStyleType);
 						else try {
 							int childFontLLevel = Integer.parseInt(childFontLevelText);
 							childFontSize = 100 + (childFontLLevel - DEFAULT_CONTENT_FONT_LEVEL) * CONTENT_FONT_SIZE_DELTA_STEP;
-							HTML2Text(element, childFontSize, context, underline);
+							HTML2Text(element, childFontSize, context, childTextStyleType);
 						} catch (NumberFormatException ignore) {
-							HTML2Text(element, childFontSize, context, underline);
+							HTML2Text(element, childFontSize, context, childTextStyleType);
 						}
 						break;
 					case "a":
-						HTML2Text(element, childFontSize, context, true);
+						HTML2Text(element, childFontSize, context, TextStyleType.underline);
 						break;
 					default:
-						HTML2Text(element, childFontSize, context, underline);
+						HTML2Text(element, childFontSize, context, childTextStyleType);
 						break;
 				}
 			}
