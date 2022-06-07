@@ -97,8 +97,9 @@ class EPubBook extends ChaptersBook
 				last = next;
 			}
 		SpineReference spineReference = book.getSpine().getSpineReferences().get(chapterIndex);
-		int matchedChapter = chapterIndex;
-		for (int i = 0; i < TOC.size(); i++) {
+		int tocSize = TOC.size();
+		int matchedToc = tocSize - 1;
+		for (int i = 0; i < tocSize; i++) {
 			TOCReference tocReference = ((EPubLoader.EPubTOC) TOC.get(i)).ref;
 			String resourceId = tocReference.getResourceId();
 			if (resourceId == null) {
@@ -109,10 +110,10 @@ class EPubBook extends ChaptersBook
 					return i;
 				else if (last.getKey().equals(tocReference.getFragmentId()))
 					return i;
-				matchedChapter = i;
+				matchedToc = i;
 			}
 		}
-		return matchedChapter;
+		return matchedToc;
 	}
 
 	@Override
