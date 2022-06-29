@@ -15,6 +15,6 @@ public class EPubChapter
 	{
 		this.path = path;
 		this.content = content;
-		this.fragmentMap = fragmentMap;
+		this.fragmentMap = fragmentMap == null ? new LinkedHashMap<String, Content.Position>() : fragmentMap;
 	}
 }
