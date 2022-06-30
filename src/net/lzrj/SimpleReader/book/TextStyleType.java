@@ -2,5 +2,6 @@ package net.lzrj.SimpleReader.book;
 
 public enum TextStyleType
 {
-	underline, border,
+	link, underline, border, fontSize,
+	color, image, background
 }

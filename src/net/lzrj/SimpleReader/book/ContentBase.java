@@ -1,6 +1,5 @@
 package net.lzrj.SimpleReader.book;
 
-import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.Reader;
 import net.lzrj.SimpleReader.UString;
 
@@ -15,8 +14,8 @@ import java.util.List;
  */
 public class ContentBase implements Content
 {
-	private List<ContentLine> lines;
-	private int booksize = 0;
+	private List<UString> lines;
+	private int booksize;
 
 	public ContentBase()
 	{
@@ -26,13 +25,13 @@ public class ContentBase implements Content
 		booksize = calcSize();
 	}
 
-	public ContentBase(List<ContentLine> content)
+	public ContentBase(List<UString> content)
 	{
 		lines = content;
 		booksize = calcSize();
 	}
 
-	public void setContent(List<ContentLine> content)
+	public void setContent(List<UString> content)
 	{
 		lines = content;
 		booksize = calcSize();
@@ -41,21 +40,15 @@ public class ContentBase implements Content
 	private int calcSize()
 	{
 		int s = 0;
-		for (ContentLine l : lines)
+		for (UString l : lines)
 			s += l.length();
 		return s;
 	}
 
 	@Override
-	public ContentLine line(int index)
+	public UString line(int index)
 	{
 		return lines.get(index);
-	}
-
-	@Override
-	public UString text(int index)
-	{
-		return (UString) lines.get(index);
 	}
 
 	@Override
@@ -87,9 +80,7 @@ public class ContentBase implements Content
 	public Position searchText(String txt, Position cpi)
 	{
 		for (int i = cpi.line; i < lineCount(); i++) {
-			ContentLine contentLine = line(i);
-			if (contentLine.isImage()) continue;
-			UString line = (UString) contentLine;
+			UString line = line(i);
 			int pos = line.indexOf(txt, cpi.offset);
 			if (pos >= 0) {
 				cpi.line = i;
@@ -124,11 +115,19 @@ public class ContentBase implements Content
 	}
 
 	@Override
-	public boolean hasNotes() { return false; }
+	public boolean hasNotes()
+	{
+		return false;
+	}
 
 	@Override
-	public String getNote(int line, int offset) { return null; }
+	public String getNote(int line, int offset)
+	{
+		return null;
+	}
 
 	@Override
-	public void clear() {}
+	public void clear()
+	{
+	}
 }

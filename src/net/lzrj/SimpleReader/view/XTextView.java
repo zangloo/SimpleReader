@@ -1,12 +1,8 @@
 package net.lzrj.SimpleReader.view;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
+import android.graphics.*;
 import android.util.AttributeSet;
-import net.lzrj.SimpleReader.TextContentBase;
 import net.lzrj.SimpleReader.UString;
 import net.lzrj.SimpleReader.book.TextStyleType;
 
@@ -74,21 +70,52 @@ public class XTextView extends SimpleTextView
 			float drawWidth = measureChar(text.charAt(i));
 
 			// calc char draw width, include border margin
-			List<TextContentBase.TextStyle> styles = text.styles();
+			List<UString.TextStyle> styles = text.styles();
 			Point drawOffset = null;
+			Integer color = null;
+			Integer background = null;
+			UString.ImageValue imageValue = null;
 			if (styles != null)
-				for (TextContentBase.TextStyle style : styles)
-					if (TextStyleType.border.equals(style.type))
-						if (style.from == i) {
-							int margin = (int) drawWidth >> 2;
-							drawOffset = new Point(margin, 0);
-							drawWidth += margin;
+				for (UString.TextStyle style : styles) {
+					if (style.from > i || style.to <= i)
+						continue;
+					switch (style.type) {
+						case border:
+							if (style.from == i) {
+								int margin = (int) drawWidth >> 2;
+								drawOffset = new Point(margin, 0);
+								drawWidth += margin;
+								break;
+							} else if (style.to - 1 == i) {
+								int margin = (int) drawWidth >> 2;
+								drawWidth += margin;
+								break;
+							}
 							break;
-						} else if (style.to - 1 == i) {
-							int margin = (int) drawWidth >> 2;
-							drawWidth += margin;
+						case link:
+							color = Color.BLUE;
 							break;
-						}
+						case color:
+							color = (int) style.value;
+							break;
+						case background:
+							background = (int) style.value;
+							break;
+						case image:
+							imageValue = (UString.ImageValue) style.value;
+						default:
+							break;
+					}
+				}
+			float drawHeight;
+			Bitmap image = null;
+			if (imageValue != null) {
+				Point size = scaleImage(imageValue, drawContext.maxLineSize, drawContext.maxDrawSize);
+				drawHeight = size.y;
+				drawWidth = size.x;
+				image = imageValue.getImage();
+			} else
+				drawHeight = fontMeasure.height;
 
 			if (left + drawWidth > max) {
 				drawContext.baseline += drawLine.drawSize + drawLine.space;
@@ -96,13 +123,16 @@ public class XTextView extends SimpleTextView
 				lines.add(drawLine);
 				left = viewMargin;
 			}
-			if (i == begin || fontMeasure.height > drawLine.drawSize) {
-				drawLine.drawSize = fontMeasure.height;
-				drawLine.space = fontMeasure.height / 4;
+			if (i == begin || drawHeight > drawLine.drawSize) {
+				drawLine.drawSize = drawHeight;
+				if (imageValue == null)
+					drawLine.space = drawHeight / 4;
+				else
+					drawLine.space = fontMeasure.height / 4;
 			}
 			float right = left + drawWidth;
-			Rect rect = new Rect((int) left, drawContext.baseline, (int) right, drawContext.baseline + (int) fontMeasure.height);
-			drawLine.chars.add(new DrawChar(i, fontSize, rect, drawOffset));
+			Rect rect = new Rect((int) left, drawContext.baseline, (int) right, drawContext.baseline + (int) drawHeight);
+			drawLine.chars.add(new DrawChar(i, fontSize, rect, drawOffset, color, background, image));
 			left = right;
 		}
 		drawContext.baseline += drawLine.drawSize + drawLine.space;
@@ -131,6 +161,7 @@ public class XTextView extends SimpleTextView
 		int right = dc.rect.right;
 		int margin = maxHeight >> 3;
 		switch (type) {
+			case link:
 			case underline:
 				if (fromStart)
 					left += margin;

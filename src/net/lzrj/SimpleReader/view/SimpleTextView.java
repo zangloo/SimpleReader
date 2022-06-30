@@ -67,13 +67,19 @@ public abstract class SimpleTextView extends View
 		final int fontSize;
 		final Rect rect;
 		final Point drawOffset;
+		final Integer color;
+		final Integer background;
+		final Bitmap image;
 
-		public DrawChar(int offset, int fontSize, Rect rect, Point drawOffset)
+		public DrawChar(int offset, int fontSize, Rect rect, Point drawOffset, Integer color, Integer background, Bitmap image)
 		{
 			this.offset = offset;
 			this.fontSize = fontSize;
 			this.rect = rect;
 			this.drawOffset = drawOffset;
+			this.color = color;
+			this.background = background;
+			this.image = image;
 		}
 	}
 
@@ -97,7 +103,6 @@ public abstract class SimpleTextView extends View
 	public static final int defaultNightTextColor = Color.WHITE;
 	public static final int defaultNightBackgroundColor = Color.BLACK;
 	public static final int defaultFontSize = 26;
-	public static final int zoomIconSize = 48;
 
 	private static final Content defaultContent = new ContentBase();
 	protected static Content content = defaultContent;
@@ -117,7 +122,6 @@ public abstract class SimpleTextView extends View
 	protected int fontSize;
 	protected int pageWidth, pageHeight;
 
-	private static Bitmap zoomIcon = null;
 	DisplayMetrics metrics;
 
 	public SimpleTextView(Context context, AttributeSet attrs)
@@ -152,33 +156,6 @@ public abstract class SimpleTextView extends View
 		if (current.line >= content.lineCount())
 			return;
 		drawText(canvas);
-	}
-
-	protected void drawImage(Canvas canvas, ImageContent image)
-	{
-		Bitmap b = image.getImage();
-		if (b == null)
-			return;
-		canvas.drawBitmap(b, null, new Rect(0, 0, pageWidth, pageHeight), null);
-		if (zoomIcon != null) {
-			canvas.drawBitmap(zoomIcon, null,
-				new Rect(pageWidth - zoomIconSize, pageHeight - zoomIconSize, pageWidth, pageHeight),
-				null);
-		}
-	}
-
-	public Bitmap getImage()
-	{
-		ContentLine line = content.line(current.line);
-		if (ContentLineType.image.equals(line.type()))
-			return ((ImageContent) line).getImage();
-		else
-			return null;
-	}
-
-	public static void setZoomIcon(Bitmap icon)
-	{
-		zoomIcon = icon;
 	}
 
 	/*
@@ -350,13 +327,13 @@ public abstract class SimpleTextView extends View
 
 	private int calcPercentOffset(int line, int offset)
 	{
-		ContentLine contentLine = content.line(line);
+		UString contentLine = content.line(line);
 		int length = contentLine.length();
-		if (contentLine instanceof UString && ((UString) contentLine).isParagraph())
+		if (contentLine.isParagraph())
 			length += 2;
-		if (!(contentLine instanceof UString) || offset >= length)
+		if (offset >= length)
 			return 0;
-		List<DrawLine> wrapLines = wrapLine(line, (UString) contentLine, 0, contentLine.length(), createDrawContext());
+		List<DrawLine> wrapLines = wrapLine(line, contentLine, 0, contentLine.length(), createDrawContext());
 		for (DrawLine wrapLine : wrapLines) {
 			List<DrawChar> chars = wrapLine.chars;
 			int charCount = chars.size();
@@ -380,21 +357,14 @@ public abstract class SimpleTextView extends View
 
 	public TapTarget getTapTarget(float x, float y)
 	{
-		TapTarget fpi;
-		if (content.line(current.line).isImage()) {
-			fpi = new TapTarget(current.line, 0);
-			fpi.type = TapTargetType.image;
-			return fpi;
-		}
-
-		fpi = calcTapTarget(x, y);
+		TapTarget fpi = calcTapTarget(x, y);
 		if (fpi == null) {
 			fpi = new TapTarget(0, 0);
 			fpi.type = TapTargetType.none;
 			return fpi;
 		}
 		fpi.type = TapTargetType.text;
-		UString l = content.text(fpi.line);
+		UString l = content.line(fpi.line);
 		if (fpi.offset >= l.length())
 			return null;
 		fpi.str = l.substring(fpi.offset);
@@ -403,9 +373,6 @@ public abstract class SimpleTextView extends View
 
 	public String getTapTargetNote(float x, float y)
 	{
-		if (content.line(current.line).isImage())
-			return null;
-
 		if (!content.hasNotes())
 			return null;
 		TapTarget pi = calcTapTarget(x, y);
@@ -417,15 +384,13 @@ public abstract class SimpleTextView extends View
 
 	public Content.Position searchText(String t)
 	{
-		ContentLine contentLine = content.line(current.line);
-		if (contentLine.isImage())
-			return null;
+		UString contentLine = content.line(current.line);
 		if (t == null)
 			return null;
 		if (t.length() == 0)
 			return null;
 
-		List<DrawLine> wrapLines = wrapLine(current.line, (UString) contentLine, current.offset, contentLine.length(), createDrawContext());
+		List<DrawLine> wrapLines = wrapLine(current.line, contentLine, current.offset, contentLine.length(), createDrawContext());
 		Content.Position position = new Content.Position();
 		if (wrapLines.size() <= 1) {
 			position.line = current.line + 1;
@@ -458,11 +423,6 @@ public abstract class SimpleTextView extends View
 		gotoPrevPage();
 	}
 
-	public boolean isImagePage()
-	{
-		return ContentLineType.image.equals(content.line(current.line).type());
-	}
-
 	protected static class DrawContext
 	{
 		final int maxDrawSize;
@@ -489,21 +449,7 @@ public abstract class SimpleTextView extends View
 
 		OUTER:
 		for (int i = current.line; i < lineCount; i++) {
-			ContentLine contentLine = content.line(i);
-			if (contentLine.isImage()) {
-				if (current.line == i) {
-					drawImage(canvas, (ImageContent) contentLine);
-					int nextLine = i + 1;
-					if (nextLine < lineCount)
-						next = new Content.Position(nextLine, 0);
-					return;
-				} else {
-					next = new Content.Position(i, 0);
-					break;
-				}
-			}
-
-			UString line = prepareLineForDraw((UString) contentLine);
+			UString line = prepareLineForDraw(content.line(i));
 			preparedLines.put(i, line);
 			List<DrawLine> wrapLines = wrapLine(i, line, offset, line.length(), drawContext);
 			offset = 0;
@@ -524,36 +470,47 @@ public abstract class SimpleTextView extends View
 		for (DrawLine drawLine : drawLines) {
 			int line = drawLine.line;
 			UString text = preparedLines.get(line);
-			for (DrawChar drawChar : drawLine.chars) {
-				offset = drawChar.offset;
-				boolean highlight = ((highlightInfo != null) && (highlightInfo.line == line) && (highlightInfo.end > offset) && (highlightInfo.begin <= offset));
-				Rect rect = drawChar.rect;
-				if (highlight) {
-					canvas.drawRect(rect, paint);
-					paint.setColor(backgroundColor);
-				}
-				int ch = text.charAt(offset);
-				int charWidth = Character.toChars(ch, buf, 0);
-				if (fontMeasure == null || fontSize != drawChar.fontSize) {
-					fontSize = drawChar.fontSize;
-					setTextSize(paint, fontSize);
-					fontMeasure = fontMeasure(fontSize);
-				}
+			for (DrawChar drawChar : drawLine.chars)
+				if (drawChar.image == null) {
+					offset = drawChar.offset;
+					boolean highlight = ((highlightInfo != null) && (highlightInfo.line == line) && (highlightInfo.end > offset) && (highlightInfo.begin <= offset));
+					Rect rect = drawChar.rect;
+					if (highlight) {
+						paint.setColor(color);
+						canvas.drawRect(rect, paint);
+						paint.setColor(backgroundColor);
+					} else {
+						if (drawChar.background != null) {
+							paint.setColor(drawChar.background);
+							canvas.drawRect(rect, paint);
+						}
+						if (drawChar.color == null)
+							paint.setColor(color);
+						else
+							paint.setColor(drawChar.color);
+					}
+					int ch = text.charAt(offset);
+					int charWidth = Character.toChars(ch, buf, 0);
+					if (fontMeasure == null || fontSize != drawChar.fontSize) {
+						fontSize = drawChar.fontSize;
+						setTextSize(paint, fontSize);
+						fontMeasure = fontMeasure(fontSize);
+					}
 //				canvas.drawLine(rect.left, rect.top, rect.right, rect.top, paint);
 //				canvas.drawLine(rect.left, rect.top, rect.left, rect.bottom, paint);
 //				canvas.drawLine(rect.right, rect.bottom, rect.right, rect.top, paint);
 //				canvas.drawLine(rect.right, rect.bottom, rect.left, rect.bottom, paint);
-				int left = rect.left;
-				int bottom = rect.bottom;
-				Point drawOffset = drawChar.drawOffset;
-				if (drawOffset != null) {
-					left += drawOffset.x;
-					bottom -= drawOffset.y;
+					int left = rect.left;
+					int bottom = rect.bottom;
+					Point drawOffset = drawChar.drawOffset;
+					if (drawOffset != null) {
+						left += drawOffset.x;
+						bottom -= drawOffset.y;
+					}
+					canvas.drawText(buf, 0, charWidth, left, bottom - fontMeasure.descent, paint);
+				} else {
+					canvas.drawBitmap(drawChar.image, null, drawChar.rect, null);
 				}
-				canvas.drawText(buf, 0, charWidth, left, bottom - fontMeasure.descent, paint);
-				if (highlight)
-					paint.setColor(color);
-			}
 			drawStyles(text, drawLine, canvas, paint);
 		}
 	}
@@ -570,7 +527,7 @@ public abstract class SimpleTextView extends View
 	protected boolean gotoPrevPage()
 	{
 		int i, offset;
-		ContentLine contentLine;
+		UString contentLine;
 		if (current.offset == 0) {
 			if (current.line == 0)
 				return false;
@@ -585,15 +542,7 @@ public abstract class SimpleTextView extends View
 		DrawContext drawContext = createDrawContext();
 		float totalSize = 0;
 		while (true) {
-			if (contentLine.isImage()) {
-				if (totalSize == 0)
-					current.line = i;
-				else
-					current.line = i + 1;
-				current.offset = 0;
-				return true;
-			}
-			List<DrawLine> wrapLines = wrapLine(i, (UString) contentLine, 0, offset, drawContext);
+			List<DrawLine> wrapLines = wrapLine(i, contentLine, 0, offset, drawContext);
 			int wrappedLines = wrapLines.size() - 1;
 			for (int wi = wrappedLines; wi >= 0; wi--) {
 				DrawLine wrapLine = wrapLines.get(wi);
@@ -658,12 +607,17 @@ public abstract class SimpleTextView extends View
 		List<DrawChar> chars = drawText.chars;
 		if (chars.size() == 0)
 			return;
-		List<TextContentBase.TextStyle> styles = text.styles();
+		List<UString.TextStyle> styles = text.styles();
 		if (styles == null)
 			return;
 		int drawTextFrom = chars.get(0).offset;
 		int drawTextTo = chars.get(chars.size() - 1).offset + 1;
-		for (TextContentBase.TextStyle style : styles) {
+		for (UString.TextStyle style : styles) {
+			if (TextStyleType.fontSize.equals(style.type)
+				|| TextStyleType.image.equals(style.type)
+				|| TextStyleType.color.equals(style.type)
+				|| TextStyleType.background.equals(style.type))
+				continue;
 			int from = style.from;
 			int to = style.to;
 			// style draw from -> to
@@ -698,8 +652,30 @@ public abstract class SimpleTextView extends View
 			} else
 				continue;
 
-			drawStyle(style.type, chars, styleFrom - drawTextFrom, styleTo - drawTextFrom, fromStart, toEnd, canvas, paint);
+			int first = styleFrom - drawTextFrom;
+			DrawChar firstDrawChar = chars.get(first);
+			if (firstDrawChar.color == null)
+				paint.setColor(color);
+			else
+				paint.setColor(firstDrawChar.color);
+			drawStyle(style.type, chars, first, styleTo - drawTextFrom, fromStart, toEnd, canvas, paint);
 		}
+	}
+
+	protected Point scaleImage(UString.ImageValue imageValue, int maxWidth, int maxHeight)
+	{
+		Bitmap image = imageValue.getImage();
+		int imageWidth = image.getWidth();
+		int imageHeight = image.getHeight();
+		if (imageWidth > maxWidth || imageHeight > maxHeight) {
+			float scaleX = (float) imageWidth / (float) maxWidth;
+			float scaleY = (float) imageHeight / (float) maxHeight;
+			if (scaleX > scaleY)
+				return new Point(maxWidth, (int) ((float) maxHeight / scaleX));
+			else
+				return new Point((int) ((float) maxWidth / scaleY), maxHeight);
+		} else
+			return new Point(imageWidth, imageHeight);
 	}
 
 	protected abstract DrawContext createDrawContext();

@@ -252,12 +252,6 @@ public class SimpleReaderBook extends net.lzrj.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public UString text(int index)
-	{
-		return line(index);
-	}
-
-	@Override
 	public int lineCount()
 	{
 		return lineCount;

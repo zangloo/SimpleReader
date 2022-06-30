@@ -1,8 +1,14 @@
 package net.lzrj.SimpleReader;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import net.lzrj.SimpleReader.book.TextStyleType;
 import net.lzrj.SimpleReader.view.SimpleTextView;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,34 +18,68 @@ import java.util.Vector;
  * <p/>
  * this class replace standard string, for some book may contain code point big then 65535
  */
-public class UString extends TextContentBase
+public class UString
 {
+	public static class TextStyle
+	{
+		public final int from;
+		public final int to;
+		public final TextStyleType type;
+		public final Object value;
+
+		public TextStyle(int from, int to, TextStyleType type, Object value)
+		{
+			this.from = from;
+			this.to = to;
+			this.type = type;
+			this.value = value;
+		}
+
+		@Override
+		public String toString()
+		{
+			return type + " (" + from + " : " + to + "): " + (value == null ? "" : value.toString());
+		}
+	}
+
+	public static class ImageValue
+	{
+		public final String href;
+		private final byte[] bytes;
+		private Bitmap image;
+
+		public ImageValue(String href, byte[] bytes)
+		{
+			this.href = href;
+			this.bytes = bytes;
+		}
+
+		public Bitmap getImage()
+		{
+			if (bytes == null)
+				return null;
+			if (image == null)
+				image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+			return image;
+		}
+	}
+
 	private String data;
 	private boolean allBMP;
-	private final Vector<int[]> fontSizes = new Vector<>();
+	private boolean paragraph = false;
+	private List<TextStyle> styles = new ArrayList<>();
 
 	public UString(String str)
 	{
-		this(str, 100);
-	}
-
-	public UString(String str, int fontSize)
-	{
 		data = str.trim();
 		allBMP = (data.length() == data.codePointCount(0, data.length()));
-		int length = this.length();
-		if (length > 0)
-			fontSizes.add(new int[]{length, fontSize});
 	}
 
 	public UString replaceChars(char[] oc, char[] nc)
 	{
 		char[] txt = data.toCharArray();
 		SimpleTextView.replaceTextChar(txt, oc, nc);
-		UString ret = copy(this, new UString(String.valueOf(txt)));
-		ret.fontSizes.clear();
-		ret.fontSizes.addAll(this.fontSizes);
-		return ret;
+		return copy(this, new UString(String.valueOf(txt)));
 	}
 
 	// index is code point based
@@ -73,24 +113,11 @@ public class UString extends TextContentBase
 		return data.codePointCount(0, data.length());
 	}
 
-	@Override
-	public boolean isImage()
-	{
-		return false;
-	}
-
-	@Override
-	public void append(String other, int fontSize)
+	public void append(String other)
 	{
 		int length = other.codePointCount(0, other.length());
 		if (length == 0)
 			return;
-		if (fontSizes.size() > 0 && fontSizes.lastElement()[1] == fontSize)
-			fontSizes.lastElement()[0] += length;
-		else {
-			int currentLen = this.length();
-			fontSizes.add(new int[]{currentLen + length, fontSize});
-		}
 		data = data + other;
 		allBMP = allBMP && (other.length() == length);
 	}
@@ -104,11 +131,13 @@ public class UString extends TextContentBase
 
 	public int charSizeAt(int index)
 	{
-		for (int[] range : fontSizes) {
-			if (range[0] > index)
-				return range[1];
+		int fontSize = 100;
+		for (int i = styles.size() - 1; i >= 0; i--) {
+			TextStyle style = styles.get(i);
+			if (TextStyleType.fontSize.equals(style.type) && style.from <= index && style.to > index)
+				fontSize = (int) style.value * fontSize / 100;
 		}
-		return 0;
+		return fontSize;
 	}
 
 	public int indexOf(String str)
@@ -145,9 +174,41 @@ public class UString extends TextContentBase
 		return data;
 	}
 
-	@Override
-	public ContentLineType type()
+	public List<TextStyle> styles()
 	{
-		return ContentLineType.text;
+		return styles;
+	}
+
+	public void concat(String string, HashMap<TextStyleType, Object> textStyles)
+	{
+		int from = length();
+		append(string);
+		if (textStyles != null) {
+			int to = length();
+			for (Map.Entry<TextStyleType, Object> entry : textStyles.entrySet())
+				styles.add(new TextStyle(from, to, entry.getKey(), entry.getValue()));
+		}
+	}
+
+	public boolean isParagraph()
+	{
+		return paragraph;
+	}
+
+	public void paragraph()
+	{
+		paragraph = true;
+	}
+
+	public void addStyle(int from, int to, TextStyleType type, Object value)
+	{
+		styles.add(new TextStyle(from, to, type, value));
+	}
+
+	private UString copy(UString orig, UString newOne)
+	{
+		newOne.styles = orig.styles;
+		newOne.paragraph = orig.paragraph;
+		return newOne;
 	}
 }

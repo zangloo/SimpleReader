@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 import cz.vutbr.web.css.*;
-import net.lzrj.SimpleReader.ContentLine;
+import cz.vutbr.web.csskit.TermFactoryImpl;
 import net.lzrj.SimpleReader.HtmlContentNodeCallback;
 import net.lzrj.SimpleReader.UString;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -20,10 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,11 +32,11 @@ public class BookUtil
 {
 	public static final String defaultCNEncode = "GBK";
 	public static final String cnEncodePrefix = "GB";
-
+	public static final String IMAGE_CHAR = "🖼";
 	public static final int detectFileReadBlockSize = 2048;
 	public static final byte[] detectFileReadBuffer = new byte[detectFileReadBlockSize];
-	public static final int DEFAULT_CONTENT_FONT_LEVEL = 3;
-	public static final int CONTENT_FONT_SIZE_DELTA_STEP = 20;
+	public static final String CONTENT_COLOR_FOR_STYLE_KEY = "data-simple-reader-color";
+	public static final String CONTENT_BACKGROUND_FOR_STYLE_KEY = "data-simple-reader-background";
 	public static final String CONTENT_FONT_SIZE_FOR_STYLE_KEY = "data-simple-reader-font-size";
 	public static final String CONTENT_TEXT_BORDER_FOR_STYLE_KEY = "data-simple-reader-text-border";
 	public static final String CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY = "data-simple-reader-text-underline";
@@ -48,10 +45,10 @@ public class BookUtil
 
 	public static class HtmlContent
 	{
-		public final List<ContentLine> lines;
+		public final List<UString> lines;
 		public final LinkedHashMap<String, Content.Position> fragmentMap;
 
-		public HtmlContent(List<ContentLine> lines, LinkedHashMap<String, Content.Position> fragmentMap)
+		public HtmlContent(List<UString> lines, LinkedHashMap<String, Content.Position> fragmentMap)
 		{
 			this.lines = lines;
 			this.fragmentMap = fragmentMap;
@@ -60,7 +57,7 @@ public class BookUtil
 
 	private static class ParseContext
 	{
-		final List<ContentLine> lines = new ArrayList<>();
+		final List<UString> lines = new ArrayList<>();
 		final LinkedHashMap<String, Content.Position> fragmentMap = new LinkedHashMap<>();
 		UString buf = new UString("");
 		HtmlContentNodeCallback nodeCallback;
@@ -70,24 +67,32 @@ public class BookUtil
 			this.nodeCallback = nodeCallback;
 		}
 
-		Integer styleFontSize(Element element, int parentFontSize)
+		HashMap<TextStyleType, Object> styleText(Element element, HashMap<TextStyleType, Object> styles)
 		{
+			HashMap<TextStyleType, Object> newStyles = new HashMap<>();
+			if (element.hasAttr(CONTENT_TEXT_BORDER_FOR_STYLE_KEY))
+				newStyles.put(TextStyleType.border, true);
+			if (element.hasAttr(CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY))
+				newStyles.put(TextStyleType.border, true);
+			String color = element.attr(CONTENT_COLOR_FOR_STYLE_KEY);
+			if (color.length() > 0)
+				try {
+					newStyles.put(TextStyleType.color, Integer.parseInt(color));
+				} catch (NumberFormatException ignore) {
+				}
+			String background = element.attr(CONTENT_BACKGROUND_FOR_STYLE_KEY);
+			if (background.length() > 0)
+				try {
+					newStyles.put(TextStyleType.background, Integer.parseInt(background));
+				} catch (NumberFormatException ignore) {
+				}
 			String fontSize = element.attr(CONTENT_FONT_SIZE_FOR_STYLE_KEY);
 			if (fontSize.length() > 0)
 				try {
-					return Integer.parseInt(fontSize);
+					newStyles.put(TextStyleType.fontSize, Integer.parseInt(fontSize));
 				} catch (NumberFormatException ignore) {
 				}
-			return parentFontSize;
-		}
-
-		TextStyleType styleText(Element element, TextStyleType parentTextStyleType)
-		{
-			if (element.hasAttr(CONTENT_TEXT_BORDER_FOR_STYLE_KEY))
-				return TextStyleType.border;
-			if (element.hasAttr(CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY))
-				return TextStyleType.underline;
-			return parentTextStyleType;
+			return newStyles;
 		}
 	}
 
@@ -115,46 +120,82 @@ public class BookUtil
 							});
 							for (RuleBlock<?> rule : sheet)
 								if (rule instanceof RuleSet) {
-									Integer fontSize = null;
-									TextStyleType textStyleType = null;
+									HashMap<TextStyleType, Object> styles = new HashMap<>();
 									for (Declaration declaration : (RuleSet) rule) {
 										String property = declaration.getProperty();
 										if ("font-size".equals(property)) {
 											Term<?> term = declaration.get(0);
 											if (term instanceof TermPercent)
-												fontSize = ((TermPercent) term).getValue().intValue();
+												styles.put(TextStyleType.fontSize, ((TermPercent) term).getValue().intValue());
 											else if (term instanceof TermLength) {
 												TermLength length = (TermLength) term;
 												if (TermNumeric.Unit.em.equals(length.getUnit()))
-													fontSize = (int) (length.getValue() * 100);
-											}
+													styles.put(TextStyleType.fontSize, (int) (length.getValue() * 100));
+											} else if (term instanceof TermIdent)
+												switch (((TermIdent) term).getValue().toLowerCase()) {
+													case "smaller":
+														styles.put(TextStyleType.fontSize, fontLevelToPercent(2));
+														break;
+													case "larger":
+														styles.put(TextStyleType.fontSize, fontLevelToPercent(4));
+														break;
+												}
 										}
 										if ("border-width".equals(property))
 											for (Term<?> term : declaration)
 												if (term instanceof TermLength && ((TermLength) term).getValue() > 0)
-													textStyleType = TextStyleType.border;
+													styles.put(TextStyleType.border, true);
 										if ("border".equals(property))
 											for (Term<?> term : declaration)
 												if (term instanceof TermLength && ((TermLength) term).getValue() > 0)
-													textStyleType = TextStyleType.border;
+													styles.put(TextStyleType.border, true);
 										if ("text-decoration-line".equals(property))
 											for (Term<?> term : declaration)
 												if (term instanceof TermIdent && "underline".equals(((TermIdent) term).getValue()))
-													textStyleType = TextStyleType.underline;
+													styles.put(TextStyleType.underline, true);
+										if ("color".equals(property))
+											for (Term<?> term : declaration)
+												if (term instanceof TermColor) {
+													Integer color = parseColor((TermColor) term);
+													if (color != null)
+														styles.put(TextStyleType.color, color);
+												}
+										if ("background-color".equals(property))
+											for (Term<?> term : declaration)
+												if (term instanceof TermColor) {
+													switch (((TermColor) term).getKeyword()) {
+														case none:
+															cz.vutbr.web.csskit.Color cssColor = ((TermColor) term).getValue();
+															styles.put(TextStyleType.background, cssColor.getRGB());
+															break;
+														case TRANSPARENT:
+															styles.put(TextStyleType.background, android.graphics.Color.TRANSPARENT);
+															break;
+														case CURRENT_COLOR:
+															break;
+													}
+												}
 									}
-									if (fontSize != null || textStyleType != null)
+									if (!styles.isEmpty())
 										for (CombinedSelector selector : ((RuleSet) rule).getSelectors())
 											try {
 												for (Element e : document.select(selector.toString())) {
-													if (fontSize != null)
-														e.attr(CONTENT_FONT_SIZE_FOR_STYLE_KEY, Integer.toString(fontSize));
-													if (textStyleType != null)
-														switch (textStyleType) {
+													for (Map.Entry<TextStyleType, Object> entry : styles.entrySet())
+														switch (entry.getKey()) {
+															case underline:
+																e.attr(CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY, true);
+																break;
 															case border:
 																e.attr(CONTENT_TEXT_BORDER_FOR_STYLE_KEY, true);
 																break;
-															case underline:
-																e.attr(CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY, true);
+															case fontSize:
+																e.attr(CONTENT_FONT_SIZE_FOR_STYLE_KEY, entry.getValue().toString());
+																break;
+															case color:
+																e.attr(CONTENT_COLOR_FOR_STYLE_KEY, entry.getValue().toString());
+																break;
+															case background:
+																e.attr(CONTENT_BACKGROUND_FOR_STYLE_KEY, entry.getValue().toString());
 																break;
 														}
 												}
@@ -168,7 +209,9 @@ public class BookUtil
 			}
 
 		ParseContext context = new ParseContext(nodeCallback);
-		HTML2Text(document.body(), 100, context, null);
+		HTML2Text(document.body(), context, new HashMap<TextStyleType, Object>());
+		if (context.buf.length() > 0)
+			context.lines.add(context.buf);
 		return new HtmlContent(context.lines, context.fragmentMap);
 	}
 
@@ -213,7 +256,7 @@ public class BookUtil
 				}
 	}
 
-	private static void HTML2Text(Element node, int fontSize, ParseContext context, TextStyleType textStyleType)
+	private static void HTML2Text(Element node, ParseContext context, HashMap<TextStyleType, Object> styles)
 	{
 		String elementId = node.id();
 		if (elementId.length() > 0)
@@ -225,20 +268,21 @@ public class BookUtil
 					if (context.buf.length() > 0
 						&& !Character.isLetterOrDigit(context.buf.charAt(context.buf.length() - 1))
 						&& !Character.isLetterOrDigit(text.charAt(0)))
-						context.buf.concat(" ", textStyleType, fontSize);
-					context.buf.concat(text, textStyleType, fontSize);
+						context.buf.concat(" ", styles);
+					context.buf.concat(text, styles);
 				}
 			} else if (child instanceof Element) {
 				final Element element = (Element) child;
 				String tagName = element.tagName();
 				Set<String> classes = element.classNames();
-				int childFontSize = context.styleFontSize(element, fontSize);
-				TextStyleType childTextStyleType = context.styleText(element, textStyleType);
+				HashMap<TextStyleType, Object> childStyles = context.styleText(element, styles);
+				int line = context.lines.size();
+				int offset = context.buf.length();
 				switch (tagName.toLowerCase()) {
 					case "div":
 					case "dt":
 						newlineForClass(classes, context);
-						HTML2Text(element, childFontSize, context, childTextStyleType);
+						HTML2Text(element, context, childStyles);
 						newlineForClass(classes, context);
 						break;
 					case "blockquote":
@@ -252,7 +296,7 @@ public class BookUtil
 						if (context.buf.length() > 0)
 							pushBuf(context);
 						context.buf.paragraph();
-						HTML2Text(element, childFontSize, context, childTextStyleType);
+						HTML2Text(element, context, childStyles);
 						if (context.buf.length() > 0) {
 							context.buf.paragraph();
 							pushBuf(context);
@@ -261,36 +305,85 @@ public class BookUtil
 					case "br":
 						if (context.buf.length() > 0)
 							pushBuf(context);
-						HTML2Text(element, childFontSize, context, childTextStyleType);
+						HTML2Text(element, context, childStyles);
 						break;
 					case "img":
-						if (context.nodeCallback != null)
-							context.lines.add(context.nodeCallback.createImage(context.lines, element.attr("src")));
+						if (context.nodeCallback != null) {
+							UString.ImageValue image = context.nodeCallback.imageValue(element.attr("src"));
+							if (image != null) {
+								childStyles.clear();
+								childStyles.put(TextStyleType.image, image);
+								context.buf.concat(IMAGE_CHAR, childStyles);
+							}
+						}
 						break;
 					case "image":
-						if (context.nodeCallback != null)
-							context.lines.add(context.nodeCallback.createImage(context.lines, element.attr("xlink:href")));
+						if (context.nodeCallback != null) {
+							UString.ImageValue image = context.nodeCallback.imageValue(element.attr("xlink:href"));
+							if (image != null) {
+								childStyles.clear();
+								childStyles.put(TextStyleType.image, image);
+								context.buf.concat(IMAGE_CHAR, childStyles);
+							}
+						}
 						break;
 					case "font":
 						String childFontLevelText = element.attr("size");
-						if (childFontLevelText == null)
-							HTML2Text(element, childFontSize, context, childTextStyleType);
-						else try {
+						if (childFontLevelText.length() > 0) try {
 							int childFontLLevel = Integer.parseInt(childFontLevelText);
-							childFontSize = 100 + (childFontLLevel - DEFAULT_CONTENT_FONT_LEVEL) * CONTENT_FONT_SIZE_DELTA_STEP;
-							HTML2Text(element, childFontSize, context, childTextStyleType);
+							int fontSize = fontLevelToPercent(childFontLLevel);
+							childStyles.put(TextStyleType.fontSize, fontSize);
 						} catch (NumberFormatException ignore) {
-							HTML2Text(element, childFontSize, context, childTextStyleType);
 						}
+						String childFontColor = element.attr("color");
+						if (childFontColor.length() > 0) {
+							TermColor term = TermFactoryImpl.getInstance().createColor(childFontColor);
+							Integer color = parseColor(term);
+							if (color != null)
+								childStyles.put(TextStyleType.color, color);
+						}
+						HTML2Text(element, context, childStyles);
 						break;
 					case "a":
-						HTML2Text(element, childFontSize, context, TextStyleType.underline);
+						childStyles.put(TextStyleType.link, true);
+						HTML2Text(element, context, childStyles);
 						break;
 					default:
-						HTML2Text(element, childFontSize, context, childTextStyleType);
+						HTML2Text(element, context, childStyles);
 						break;
 				}
+				if (!styles.isEmpty()) {
+					int lines = context.lines.size();
+					int to = context.buf.length();
+					if (lines > line) {
+						for (int i = line; i < lines; i++) {
+							UString text = context.lines.get(i);
+							addCurrentStyles(text, 0, text.length(), styles);
+						}
+						if (to > 0)
+							addCurrentStyles(context.buf, 0, to, styles);
+					} else if (to > offset)
+						addCurrentStyles(context.buf, offset, to, styles);
+				}
 			}
+	}
+
+	private static void addCurrentStyles(UString text, int from, int to, HashMap<TextStyleType, Object> styles)
+	{
+		Object value = styles.get(TextStyleType.border);
+		if (value != null)
+			text.addStyle(from, to, TextStyleType.border, true);
+		value = styles.get(TextStyleType.link);
+		if (value != null)
+			text.addStyle(from, to, TextStyleType.link, true);
+		else {
+			value = styles.get(TextStyleType.underline);
+			if (value != null)
+				text.addStyle(from, to, TextStyleType.underline, true);
+		}
+		value = styles.get(TextStyleType.fontSize);
+		if (value != null)
+			text.addStyle(from, to, TextStyleType.fontSize, value);
 	}
 
 	public static String detectCharset(InputStream is)
@@ -336,6 +429,41 @@ public class BookUtil
 			return path;
 		else
 			return prefix + "/" + path;
+	}
+
+	private static int fontLevelToPercent(int level)
+	{
+		switch (level) {
+			case 1:
+				return 3 * 100 / 5;
+			case 2:
+				return 8 * 100 / 9;
+			case 3:
+			default:
+				return 100;
+			case 4:
+				return 6 * 100 / 5;
+			case 5:
+				return 3 * 100 / 2;
+			case 6:
+				return 2 * 100;
+			case 7:
+				return 3 * 100;
+		}
+	}
+
+	private static Integer parseColor(TermColor color)
+	{
+		switch (color.getKeyword()) {
+			case none:
+				cz.vutbr.web.csskit.Color cssColor = color.getValue();
+				return cssColor.getRGB();
+			case TRANSPARENT:
+				return android.graphics.Color.TRANSPARENT;
+			case CURRENT_COLOR:
+			default:
+				return null;
+		}
 	}
 
 	static public Bitmap loadPicFromZip(ZipFile zip, String picName)

@@ -7,9 +7,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteException;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -20,11 +18,11 @@ import android.widget.*;
 import net.lzrj.SimpleReader.book.Book;
 import net.lzrj.SimpleReader.book.BookLoader;
 import net.lzrj.SimpleReader.book.Content;
-import net.lzrj.SimpleReader.dict.DictManager;
 import net.lzrj.SimpleReader.dialog.FileDialog;
 import net.lzrj.SimpleReader.dialog.OptionDialog;
-import net.lzrj.SimpleReader.popup.*;
+import net.lzrj.SimpleReader.dict.DictManager;
 import net.lzrj.SimpleReader.popup.PopupMenu;
+import net.lzrj.SimpleReader.popup.*;
 import net.lzrj.SimpleReader.vfs.VFile;
 import net.lzrj.SimpleReader.view.SimpleTextView;
 
@@ -79,7 +77,6 @@ public class Reader extends Activity implements View.OnTouchListener
 	private Config.ReadingInfo ri = null;
 	private BookmarkManager bookmarkManager = null;
 	private TOCList TOCList = null;
-	private ImageViewer imageViewer = null;
 	private StatusPanel statusPanel = null;
 	private DictManager dictManager;
 	private Typeface tf = null;
@@ -141,8 +138,6 @@ public class Reader extends Activity implements View.OnTouchListener
 		xbv = (SimpleTextView) findViewById(R.id.xbook_text);
 		xbv.setOnTouchListener(this);
 		setView(config.isHanStyle());
-		BitmapDrawable bd = (BitmapDrawable) getResources().getDrawable(R.drawable.zoom);
-		SimpleTextView.setZoomIcon(bd.getBitmap());
 
 		dictManager = new DictManager(this);
 		VFile.setDefaultEncode(config.getZipEncode());
@@ -175,9 +170,6 @@ public class Reader extends Activity implements View.OnTouchListener
 			bookmarkManager.update(bookmarkManager.getWidth(), WindowManager.LayoutParams.MATCH_PARENT);
 		if (TOCList.isShowing())
 			TOCList.update(TOCList.getWidth(), WindowManager.LayoutParams.MATCH_PARENT);
-		if (imageViewer.isShowing())
-			imageViewer.update(WindowManager.LayoutParams.MATCH_PARENT,
-				WindowManager.LayoutParams.MATCH_PARENT);
 		super.onConfigurationChanged(newConfig);
 	}
 
@@ -742,7 +734,6 @@ public class Reader extends Activity implements View.OnTouchListener
 		mi.put(R.string.menu_bookmark, getString(R.string.menu_bookmark));
 		mi.put(R.string.menu_copy, getString(R.string.menu_copy));
 
-		imageViewer = new ImageViewer(this);
 		pm = new PopupMenu(this, mi, new AdapterView.OnItemClickListener()
 		{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
@@ -762,9 +753,7 @@ public class Reader extends Activity implements View.OnTouchListener
 					case R.string.menu_copy:
 						if (book == null)
 							break;
-						if (bv.isImagePage())
-							break;
-						UString l = book.content().text(tapTarget.line);
+						UString l = book.content().line(tapTarget.line);
 						final EditText et = new EditText(Reader.this);
 						et.setText(l.text());
 						new AlertDialog.Builder(Reader.this).setTitle(
@@ -991,7 +980,7 @@ public class Reader extends Activity implements View.OnTouchListener
 	{
 		gs = new GestureDetector(new GestureDetector.OnGestureListener()
 		{
-			ArrayList<Integer> items = new ArrayList<>();
+			final ArrayList<Integer> items = new ArrayList<>();
 
 			public boolean onDown(MotionEvent e)
 			{
@@ -1032,14 +1021,6 @@ public class Reader extends Activity implements View.OnTouchListener
 
 			public boolean onSingleTapUp(MotionEvent e)
 			{
-				if (bv.isImagePage()
-					&& (e.getX() > (screenWidth - SimpleTextView.zoomIconSize))
-					&& (e.getY() > (screenHeight - SimpleTextView.zoomIconSize))) {
-					Bitmap bm = bv.getImage();
-					if (bm != null)
-						imageViewer.show(bm);
-					return true;
-				}
 				String note = bv.getTapTargetNote(e.getX(), e.getY());
 				if (note != null) {
 					showNote(note, e);

@@ -77,7 +77,7 @@ public class SRBOnlineLoader implements BookLoader.Loader
 				return null;
 			if (line >= lineCount())
 				return null;
-			UString l = text(line);
+			UString l = line(line);
 			if (offset >= l.length())
 				return null;
 			if (l.charAt(offset) != op.mark)

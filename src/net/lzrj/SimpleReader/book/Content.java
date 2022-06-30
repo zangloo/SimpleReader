@@ -1,6 +1,5 @@
 package net.lzrj.SimpleReader.book;
 
-import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.UString;
 
 /**
@@ -43,10 +42,7 @@ public interface Content
 	Position getPercentPos(int percent);
 
 	// return line at index
-	ContentLine line(int index);
-
-	// return text at index
-	UString text(int index);
+	UString line(int index);
 
 	// return line count
 	int lineCount();

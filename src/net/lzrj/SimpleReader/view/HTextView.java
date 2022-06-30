@@ -1,12 +1,8 @@
 package net.lzrj.SimpleReader.view;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
+import android.graphics.*;
 import android.util.AttributeSet;
-import net.lzrj.SimpleReader.TextContentBase;
 import net.lzrj.SimpleReader.UString;
 import net.lzrj.SimpleReader.book.TextStyleType;
 
@@ -21,8 +17,8 @@ import java.util.List;
  */
 public class HTextView extends SimpleTextView
 {
-	public static final char[] SC = new char[]{'「', '」', '〈', '〉', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', '…', 9, '(', ')', '[', ']', '<', '>', '{', '}', '-', '—', '〖', '〗'};
-	public static final char[] TC = new char[]{'﹁', '﹂', '︿', '﹀', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '⋮', '　', '︵', '︶', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '︱', '\uE794', '\uE795'};
+	public static final char[] SC = new char[]{' ', '「', '」', '〈', '〉', '『', '』', '（', '）', '《', '》', '〔', '〕', '【', '】', '｛', '｝', '─', '…', 9, '(', ')', '[', ']', '<', '>', '{', '}', '-', '—', '〖', '〗'};
+	public static final char[] TC = new char[]{'　', '﹁', '﹂', '︿', '﹀', '﹃', '﹄', '︵', '︶', '︽', '︾', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '⋮', '　', '︵', '︶', '︹', '︺', '︻', '︼', '︷', '︸', '︱', '︱', '\uE794', '\uE795'};
 
 	public HTextView(Context context, AttributeSet attrs)
 	{
@@ -73,20 +69,52 @@ public class HTextView extends SimpleTextView
 				top += 2 * defaultFontMeasure.height;
 			// calc char draw height, include border margin
 			float drawHeight = fontMeasure.height;
-			List<TextContentBase.TextStyle> styles = text.styles();
+			List<UString.TextStyle> styles = text.styles();
 			Point drawOffset = null;
+			Integer color = null;
+			Integer background = null;
+			UString.ImageValue imageValue = null;
 			if (styles != null)
-				for (TextContentBase.TextStyle style : styles)
-					if (TextStyleType.border.equals(style.type))
-						if (style.from == i) {
-							drawHeight += (int) fontMeasure.height >> 2;
+				for (UString.TextStyle style : styles) {
+					if (style.from > i || style.to <= i)
+						continue;
+					switch (style.type) {
+						case border:
+							if (style.from == i) {
+								drawHeight += (int) fontMeasure.height >> 2;
+								break;
+							} else if (style.to - 1 == i) {
+								int margin = (int) fontMeasure.height >> 2;
+								drawOffset = new Point(0, margin);
+								drawHeight += margin;
+								break;
+							}
 							break;
-						} else if (style.to - 1 == i) {
-							int margin = (int) fontMeasure.height >> 2;
-							drawOffset = new Point(0, margin);
-							drawHeight += margin;
+						case link:
+							color = Color.BLUE;
 							break;
-						}
+						case color:
+							color = (int) style.value;
+							break;
+						case background:
+							background = (int) style.value;
+							break;
+						case image:
+							imageValue = (UString.ImageValue) style.value;
+							break;
+						default:
+							break;
+					}
+				}
+			float charWidth;
+			Bitmap image = null;
+			if (imageValue != null) {
+				Point size = scaleImage(imageValue, drawContext.maxDrawSize, drawContext.maxLineSize);
+				drawHeight = size.y;
+				charWidth = size.x;
+				image = imageValue.getImage();
+			} else
+				charWidth = measureChar(text.charAt(i));
 
 			if (top + drawHeight > max) {
 				drawContext.baseline -= drawLine.drawSize + drawLine.space;
@@ -94,14 +122,17 @@ public class HTextView extends SimpleTextView
 				lines.add(drawLine);
 				top = viewMargin;
 			}
-			if (i == begin || fontMeasure.width > drawLine.drawSize) {
-				drawLine.drawSize = fontMeasure.width;
-				drawLine.space = fontMeasure.width / 2;
+
+			if (i == begin || charWidth > drawLine.drawSize) {
+				drawLine.drawSize = charWidth;
+				if (imageValue == null)
+					drawLine.space = charWidth / 2;
+				else
+					drawLine.space = drawLine.drawSize / 2;
 			}
-			float charWidth = measureChar(text.charAt(i));
 			float bottom = top + drawHeight;
 			Rect rect = new Rect(drawContext.baseline - (int) charWidth, (int) top, drawContext.baseline, (int) bottom);
-			drawLine.chars.add(new DrawChar(i, fontSize, rect, drawOffset));
+			drawLine.chars.add(new DrawChar(i, fontSize, rect, drawOffset, color, background, image));
 			top = bottom;
 		}
 		drawContext.baseline -= drawLine.drawSize + drawLine.space;
@@ -131,6 +162,7 @@ public class HTextView extends SimpleTextView
 		int bottom = dc.rect.bottom;
 		int margin = maxWidth >> 3;
 		switch (type) {
+			case link:
 			case underline:
 				if (fromStart)
 					top += margin;

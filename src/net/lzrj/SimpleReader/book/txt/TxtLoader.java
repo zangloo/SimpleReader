@@ -1,7 +1,6 @@
 package net.lzrj.SimpleReader.book.txt;
 
 import net.lzrj.SimpleReader.Config;
-import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.UString;
 import net.lzrj.SimpleReader.book.*;
 import net.lzrj.SimpleReader.vfs.VFile;
@@ -35,7 +34,7 @@ public class TxtLoader implements BookLoader.Loader
 
 	public Book load(VFile f, Config.ReadingInfo ri) throws Exception
 	{
-		List<ContentLine> lines = new ArrayList<>();
+		List<UString> lines = new ArrayList<>();
 		String cs;
 
 		InputStream fs = f.getInputStream();

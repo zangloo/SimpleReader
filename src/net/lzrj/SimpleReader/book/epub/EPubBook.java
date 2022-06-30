@@ -1,7 +1,6 @@
 package net.lzrj.SimpleReader.book.epub;
 
 import net.lzrj.SimpleReader.Config;
-import net.lzrj.SimpleReader.ContentLine;
 import net.lzrj.SimpleReader.UString;
 import net.lzrj.SimpleReader.book.*;
 import nl.siegmann.epublib.domain.Book;
@@ -46,13 +45,13 @@ class EPubBook extends ChaptersBook
 			final String htmlPath = resource.getHref();
 			Document document = Jsoup.parse(resource.getInputStream(), charset, "");
 			BookUtil.HtmlContent htmlContent = BookUtil.HTML2Text(document, new EPubContentNodeCallback(book, htmlPath));
-			List<ContentLine> lines = htmlContent.lines;
+			List<UString> lines = htmlContent.lines;
 			if (lines.size() == 0)
 				lines.add(new UString(" "));
 			chapter = new EPubChapter(htmlPath, new ContentBase(lines), htmlContent.fragmentMap.size() == 0 ? null : htmlContent.fragmentMap);
 		} catch (Exception e) {
 			e.printStackTrace();
-			ArrayList<ContentLine> list = new ArrayList<>();
+			ArrayList<UString> list = new ArrayList<>();
 			String message = e.getMessage();
 			if (message == null)
 				message = e.toString();
