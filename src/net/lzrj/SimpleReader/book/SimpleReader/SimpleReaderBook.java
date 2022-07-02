@@ -275,12 +275,6 @@ public class SimpleReaderBook extends net.lzrj.SimpleReader.book.Book implements
 	}
 
 	@Override
-	public boolean hasNotes()
-	{
-		return hasNotes;
-	}
-
-	@Override
 	public String getNote(int index, int offset)
 	{
 		if (!hasNotes)

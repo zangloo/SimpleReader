@@ -1021,10 +1021,21 @@ public class Reader extends Activity implements View.OnTouchListener
 
 			public boolean onSingleTapUp(MotionEvent e)
 			{
-				String note = bv.getTapTargetNote(e.getX(), e.getY());
-				if (note != null) {
-					showNote(note, e);
-					return true;
+				SimpleTextView.TapTarget pi = bv.calcTapTarget(e.getX(), e.getY());
+				if (pi != null) {
+					String note = bv.getNote(pi.line, pi.offset);
+					if (note != null) {
+						showNote(note, e);
+						return true;
+					}
+					String href = bv.getLink(pi.line, pi.offset);
+					if (href != null) {
+						pushReadingInfo();
+						Content.Position position = book.gotoLink(href);
+						if (position != null)
+							switchChapterUpdate(position.line, position.offset);
+						return true;
+					}
 				}
 
 				int height = bv.getHeight();

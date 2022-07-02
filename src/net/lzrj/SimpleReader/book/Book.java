@@ -35,6 +35,12 @@ public abstract class Book
 		return new Content.Position(0, 0);
 	}
 
+	// goto position of [target#anchor]
+	public Content.Position gotoLink(String href)
+	{
+		return null;
+	}
+
 	// get current chapter index
 	public abstract int currChapter();
 

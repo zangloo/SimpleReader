@@ -115,12 +115,6 @@ public class ContentBase implements Content
 	}
 
 	@Override
-	public boolean hasNotes()
-	{
-		return false;
-	}
-
-	@Override
 	public String getNote(int line, int offset)
 	{
 		return null;

@@ -65,12 +65,6 @@ public class SRBOnlineLoader implements BookLoader.Loader
 		}
 
 		@Override
-		public boolean hasNotes()
-		{
-			return op.hasNotes;
-		}
-
-		@Override
 		public String getNote(int line, int offset)
 		{
 			if (!op.hasNotes)

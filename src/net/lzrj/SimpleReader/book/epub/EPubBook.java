@@ -137,5 +137,34 @@ class EPubBook extends ChaptersBook
 			}
 		return null;
 	}
+
+	@Override
+	public Content.Position gotoLink(String href)
+	{
+		String[] parts = href.split("#");
+		EPubChapter chapter = null;
+		if (parts[0].length() > 0) {
+			List<SpineReference> spineReferences = book.getSpine().getSpineReferences();
+			for (int i = 0; i < spineReferences.size(); i++)
+				if (parts[0].equals(spineReferences.get(i).getResource().getHref())) {
+					loadChapter(i);
+					chapter = chapters.get(i);
+				}
+		} else
+			chapter = chapters.get(this.chapter);
+
+		if (chapter == null)
+			return null;
+
+		if (parts.length > 1 && parts[1].length() > 0) {
+			Content.Position position = chapter.fragmentMap.get(parts[1]);
+			if (position == null)
+				return new Content.Position(0, 0);
+			else
+				return position;
+		} else {
+			return new Content.Position(0, 0);
+		}
+	}
 }
 

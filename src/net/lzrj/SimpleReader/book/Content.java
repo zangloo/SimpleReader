@@ -26,9 +26,6 @@ public interface Content
 		}
 	}
 
-	// has notes?
-	boolean hasNotes();
-
 	// return null when no note at line:offset
 	String getNote(int line, int offset);
 

@@ -345,7 +345,9 @@ public class BookUtil
 						HTML2Text(element, context, childStyles);
 						break;
 					case "a":
-						childStyles.put(TextStyleType.link, true);
+						String href = element.attr("href");
+						if (href.length() > 1)
+							childStyles.put(TextStyleType.link, href);
 						HTML2Text(element, context, childStyles);
 						break;
 					default:
@@ -375,7 +377,7 @@ public class BookUtil
 			text.addStyle(from, to, TextStyleType.border, true);
 		value = styles.get(TextStyleType.link);
 		if (value != null)
-			text.addStyle(from, to, TextStyleType.link, true);
+			text.addStyle(from, to, TextStyleType.link, value);
 		else {
 			value = styles.get(TextStyleType.underline);
 			if (value != null)

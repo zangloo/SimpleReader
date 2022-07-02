@@ -371,15 +371,18 @@ public abstract class SimpleTextView extends View
 		return fpi;
 	}
 
-	public String getTapTargetNote(float x, float y)
+	public String getNote(int line, int offset)
 	{
-		if (!content.hasNotes())
-			return null;
-		TapTarget pi = calcTapTarget(x, y);
-		if (pi == null)
-			return null;
+		return content.getNote(line, offset);
+	}
 
-		return content.getNote(pi.line, pi.offset);
+	public String getLink(int line, int offset)
+	{
+		UString text = content.line(line);
+		for (UString.TextStyle style : text.styles())
+			if (TextStyleType.link.equals(style.type) && style.from <= offset && style.to > offset)
+				return (String) style.value;
+		return null;
 	}
 
 	public Content.Position searchText(String t)
@@ -515,7 +518,7 @@ public abstract class SimpleTextView extends View
 		}
 	}
 
-	protected TapTarget calcTapTarget(float x, float y)
+	public TapTarget calcTapTarget(float x, float y)
 	{
 		for (DrawLine drawLine : drawLines)
 			for (DrawChar drawChar : drawLine.chars)
