@@ -139,14 +139,23 @@ class EPubBook extends ChaptersBook
 	}
 
 	@Override
-	public Content.Position gotoLink(String href)
+	public Content.Position gotoLink( String href)
 	{
 		String[] parts = href.split("#");
 		EPubChapter chapter = null;
 		if (parts[0].length() > 0) {
+			EPubChapter current = chapters.get(this.chapter);
+			if (current == null)
+				return null;
+			String prefix = BookUtil.getParentPath(current.path);
+			String path;
+			if (prefix == null)
+				path = parts[0];
+			else
+				path = BookUtil.concatPath(prefix, parts[0]);
 			List<SpineReference> spineReferences = book.getSpine().getSpineReferences();
 			for (int i = 0; i < spineReferences.size(); i++)
-				if (parts[0].equals(spineReferences.get(i).getResource().getHref())) {
+				if (path.equals(spineReferences.get(i).getResource().getHref())) {
 					loadChapter(i);
 					chapter = chapters.get(i);
 				}

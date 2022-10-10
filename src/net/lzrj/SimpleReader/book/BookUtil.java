@@ -415,6 +415,24 @@ public class BookUtil
 		return encoding;
 	}
 
+	static public String getParentPath(String path)
+	{
+		if (path == null)
+			return null;
+		int length = path.length();
+		if (length <= 1)
+			return null;
+		int lastIndex = path.lastIndexOf("/");
+		if (lastIndex < 0)
+			return null;
+		if (lastIndex == length - 1)
+			return getParentPath(path.substring(0, lastIndex));
+		if (lastIndex == 0)
+			return "/";
+		else
+			return path.substring(0, lastIndex);
+	}
+
 	static public String concatPath(String prefix, String path)
 	{
 		if (prefix.endsWith("/"))
