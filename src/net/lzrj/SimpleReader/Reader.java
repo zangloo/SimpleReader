@@ -900,6 +900,20 @@ public class Reader extends Activity implements View.OnTouchListener
 			}
 
 			@Override
+			public void onTocClick()
+			{
+				showChapterList();
+				statusPanel.hide();
+			}
+
+			@Override
+			public void onBookmarkClick()
+			{
+				showBookmarkMgr();
+				statusPanel.hide();
+			}
+
+			@Override
 			public void onSearchClick()
 			{
 				showSearchPanel();

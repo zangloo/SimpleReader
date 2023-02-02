@@ -55,6 +55,8 @@
 	<string name="zip_encode_label">zip文件名編碼：</string>
 	<string name="button_ok_text">確定</string>
 	<string name="button_cancel_text">取消</string>
+	<string name="button_toc_text">章節</string>
+	<string name="button_bookmark_text">書籤</string>
 	<string name="button_search_text">檢索</string>
 	<string name="view_direct_label">閱讀方嚮：</string>
 	<string name="dict_enabled_label">啓用字典：</string>

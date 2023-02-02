@@ -21,9 +21,13 @@ import java.util.Stack;
  */
 public class StatusPanel extends PopupWindow
 {
-	public static interface OnPanelClickListener
+	public interface OnPanelClickListener
 	{
 		void onFilenameClick();
+
+		void onTocClick();
+
+		void onBookmarkClick();
 
 		void onSearchClick();
 
@@ -96,6 +100,24 @@ public class StatusPanel extends PopupWindow
 			public void onClick(View view)
 			{
 				pcl.onFilenameClick();
+			}
+		});
+
+		btn = (Button) layout.findViewById(R.id.button_toc);
+		btn.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View view)
+			{
+				pcl.onTocClick();
+			}
+		});
+
+		btn = (Button) layout.findViewById(R.id.button_bookmark);
+		btn.setOnClickListener(new View.OnClickListener()
+		{
+			public void onClick(View view)
+			{
+				pcl.onBookmarkClick();
 			}
 		});
 
