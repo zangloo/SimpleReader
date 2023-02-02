@@ -41,7 +41,7 @@ public class BookUtil
 	public static final String CONTENT_TEXT_BORDER_FOR_STYLE_KEY = "data-simple-reader-text-border";
 	public static final String CONTENT_TEXT_UNDERLINE_FOR_STYLE_KEY = "data-simple-reader-text-underline";
 
-	private static final String[] NEWLINE_CLASSES = new String[]{"contents", "toc", "mulu"};
+	private static final String[] NEWLINE_CLASSES = new String[]{"contents", "toc", "mulu", "kindle-cn-toc-level"};
 
 	public static class HtmlContent
 	{
@@ -67,7 +67,7 @@ public class BookUtil
 			this.nodeCallback = nodeCallback;
 		}
 
-		HashMap<TextStyleType, Object> styleText(Element element, HashMap<TextStyleType, Object> styles)
+		HashMap<TextStyleType, Object> styleText(Element element)
 		{
 			HashMap<TextStyleType, Object> newStyles = new HashMap<>();
 			if (element.hasAttr(CONTENT_TEXT_BORDER_FOR_STYLE_KEY))
@@ -275,7 +275,7 @@ public class BookUtil
 				final Element element = (Element) child;
 				String tagName = element.tagName();
 				Set<String> classes = element.classNames();
-				HashMap<TextStyleType, Object> childStyles = context.styleText(element, styles);
+				HashMap<TextStyleType, Object> childStyles = context.styleText(element);
 				int line = context.lines.size();
 				int offset = context.buf.length();
 				switch (tagName.toLowerCase()) {
