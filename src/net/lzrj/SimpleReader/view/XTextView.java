@@ -73,6 +73,7 @@ public class XTextView extends SimpleTextView
 			List<UString.TextStyle> styles = text.styles();
 			Point drawOffset = null;
 			Integer color = null;
+			boolean bold = false;
 			Integer background = null;
 			UString.ImageValue imageValue = null;
 			if (styles != null)
@@ -103,6 +104,10 @@ public class XTextView extends SimpleTextView
 							break;
 						case image:
 							imageValue = (UString.ImageValue) style.value;
+							break;
+						case bold:
+							bold = true;
+							break;
 						default:
 							break;
 					}
@@ -132,7 +137,7 @@ public class XTextView extends SimpleTextView
 			}
 			float right = left + drawWidth;
 			Rect rect = new Rect((int) left, drawContext.baseline, (int) right, drawContext.baseline + (int) drawHeight);
-			drawLine.chars.add(new DrawChar(i, fontSize, rect, drawOffset, color, background, image));
+			drawLine.chars.add(new DrawChar(i, fontSize, bold, rect, drawOffset, color, background, image));
 			left = right;
 		}
 		drawContext.baseline += drawLine.drawSize + drawLine.space;

@@ -72,6 +72,7 @@ public class HTextView extends SimpleTextView
 			List<UString.TextStyle> styles = text.styles();
 			Point drawOffset = null;
 			Integer color = null;
+			boolean bold = false;
 			Integer background = null;
 			UString.ImageValue imageValue = null;
 			if (styles != null)
@@ -101,6 +102,9 @@ public class HTextView extends SimpleTextView
 							break;
 						case image:
 							imageValue = (UString.ImageValue) style.value;
+							break;
+						case bold:
+							bold = true;
 							break;
 						default:
 							break;
@@ -132,7 +136,7 @@ public class HTextView extends SimpleTextView
 			}
 			float bottom = top + drawHeight;
 			Rect rect = new Rect(drawContext.baseline - (int) charWidth, (int) top, drawContext.baseline, (int) bottom);
-			drawLine.chars.add(new DrawChar(i, fontSize, rect, drawOffset, color, background, image));
+			drawLine.chars.add(new DrawChar(i, fontSize, bold, rect, drawOffset, color, background, image));
 			top = bottom;
 		}
 		drawContext.baseline -= drawLine.drawSize + drawLine.space;

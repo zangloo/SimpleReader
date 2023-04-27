@@ -65,16 +65,18 @@ public abstract class SimpleTextView extends View
 	{
 		final int offset;
 		final int fontSize;
+		final boolean bold;
 		final Rect rect;
 		final Point drawOffset;
 		final Integer color;
 		final Integer background;
 		final Bitmap image;
 
-		public DrawChar(int offset, int fontSize, Rect rect, Point drawOffset, Integer color, Integer background, Bitmap image)
+		public DrawChar(int offset, int fontSize, boolean bold, Rect rect, Point drawOffset, Integer color, Integer background, Bitmap image)
 		{
 			this.offset = offset;
 			this.fontSize = fontSize;
+			this.bold = bold;
 			this.rect = rect;
 			this.drawOffset = drawOffset;
 			this.color = color;
@@ -510,6 +512,10 @@ public abstract class SimpleTextView extends View
 						left += drawOffset.x;
 						bottom -= drawOffset.y;
 					}
+					if (drawChar.bold)
+						paint.setTypeface(Typeface.DEFAULT_BOLD);
+					else
+						paint.setTypeface(Typeface.DEFAULT);
 					canvas.drawText(buf, 0, charWidth, left, bottom - fontMeasure.descent, paint);
 				} else {
 					canvas.drawBitmap(drawChar.image, null, drawChar.rect, null);

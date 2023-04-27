@@ -350,6 +350,10 @@ public class BookUtil
 							childStyles.put(TextStyleType.link, href);
 						HTML2Text(element, context, childStyles);
 						break;
+					case "b":
+						childStyles.put(TextStyleType.bold, true);
+						HTML2Text(element, context, childStyles);
+						break;
 					default:
 						HTML2Text(element, context, childStyles);
 						break;
@@ -386,6 +390,9 @@ public class BookUtil
 		value = styles.get(TextStyleType.fontSize);
 		if (value != null)
 			text.addStyle(from, to, TextStyleType.fontSize, value);
+		value = styles.get(TextStyleType.bold);
+		if (value != null)
+			text.addStyle(from, to, TextStyleType.bold, value);
 	}
 
 	public static String detectCharset(InputStream is)
