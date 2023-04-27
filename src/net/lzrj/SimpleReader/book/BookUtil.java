@@ -215,30 +215,6 @@ public class BookUtil
 		return new HtmlContent(context.lines, context.fragmentMap);
 	}
 
-	private static boolean isAsciiWhitespace(char ch)
-	{
-		return ch == '\t' || ch == '\n' || ch == 12 || ch == '\r' | ch == ' ';
-	}
-
-	private static String strip(String text)
-	{
-		int length = text.length();
-		int start = 0;
-		for (; start < length; start++)
-			if (!isAsciiWhitespace(text.charAt(start)))
-				break;
-		int end = length - 1;
-		for (; end >= start; end--)
-			if (!isAsciiWhitespace(text.charAt(end)))
-				break;
-		end++;
-		if (start == 0 && end == length)
-			return text;
-		if (start >= end)
-			return "";
-		return text.substring(start, end);
-	}
-
 	private static void pushBuf(ParseContext context)
 	{
 		// ignore empty line if prev line is empty too.
@@ -268,7 +244,7 @@ public class BookUtil
 			context.fragmentMap.put(elementId, new Content.Position(context.lines.size(), context.buf.length()));
 		for (Node child : node.childNodes())
 			if (child instanceof TextNode) {
-				String text = strip(((TextNode) child).text());
+				String text = ((TextNode) child).text().trim();
 				if (text.length() > 0) {
 					if (context.buf.length() > 0
 						&& !Character.isLetterOrDigit(context.buf.charAt(context.buf.length() - 1))
