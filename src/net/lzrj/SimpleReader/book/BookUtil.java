@@ -215,16 +215,21 @@ public class BookUtil
 		return new HtmlContent(context.lines, context.fragmentMap);
 	}
 
+	private static boolean isAsciiWhitespace(char ch)
+	{
+		return ch == '\t' || ch == '\n' || ch == 12 || ch == '\r' | ch == ' ';
+	}
+
 	private static String strip(String text)
 	{
 		int length = text.length();
 		int start = 0;
 		for (; start < length; start++)
-			if (!Character.isWhitespace(text.charAt(start)))
+			if (!isAsciiWhitespace(text.charAt(start)))
 				break;
 		int end = length - 1;
 		for (; end >= start; end--)
-			if (!Character.isWhitespace(text.charAt(end)))
+			if (!isAsciiWhitespace(text.charAt(end)))
 				break;
 		end++;
 		if (start == 0 && end == length)
