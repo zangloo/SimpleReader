@@ -49,12 +49,27 @@ public class EPubLoader implements BookLoader.Loader
 			book = reader.readEpub(is);
 		}
 
-		if (ri.chapter >= book.getSpine().size())
+		int chapter_count = book.getSpine().size();
+		if (ri.chapter >= chapter_count)
 			throw new Exception(
 				String.format("Error open chapter %d @ \"%s\"", ri.chapter, file.getPath()));
 
 		ArrayList<TOCRecord> toc = new ArrayList<>();
 		setupTOC(book.getTableOfContents().getTocReferences(), toc, 0);
+
+		int chapter_index = 0;
+		for (TOCRecord entry : toc) {
+			EPubTOC et = (EPubTOC) entry;
+			String src_file = et.ref.getResourceId();
+			for (int i = chapter_index; i < chapter_count; i++) {
+				String chapter_href = book.getSpine().getSpineReferences().get(i).getResourceId();
+				if (chapter_href != null && chapter_href.equals(src_file)){
+					et.first_chapter_index = i;
+					chapter_index = i;
+					break;
+				}
+			}
+		}
 
 		return new EPubBook(book, ri, toc);
 	}
@@ -73,6 +88,7 @@ public class EPubLoader implements BookLoader.Loader
 	{
 		final TOCReference ref;
 		final int level;
+		private int first_chapter_index = 0;
 
 		EPubTOC(TOCReference ref, int level)
 		{
@@ -85,6 +101,11 @@ public class EPubLoader implements BookLoader.Loader
 		public int level()
 		{
 			return level;
+		}
+
+		int first_chapter_index()
+		{
+			return first_chapter_index;
 		}
 	}
 }
