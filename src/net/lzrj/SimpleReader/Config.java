@@ -96,6 +96,7 @@ public class Config extends SQLiteOpenHelper
 	private static final String configNightColor = "ncolor";
 	private static final String configNightBColor = "nbcolor";
 	private static final String configColorBright = "colorbright";
+	private static final String configCustomColor = "customColor";
 	private static final String configHanStyle = "han";
 	private static final String configViewOrient = "orient";
 	private static final String configZipEncode = "zipencode";
@@ -115,6 +116,7 @@ public class Config extends SQLiteOpenHelper
 	private int viewOrient = Configuration.ORIENTATION_UNDEFINED;
 	private String zipEncode = VFile.getDefaultEncode();
 	private boolean colorBright = true;
+	private boolean customColor = true;
 	private boolean showStatus = true;
 	private GestureDirect pagingDirect = Config.GestureDirect.up;
 	private boolean dictEnabled = false;
@@ -185,6 +187,7 @@ public class Config extends SQLiteOpenHelper
 		ncolor = getInt(config, configNightColor, SimpleTextView.defaultNightTextColor);
 		nbcolor = getInt(config, configNightBColor, SimpleTextView.defaultNightBackgroundColor);
 		colorBright = getBoolean(config, configColorBright, true);
+		customColor = getBoolean(config, configCustomColor, true);
 		hanStyle = getBoolean(config, configHanStyle, true);
 		viewOrient = getInt(config, configViewOrient, Configuration.ORIENTATION_UNDEFINED);
 		zipEncode = getString(config, configZipEncode, VFile.getDefaultEncode());
@@ -251,6 +254,7 @@ public class Config extends SQLiteOpenHelper
 		config.put(configHanStyle, "" + hanStyle);
 		config.put(configViewOrient, "" + viewOrient);
 		config.put(configZipEncode, zipEncode);
+		config.put(configCustomColor, "" + customColor);
 		config.put(configColorBright, "" + colorBright);
 		config.put(configPagingDirect, pagingDirect.s());
 		config.put(configDictEnabled, "" + dictEnabled);
@@ -276,6 +280,7 @@ public class Config extends SQLiteOpenHelper
 		dup.bcolor = bcolor;
 		dup.ncolor = ncolor;
 		dup.nbcolor = nbcolor;
+		dup.customColor = customColor;
 		dup.colorBright = colorBright;
 		dup.hanStyle = hanStyle;
 		dup.showStatus = showStatus;
@@ -297,6 +302,7 @@ public class Config extends SQLiteOpenHelper
 		ncolor = dup.ncolor;
 		nbcolor = dup.nbcolor;
 		colorBright = dup.colorBright;
+		customColor = dup.customColor;
 		hanStyle = dup.hanStyle;
 		showStatus = dup.showStatus;
 		viewOrient = dup.viewOrient;
@@ -490,6 +496,16 @@ public class Config extends SQLiteOpenHelper
 	public void setColorBright(boolean colorBright)
 	{
 		this.colorBright = colorBright;
+	}
+
+	public boolean isCustomColor()
+	{
+		return customColor;
+	}
+
+	public void setCustomColor(boolean customColor)
+	{
+		this.customColor = customColor;
 	}
 
 	public GestureDirect getPagingDirect()

@@ -377,7 +377,12 @@ public class Reader extends Activity implements View.OnTouchListener
 
 	private void setColorAndFont()
 	{
-		bv.setColorAndFont(config.getCurrentColor(), config.getCurrentBColor(), config.getFontSize(), tf);
+		bv.setColorAndFont(
+			config.getCurrentColor(),
+			config.getCurrentBColor(),
+			config.isCustomColor(),
+			config.getFontSize(),
+			tf);
 		nt.setTypeface(tf);
 		nt.invalidate();
 	}

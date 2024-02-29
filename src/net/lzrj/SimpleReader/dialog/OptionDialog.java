@@ -170,6 +170,8 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				break;
 			}
 
+		CheckBox cb = (CheckBox) findViewById(R.id.custom_color);
+		cb.setChecked(conf.isCustomColor());
 
 		RadioGroup rg = (RadioGroup) findViewById(R.id.view_style);
 		if (conf.isHanStyle())
@@ -191,7 +193,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 				break;
 			}
 
-		CheckBox cb = (CheckBox) findViewById(R.id.online_enabled);
+		cb = (CheckBox) findViewById(R.id.online_enabled);
 		cb.setChecked(conf.isOnlineEnabled());
 
 		cb = (CheckBox) findViewById(R.id.dict_enabled);
@@ -231,6 +233,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		conf.setNColor(ncolor);
 		conf.setNBColor(nbcolor);
 		conf.setColorBright(isBright);
+		conf.setCustomColor(((CheckBox) findViewById(R.id.custom_color)).isChecked());
 		conf.setHanStyle(
 			((RadioGroup) findViewById(R.id.view_style)).getCheckedRadioButtonId() == R.id.han_style);
 

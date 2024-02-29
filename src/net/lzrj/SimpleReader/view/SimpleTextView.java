@@ -123,6 +123,7 @@ public abstract class SimpleTextView extends View
 	protected final List<DrawLine> drawLines = new ArrayList<>();
 	protected int fontSize;
 	protected int pageWidth, pageHeight;
+	protected boolean customColor;
 
 	DisplayMetrics metrics;
 
@@ -212,11 +213,13 @@ public abstract class SimpleTextView extends View
 
 			 }
 		 */
-	public void setColorAndFont(int aColor, int aBcolor, int fontSize, Typeface typeface)
+	public void setColorAndFont(int aColor, int aBcolor, boolean customColor, int fontSize, Typeface typeface)
 	{
 		this.fontSize = fontSize;
 		backgroundColor = aBcolor;
 		color = aColor;
+		this.customColor = customColor;
+
 		paint.setColor(color);
 		paint.setTypeface(typeface);
 		setTextSize(paint, fontSize);
@@ -489,7 +492,7 @@ public abstract class SimpleTextView extends View
 							paint.setColor(drawChar.background);
 							canvas.drawRect(rect, paint);
 						}
-						if (drawChar.color == null)
+						if (!customColor || drawChar.color == null)
 							paint.setColor(color);
 						else
 							paint.setColor(drawChar.color);
@@ -663,7 +666,7 @@ public abstract class SimpleTextView extends View
 
 			int first = styleFrom - drawTextFrom;
 			DrawChar firstDrawChar = chars.get(first);
-			if (firstDrawChar.color == null)
+			if (!customColor || firstDrawChar.color == null)
 				paint.setColor(color);
 			else
 				paint.setColor(firstDrawChar.color);
