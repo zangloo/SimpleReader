@@ -41,6 +41,7 @@
 	<string name="font_bcolor_green">背景色(綠):</string>
 	<string name="font_bcolor_blue">背景色(藍):</string>
 	<string name="custom_color_label">書籍設定顏色</string>
+	<string name="strip_empty_line_label">隱藏空白行</string>
 	<string name="view_style_label">閱讀方式：</string>
 	<string name="han_style">直排</string>
 	<string name="xi_style">横排</string>

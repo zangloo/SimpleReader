@@ -173,6 +173,9 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		CheckBox cb = (CheckBox) findViewById(R.id.custom_color);
 		cb.setChecked(conf.isCustomColor());
 
+		cb = (CheckBox) findViewById(R.id.strip_empty_line);
+		cb.setChecked(conf.isStripEmptyLine());
+
 		RadioGroup rg = (RadioGroup) findViewById(R.id.view_style);
 		if (conf.isHanStyle())
 			rg.check(R.id.han_style);
@@ -234,6 +237,7 @@ public class OptionDialog extends Dialog implements AdapterView.OnItemSelectedLi
 		conf.setNBColor(nbcolor);
 		conf.setColorBright(isBright);
 		conf.setCustomColor(((CheckBox) findViewById(R.id.custom_color)).isChecked());
+		conf.setStripEmptyLine(((CheckBox) findViewById(R.id.strip_empty_line)).isChecked());
 		conf.setHanStyle(
 			((RadioGroup) findViewById(R.id.view_style)).getCheckedRadioButtonId() == R.id.han_style);
 

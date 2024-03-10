@@ -124,6 +124,7 @@ public abstract class SimpleTextView extends View
 	protected int fontSize;
 	protected int pageWidth, pageHeight;
 	protected boolean customColor;
+	protected boolean stripEmptyLine;
 
 	DisplayMetrics metrics;
 
@@ -213,12 +214,13 @@ public abstract class SimpleTextView extends View
 
 			 }
 		 */
-	public void setColorAndFont(int aColor, int aBcolor, boolean customColor, int fontSize, Typeface typeface)
+	public void setColorAndFont(int aColor, int aBcolor, boolean customColor, boolean stripEmptyLine, int fontSize, Typeface typeface)
 	{
 		this.fontSize = fontSize;
 		backgroundColor = aBcolor;
 		color = aColor;
 		this.customColor = customColor;
+		this.stripEmptyLine = stripEmptyLine;
 
 		paint.setColor(color);
 		paint.setTypeface(typeface);
@@ -338,7 +340,7 @@ public abstract class SimpleTextView extends View
 			length += 2;
 		if (offset >= length)
 			return 0;
-		List<DrawLine> wrapLines = wrapLine(line, contentLine, 0, contentLine.length(), createDrawContext());
+		List<DrawLine> wrapLines = tryWrapLine(line, contentLine, 0, contentLine.length(), createDrawContext());
 		for (DrawLine wrapLine : wrapLines) {
 			List<DrawChar> chars = wrapLine.chars;
 			int charCount = chars.size();
@@ -398,7 +400,7 @@ public abstract class SimpleTextView extends View
 		if (t.length() == 0)
 			return null;
 
-		List<DrawLine> wrapLines = wrapLine(current.line, contentLine, current.offset, contentLine.length(), createDrawContext());
+		List<DrawLine> wrapLines = tryWrapLine(current.line, contentLine, current.offset, contentLine.length(), createDrawContext());
 		Content.Position position = new Content.Position();
 		if (wrapLines.size() <= 1) {
 			position.line = current.line + 1;
@@ -459,7 +461,7 @@ public abstract class SimpleTextView extends View
 		for (int i = current.line; i < lineCount; i++) {
 			UString line = prepareLineForDraw(content.line(i));
 			preparedLines.put(i, line);
-			List<DrawLine> wrapLines = wrapLine(i, line, offset, line.length(), drawContext);
+			List<DrawLine> wrapLines = tryWrapLine(i, line, offset, line.length(), drawContext);
 			offset = 0;
 			for (DrawLine wrapLine : wrapLines) {
 				float newSize = drawnSize + wrapLine.drawSize;
@@ -554,7 +556,7 @@ public abstract class SimpleTextView extends View
 		DrawContext drawContext = createDrawContext();
 		float totalSize = 0;
 		while (true) {
-			List<DrawLine> wrapLines = wrapLine(i, contentLine, 0, offset, drawContext);
+			List<DrawLine> wrapLines = tryWrapLine(i, contentLine, 0, offset, drawContext);
 			int wrappedLines = wrapLines.size() - 1;
 			for (int wi = wrappedLines; wi >= 0; wi--) {
 				DrawLine wrapLine = wrapLines.get(wi);
@@ -693,6 +695,14 @@ public abstract class SimpleTextView extends View
 	protected abstract DrawContext createDrawContext();
 
 	protected abstract UString prepareLineForDraw(UString line);
+
+	private List<DrawLine> tryWrapLine(int line, UString text, int begin, int end, DrawContext drawContext)
+	{
+		if (stripEmptyLine && text.length() == 0)
+			return new ArrayList<>();
+		else
+			return wrapLine(line, text, begin, end, drawContext);
+	}
 
 	protected abstract List<DrawLine> wrapLine(int line, UString text, int begin, int end, DrawContext drawContext);
 

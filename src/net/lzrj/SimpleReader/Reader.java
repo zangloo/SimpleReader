@@ -381,6 +381,7 @@ public class Reader extends Activity implements View.OnTouchListener
 			config.getCurrentColor(),
 			config.getCurrentBColor(),
 			config.isCustomColor(),
+			config.isStripEmptyLine(),
 			config.getFontSize(),
 			tf);
 		nt.setTypeface(tf);
