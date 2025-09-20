@@ -682,12 +682,20 @@ public abstract class SimpleTextView extends View
 		int imageWidth = image.getWidth();
 		int imageHeight = image.getHeight();
 		if (imageWidth > maxWidth || imageHeight > maxHeight) {
-			float scaleX = (float) imageWidth / (float) maxWidth;
-			float scaleY = (float) imageHeight / (float) maxHeight;
-			if (scaleX > scaleY)
-				return new Point(maxWidth, (int) ((float) maxHeight / scaleX));
-			else
-				return new Point((int) ((float) maxWidth / scaleY), maxHeight);
+			float imageRatio = (float) imageWidth / (float) imageHeight;
+			float viewRatio = (float) maxWidth / (float) maxHeight;
+			float drawWidth, drawHeight;
+			if (imageRatio > viewRatio) {
+				drawWidth = maxWidth;
+				drawHeight = maxWidth/imageRatio;
+			} else if (imageRatio < viewRatio) {
+				drawWidth = maxHeight * imageRatio;
+				drawHeight = maxHeight;
+			} else {
+				drawWidth = maxWidth;
+				drawHeight = maxHeight;
+			}
+			return new Point((int) drawWidth, (int) drawHeight);
 		} else
 			return new Point(imageWidth, imageHeight);
 	}
