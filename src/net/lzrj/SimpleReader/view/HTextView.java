@@ -65,8 +65,6 @@ public class HTextView extends SimpleTextView
 				setTextSize(paint, usingFontSize);
 			}
 			FontMeasure fontMeasure = fontMeasure(fontSize);
-			if (i == 0 && text.isParagraph())
-				top += 2 * defaultFontMeasure.height;
 			// calc char draw height, include border margin
 			float drawHeight = fontMeasure.height;
 			List<UString.TextStyle> styles = text.styles();
@@ -117,8 +115,11 @@ public class HTextView extends SimpleTextView
 				drawHeight = size.y;
 				charWidth = size.x;
 				image = imageValue.getImage();
-			} else
+			} else {
+				if (i == 0 && text.isParagraph())
+					top += 2 * defaultFontMeasure.height;
 				charWidth = measureChar(text.charAt(i));
+			}
 
 			if (top + drawHeight > max) {
 				drawContext.baseline -= drawLine.drawSize + drawLine.space;

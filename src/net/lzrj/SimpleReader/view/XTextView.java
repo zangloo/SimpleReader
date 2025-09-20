@@ -65,8 +65,6 @@ public class XTextView extends SimpleTextView
 				setTextSize(paint, usingFontSize);
 			}
 			FontMeasure fontMeasure = fontMeasure(fontSize);
-			if (i == 0 && text.isParagraph())
-				left += 2 * defaultFontMeasure.width;
 			float drawWidth = measureChar(text.charAt(i));
 
 			// calc char draw width, include border margin
@@ -119,9 +117,11 @@ public class XTextView extends SimpleTextView
 				drawHeight = size.y;
 				drawWidth = size.x;
 				image = imageValue.getImage();
-			} else
+			} else {
+				if (i == 0 && text.isParagraph())
+					left += 2 * defaultFontMeasure.width;
 				drawHeight = fontMeasure.height;
-
+			}
 			if (left + drawWidth > max) {
 				drawContext.baseline += drawLine.drawSize + drawLine.space;
 				drawLine = createDrawLine(line, fontMeasure);
